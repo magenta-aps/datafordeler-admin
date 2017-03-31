@@ -4,39 +4,29 @@ from __future__ import unicode_literals
 
 from django.apps import apps
 from django.db import models
+from django.utils import formats
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-
-class HistoryFields(models.Model):
-
-    class Meta:
-        abstract = True
-
-    changed_by = models.CharField(
-        verbose_name=_(u"Ændret af"),
-        max_length=2048
-    )
-    updated = models.DateTimeField(
-        verbose_name=_(u"Seneste opdatering"),
-        default=timezone.now
-    )
+import copy
 
 
-class EntityWithHistory(HistoryFields):
+class EntityWithHistory(models.Model):
 
     class Meta:
         abstract = True
 
     history_class = None
 
-    def get_history_class(self):
-        if(isinstance(self.__class__.history_class, basestring)):
-            model = apps.get_app_config("dafousers").get_model(
-                self.__class__.history_class
-            )
-            self.__class__.history_class = model
-        return self.__class__.history_class
+    changed_by = models.CharField(
+        verbose_name=_(u"Ændret af"),
+        max_length=2048
+    )
+    updated = models.DateTimeField(
+        verbose_name=_(u"Opdateret"),
+        default=timezone.now
+    )
+
 
     def save(self, *args, **kwargs):
         # Complain if changed_by has not been set
@@ -54,7 +44,7 @@ class EntityWithHistory(HistoryFields):
         result = super(EntityWithHistory, self).save(*args, **kwargs)
 
         # Save history record
-        self.get_history_class().create_from_entity(self)
+        self.history_class.create_from_entity(self)
 
         return result
 
@@ -98,9 +88,87 @@ class HistoryForEntity(object):
         # Add many-to-many relation
         for r in rel_data:
             for v in rel_data[r]:
-                getattr(new_obj, r).add(v)
+                getattr(new_obj, r).add(v.pk)
 
         return new_obj
+
+    @classmethod
+    def build_from_entity_class(cls, entity_class, *extra_parents):
+
+        if EntityWithHistory not in entity_class.__bases__:
+            raise ImproperlyConfigured(
+                "Can not build %s from a class that does not " +
+                "inherit from %s" % (
+                    cls.__name__,
+                    EntityWithHistory.__name__
+                )
+            )
+
+
+        # Construct model class which inherits from cls and has an
+        # entity field as a foreign key to the entity class.
+        new_class = type(
+            str(entity_class.__name__ + "History"),
+            (models.Model, cls) + extra_parents,
+            {
+                "__module__": entity_class.__module__,
+                "entity": models.ForeignKey(entity_class),
+                "entity_class": entity_class
+            }
+        )
+        
+        entity_class.history_class = new_class
+
+        # Copy fields from the entity class and its parents
+        field_sources = [entity_class]
+        field_sources.extend(reversed(entity_class.__bases__))
+
+
+
+        seen_fields = set(["id", "entity"])
+        
+        for field_source in field_sources:
+            if not issubclass(field_source, models.Model):
+                continue
+
+            for f in field_source._meta.local_fields:
+                if f.name in seen_fields:
+                    continue
+
+                # Skip one-to-one relations, usually used in inheritance
+                if f.one_to_one:
+                    continue
+
+                new_field = copy.deepcopy(f)
+                new_class.add_to_class(f.name, new_field)
+                seen_fields.add(f.name)
+        
+            for f in field_source._meta.local_many_to_many:
+                if f.name in seen_fields:
+                    continue
+
+                new_field = models.ManyToManyField(
+                    f.remote_field.model,
+                    verbose_name=f.verbose_name,
+                    blank=f.blank
+                )
+                new_class.add_to_class(f.name, new_field)
+        
+        new_class._meta.verbose_name = "Historik for %s" % (
+            entity_class._meta.verbose_name
+        )
+        
+        return new_class
+
+
+    @classmethod
+    def admin_register_kwargs(cls):
+        return {"list_display": ['__unicode__', 'updated', 'changed_by']}
+
+    def __unicode__(self):
+        entity_unicode_method = self.entity_class.__unicode__.__func__
+
+        return entity_unicode_method(self)
 
 
 class UserIdentification(models.Model):
@@ -112,11 +180,7 @@ class UserIdentification(models.Model):
     def __unicode__(self):
         return unicode(self.user_id)
 
-
-class AccessAccountFields(models.Model):
-
-    class Meta:
-        abstract = True
+class AccessAccount(models.Model):
 
     STATUS_ACTIVE = 1
     STATUS_BLOCKED = 2
@@ -144,10 +208,6 @@ class AccessAccountFields(models.Model):
         verbose_name=_("Tilknyttede brugerprofiler"),
         blank=True
     )
-
-
-class AccessAccount(AccessAccountFields):
-    pass
 
 
 class PasswordUserFields(models.Model):
@@ -184,22 +244,11 @@ class PasswordUserFields(models.Model):
 
 
 class PasswordUser(AccessAccount, PasswordUserFields, EntityWithHistory):
-    history_class = "PasswordUserHistory"
 
     def __unicode__(self):
         return '%s <%s>' % (self.fullname, self.email)
 
-
-class PasswordUserHistory(AccessAccountFields, PasswordUserFields,
-                          HistoryFields, HistoryForEntity):
-    entity = models.ForeignKey(
-        PasswordUser,
-        blank=False,
-        null=False
-    )
-
-    def __unicode__(self):
-        return '%s <%s> - %s' % (self.fullname, self.email, self.updated)
+PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser,)
 
 
 class UserProfile(models.Model):
