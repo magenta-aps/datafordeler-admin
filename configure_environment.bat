@@ -1,10 +1,10 @@
 @echo off
 
 REM set root dir
-set DAFOADMIN_ROOT_DIR=%~dp0%
+set DJANGOPROJECT_ROOT_DIR=%~dp0%
 
 REM load virtual env
-call "%DAFOADMIN_ROOT_DIR%python-env\Scripts\activate"
+call "%DJANGOPROJECT_ROOT_DIR%python-env\Scripts\activate"
 
 REM Configure python include path
 IF NOT DEFINED PYTHONPATH GOTO empty_path
