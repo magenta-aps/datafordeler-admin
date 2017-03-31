@@ -1,0 +1,6 @@
+# General ignores
+
+# Folder-specific ignores
+/*.sqlite3
+/*.sqlite3*
+/dafoadmin_site/local_settings.py

@@ -1,5 +1,5 @@
 @echo off
-set VIRTUALENV_LOCATION=%~dp0%env
+set VIRTUALENV_LOCATION=%~dp0%python-env
 
 set PYTHON_EXE=python.exe
 set PIP_EXE=pip.exe

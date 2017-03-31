@@ -1,41 +1,12 @@
-/env
-/python-env
-/.installed.cfg
-/develop-eggs
-/dist
-/downloads
-/eggs
-/parts
-/src/*.egg-info
-/lib/*
-!/lib/autoit
-!/lib/*.whl
-/lib/autoit/*.exe
-/lib64
-
-
-/aalborgmonitor/local_settings.py
-/appmonitor/migrations/disabled
-
-/AutoIT
-/bin/IEDriverServer.exe
-
-/testsuites/*
-!/testsuites/google_search
-/testsuites/**/*.exe
-/testsuites/**/sqlite3*.dll
-/testsuites/**/*.err
-/testsuites/**/*.msg
-
-/.idea
-/*.sqlite3
-/*.sqlite3*
-/*.whl
-
+# General ignores
+.idea
 sqlite3.dll
 sqlite3_x64.dll
 
 .komodotools
 *.komodoproject
 *.pyc
-pyDes-2.0.1.zip
+
+# Folder-specific ignores
+/python-env
+

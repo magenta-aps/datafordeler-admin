@@ -12,11 +12,11 @@
 #
 import os
 import django
+django.setup()
 from django.contrib.auth.models import User
 
 if __name__ == '__main__':
     try:
-        django.setup()
         users = User.objects.filter(is_superuser=True)
         if len(users) > 0:
             print "Superusers already exists: %s" % (
@@ -28,4 +28,3 @@ if __name__ == '__main__':
     except Exception as e:
         print e
         exit(1)
-
