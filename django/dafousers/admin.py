@@ -10,6 +10,23 @@ CUSTOM_ADMIN_CLASSES = {
     # Empty for now
 }
 
+class DefaultModelAdmin(admin.ModelAdmin):
+    def get_model_perms(self, *args, **kwargs):
+        perms = super(DefaultModelAdmin, self).get_model_perms(*args, **kwargs)
+
+        try:
+            request = args[0]
+        except ValueError:
+            request = None
+
+        # if(request):
+        #     url_name = request.resolver_match.url_name
+        #     if (url_name in ('index', 'app_list') and
+        #         self.model.__name__[-7:] == "History"):
+        #         return {}
+
+        return perms
+
 
 def register_models(models, namespace=None):
     models = models.__dict__.iteritems()
@@ -49,6 +66,6 @@ def register_models(models, namespace=None):
         if cls is not None:
             admin.site.register(value, cls, **kwargs)
         else:
-            admin.site.register(value, None, **kwargs)
+            admin.site.register(value, DefaultModelAdmin, **kwargs)
 
 register_models(dafousers.models, 'dafousers.models')

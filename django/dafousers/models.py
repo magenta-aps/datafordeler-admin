@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import formats
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from dafousers import model_constants
 
 import copy
 
@@ -134,6 +135,7 @@ class HistoryForEntity(object):
             for f in field_source._meta.local_fields:
                 if f.name in seen_fields:
                     continue
+                seen_fields.add(f.name)
 
                 # Skip one-to-one relations, usually used in inheritance
                 if f.one_to_one:
@@ -141,18 +143,18 @@ class HistoryForEntity(object):
 
                 new_field = copy.deepcopy(f)
                 new_class.add_to_class(f.name, new_field)
-                seen_fields.add(f.name)
         
             for f in field_source._meta.local_many_to_many:
                 if f.name in seen_fields:
                     continue
+                seen_fields.add(f.name)
 
-                new_field = models.ManyToManyField(
+                new_class.add_to_class(f.name, models.ManyToManyField(
                     f.remote_field.model,
                     verbose_name=f.verbose_name,
-                    blank=f.blank
-                )
-                new_class.add_to_class(f.name, new_field)
+                    blank=f.blank,
+                ))
+
         
         new_class._meta.verbose_name = "Historik for %s" % (
             entity_class._meta.verbose_name
@@ -182,15 +184,7 @@ class UserIdentification(models.Model):
 
 class AccessAccount(models.Model):
 
-    STATUS_ACTIVE = 1
-    STATUS_BLOCKED = 2
-    STATUS_DEACTIVATED = 3
-
-    status_choices = (
-        (STATUS_ACTIVE, _(u"Aktiv")),
-        (STATUS_BLOCKED, _(u"Blokeret")),
-        (STATUS_DEACTIVATED, _(u"Deaktiveret")),
-    )
+    constants = model_constants.AccessAccount
 
     identified_user = models.ForeignKey(
         UserIdentification,
@@ -200,8 +194,8 @@ class AccessAccount(models.Model):
     )
     status = models.IntegerField(
         verbose_name=_(u"Status"),
-        choices=status_choices,
-        default=STATUS_ACTIVE
+        choices=constants.status_choices,
+        default=constants.STATUS_ACTIVE
     )
     user_profiles = models.ManyToManyField(
         'UserProfile',
@@ -210,9 +204,7 @@ class AccessAccount(models.Model):
     )
 
 
-class PasswordUserFields(models.Model):
-    class Meta:
-        abstract = True
+class PasswordUser(AccessAccount, EntityWithHistory):
 
     fullname = models.CharField(
         verbose_name=_(u"Fulde navn"),
@@ -242,13 +234,117 @@ class PasswordUserFields(models.Model):
         default=""
     )
 
-
-class PasswordUser(AccessAccount, PasswordUserFields, EntityWithHistory):
-
     def __unicode__(self):
         return '%s <%s>' % (self.fullname, self.email)
 
-PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser,)
+PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
+
+
+class EntityWithCertificate(models.Model):
+
+    class Meta:
+        abstract = True
+
+    contact_name = models.CharField(
+        verbose_name=_(u"Navn på kontaktperson"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    contact_email = models.EmailField(
+        verbose_name=_(u"E-mailadresse på kontaktperson"),
+        blank=False
+    )
+    next_expiration = models.DateTimeField(
+        verbose_name=_(u"Næste udløbsdato for certifikat(er)"),
+        blank=True,
+        null=True,
+        default=None
+    )
+    certificates = models.ManyToManyField(
+        "Certificate",
+        verbose_name=_(u"Certifikater")
+    )
+
+
+class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
+
+    name = models.CharField(
+        name=_(u"Navn"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    organisation = models.TextField(
+        verbose_name=_(u"Information om brugerens organisation"),
+        blank=True,
+        default=""
+    )
+    comment = models.TextField(
+        verbose_name=_(u"Kommentar/noter"),
+        blank=True,
+        default=""
+    )
+
+CertificateUserHistory = HistoryForEntity.build_from_entity_class(
+    CertificateUser
+)
+
+
+class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
+                              EntityWithHistory):
+
+    metadata_xml = models.TextField(
+        verbose_name=_(u"Metadata XML"),
+        blank=True,
+        default=""
+    )
+    sso_endpoint = models.CharField(
+        name=_(u"Single-Sign-On Endpoint"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    slo_endpoint = models.CharField(
+        name=_(u"Single-Log-Out Endpoint"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    organisation = models.TextField(
+        verbose_name=_(u"Information om brugerens organisation"),
+        blank=True,
+        default=""
+    )
+    nameid_format = models.CharField(
+        name=_(u"NameID format"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+
+
+IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
+    IdentityProviderAccount
+)
+
+class Certificate(models.Model):
+
+    figerprint = models.CharField(
+        max_length=4096,
+        blank=True,
+        null=True,
+        default=""
+    )
+    certificate_blob = models.BinaryField(
+        verbose_name=_(u"Certifikat (binære data)")
+    )
+    valid_from = models.DateTimeField(
+        verbose_name=_(u"Gyldig fra")
+    )
+    valid_to = models.DateTimeField(
+        verbose_name=_(u"Gyldig til")
+    )
 
 
 class UserProfile(models.Model):
@@ -265,24 +361,19 @@ class UserProfile(models.Model):
         verbose_name=_("Tilknyttede systemroller"),
         blank=True
     )
+    area_restrictions = models.ManyToManyField(
+        'AreaRestriction',
+        verbose_name=_("Tilknyttede områdebegrænsninger"),
+        blank=True
+    )
 
     def __unicode__(self):
         return unicode(self.name)
 
 
 class SystemRole(models.Model):
-
-    TYPE_SERVICE = 1
-    TYPE_ENTITY = 2
-    TYPE_ATTRIBUTE = 3
-    TYPE_CUSTOM = 4
-
-    type_choices = (
-        (TYPE_SERVICE, _(u"Servicerolle")),
-        (TYPE_ENTITY, _(u"Entitetsrolle")),
-        (TYPE_ATTRIBUTE, _(u"Attributrolle")),
-        (TYPE_CUSTOM, _(u"Tilpasset rolletype")),
-    )
+    
+    constants = model_constants.SystemRole
 
     parent = models.ForeignKey(
         'SystemRole',
@@ -297,8 +388,8 @@ class SystemRole(models.Model):
     )
     role_type = models.IntegerField(
         verbose_name=_(u"Type"),
-        choices=type_choices,
-        default=TYPE_CUSTOM
+        choices=constants.type_choices,
+        default=constants.TYPE_CUSTOM
     )
     target_name = models.CharField(
         verbose_name=_(u"Objekt rollen giver adgang til"),
@@ -310,3 +401,44 @@ class SystemRole(models.Model):
         return unicode(
             '%s (%s)' % (self.role_name, self.get_role_type_display())
         )
+
+
+class AreaRestriction(models.Model):
+    name = models.CharField(
+        verbose_name=_(u"Navn"),
+        max_length=2048
+    )
+    description = models.TextField(
+        verbose_name=_(u"Beskrivelse"),
+        blank=True,
+        default=""
+    )
+    sumiffiik = models.UUIDField(
+        verbose_name=_(u"Sumiffiik"),
+        blank=True,
+        null=True,
+        default=""
+    )
+    area_restriction_type = models.ForeignKey(
+        "AreaRestrictionType",
+        verbose_name=_(u"Type"),
+        blank=False,
+        null=False,
+    )
+
+
+class AreaRestrictionType(models.Model):
+    name = models.CharField(
+        verbose_name=_(u"Navn"),
+        max_length=2048
+    )
+    description = models.TextField(
+        verbose_name=_(u"Beskrivelse"),
+        blank=True,
+        default=""
+    )
+    service_name = models.CharField(
+        verbose_name=_(u"Navn på associeret service"),
+        max_length=2048
+    )
+    
