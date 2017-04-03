@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models as django_models
-from django import forms
+# from django import forms
 import dafousers.models
 
 EXCLUDE_MODELS = [
@@ -10,14 +10,15 @@ CUSTOM_ADMIN_CLASSES = {
     # Empty for now
 }
 
+
 class DefaultModelAdmin(admin.ModelAdmin):
     def get_model_perms(self, *args, **kwargs):
         perms = super(DefaultModelAdmin, self).get_model_perms(*args, **kwargs)
 
-        try:
-            request = args[0]
-        except ValueError:
-            request = None
+        # try:
+        #     request = args[0]
+        # except ValueError:
+        #     request = None
 
         # if(request):
         #     url_name = request.resolver_match.url_name
@@ -62,10 +63,10 @@ def register_models(models, namespace=None):
         if hasattr(value, "admin_register_kwargs"):
             kwargs.update(value.admin_register_kwargs())
 
-
         if cls is not None:
             admin.site.register(value, cls, **kwargs)
         else:
             admin.site.register(value, DefaultModelAdmin, **kwargs)
+
 
 register_models(dafousers.models, 'dafousers.models')

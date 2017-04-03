@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext as _
 
+
 class SystemRole(object):
     TYPE_SERVICE = 1
     TYPE_ENTITY = 2
@@ -13,6 +14,7 @@ class SystemRole(object):
         (TYPE_ATTRIBUTE, _(u"Attributrolle")),
         (TYPE_CUSTOM, _(u"Tilpasset rolletype")),
     )
+
 
 class AccessAccount(object):
 

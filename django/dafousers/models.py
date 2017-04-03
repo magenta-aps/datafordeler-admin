@@ -2,9 +2,9 @@
 
 from __future__ import unicode_literals
 
-from django.apps import apps
 from django.db import models
-from django.utils import formats
+from django.core.exceptions import FieldError
+from django.core.exceptions import ImproperlyConfigured
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from dafousers import model_constants
@@ -27,7 +27,6 @@ class EntityWithHistory(models.Model):
         verbose_name=_(u"Opdateret"),
         default=timezone.now
     )
-
 
     def save(self, *args, **kwargs):
         # Complain if changed_by has not been set
@@ -105,7 +104,6 @@ class HistoryForEntity(object):
                 )
             )
 
-
         # Construct model class which inherits from cls and has an
         # entity field as a foreign key to the entity class.
         new_class = type(
@@ -117,17 +115,15 @@ class HistoryForEntity(object):
                 "entity_class": entity_class
             }
         )
-        
+
         entity_class.history_class = new_class
 
         # Copy fields from the entity class and its parents
         field_sources = [entity_class]
         field_sources.extend(reversed(entity_class.__bases__))
 
-
-
         seen_fields = set(["id", "entity"])
-        
+
         for field_source in field_sources:
             if not issubclass(field_source, models.Model):
                 continue
@@ -143,7 +139,7 @@ class HistoryForEntity(object):
 
                 new_field = copy.deepcopy(f)
                 new_class.add_to_class(f.name, new_field)
-        
+
             for f in field_source._meta.local_many_to_many:
                 if f.name in seen_fields:
                     continue
@@ -155,13 +151,11 @@ class HistoryForEntity(object):
                     blank=f.blank,
                 ))
 
-        
         new_class._meta.verbose_name = "Historik for %s" % (
             entity_class._meta.verbose_name
         )
-        
-        return new_class
 
+        return new_class
 
     @classmethod
     def admin_register_kwargs(cls):
@@ -181,6 +175,7 @@ class UserIdentification(models.Model):
 
     def __unicode__(self):
         return unicode(self.user_id)
+
 
 class AccessAccount(models.Model):
 
@@ -237,6 +232,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
     def __unicode__(self):
         return '%s <%s>' % (self.fullname, self.email)
 
+
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 
 
@@ -286,6 +282,7 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
         default=""
     )
 
+
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser
 )
@@ -327,6 +324,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
 IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
     IdentityProviderAccount
 )
+
 
 class Certificate(models.Model):
 
@@ -372,7 +370,7 @@ class UserProfile(models.Model):
 
 
 class SystemRole(models.Model):
-    
+
     constants = model_constants.SystemRole
 
     parent = models.ForeignKey(
@@ -441,4 +439,3 @@ class AreaRestrictionType(models.Model):
         verbose_name=_(u"Navn på associeret service"),
         max_length=2048
     )
-    
