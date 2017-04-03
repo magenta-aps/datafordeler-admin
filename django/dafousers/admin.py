@@ -10,21 +10,40 @@ CUSTOM_ADMIN_CLASSES = {
     # Empty for now
 }
 
+ALWAYS_READONLY_FIELDS = set([
+    'changed_by',
+    'updated'
+])
+
 
 class DefaultModelAdmin(admin.ModelAdmin):
+
+    def get_readonly_fields(self, request, obj=None):
+
+        readonly_list = [
+            x.name for x in self.model._meta.get_fields()
+            if x.name in ALWAYS_READONLY_FIELDS
+        ]
+
+        if obj is None:
+            pass
+        else:
+            pass
+
+        return readonly_list
+
     def get_model_perms(self, *args, **kwargs):
         perms = super(DefaultModelAdmin, self).get_model_perms(*args, **kwargs)
 
-        # try:
-        #     request = args[0]
-        # except ValueError:
-        #     request = None
+        try:
+            request = args[0]
+        except ValueError:
+            request = None
 
-        # if(request):
-        #     url_name = request.resolver_match.url_name
-        #     if (url_name in ('index', 'app_list') and
-        #         self.model.__name__[-7:] == "History"):
-        #         return {}
+        if(request and request.user.username == "dafoadmin"):
+            if (hasattr(self.model, "hide_in_dafoadmin") and
+                    getattr(self.model, "hide_in_dafoadmin")):
+                return {}
 
         return perms
 
@@ -60,6 +79,7 @@ def register_models(models, namespace=None):
             #     },
             # }
         }
+
         if hasattr(value, "admin_register_kwargs"):
             kwargs.update(value.admin_register_kwargs())
 

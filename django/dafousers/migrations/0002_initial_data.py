@@ -47,11 +47,23 @@ users = [
         "is_active": True,
         "is_staff": True,
         "is_superuser": True,
+    },
+    {
+        "username": "dafoadmin",
+        "password": "".join([
+            u'pbkdf2_sha256$30000$TrP4nKsj7OoX$sI',
+            u'oH53kF23A7o80XJGlV91iyd/qo80qhYrFi+NduY4Q='
+        ]),
+        "is_active": True,
+        "is_staff": True,
+        "is_superuser": True,
     }
 ]
 
+
 def add_users(apps, schema_editor):
     add_defaults(apps, schema_editor, "auth.User", users)
+
 
 def remove_users(apps, schema_editor):
     remove_defaults(apps, schema_editor, "auth.User", users)
