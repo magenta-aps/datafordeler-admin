@@ -10,8 +10,6 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'dafousers', '0001_initial'), (b'dafousers', '0002_auto_20170331_2359'), (b'dafousers', '0003_certificate_certificateuser_certificateuserhistory_identityprovideraccount_identityprovideraccounthi'), (b'dafousers', '0004_auto_20170401_1055')]
-
     initial = True
 
     dependencies = [
@@ -238,5 +236,69 @@ class Migration(migrations.Migration):
             model_name='userprofile',
             name='area_restrictions',
             field=models.ManyToManyField(blank=True, to=b'dafousers.AreaRestriction', verbose_name='Tilknyttede omr\xe5debegr\xe6nsninger'),
+        ),
+        migrations.AlterModelOptions(
+            name='arearestriction',
+            options={'verbose_name': 'omr\xe5deafgr\xe6nsning', 'verbose_name_plural': 'omr\xe5deafgr\xe6nsninger'},
+        ),
+        migrations.AlterModelOptions(
+            name='arearestrictiontype',
+            options={'verbose_name': 'omr\xe5deafgr\xe6nsningstype', 'verbose_name_plural': 'omr\xe5deafgr\xe6nsningstyper'},
+        ),
+        migrations.AlterModelOptions(
+            name='certificate',
+            options={'verbose_name': 'Certifikat', 'verbose_name_plural': 'Certifikater'},
+        ),
+        migrations.AlterModelOptions(
+            name='certificateuser',
+            options={'verbose_name': 'system', 'verbose_name_plural': 'systemer'},
+        ),
+        migrations.AlterModelOptions(
+            name='identityprovideraccount',
+            options={'verbose_name': 'Organisation', 'verbose_name_plural': 'Organisationer'},
+        ),
+        migrations.AlterModelOptions(
+            name='passworduser',
+            options={'verbose_name': 'bruger', 'verbose_name_plural': 'brugere'},
+        ),
+        migrations.AlterModelOptions(
+            name='systemrole',
+            options={'verbose_name': 'systemrolle', 'verbose_name_plural': 'systemroller'},
+        ),
+        migrations.AlterModelOptions(
+            name='useridentification',
+            options={'verbose_name': 'brugeridentifikation', 'verbose_name_plural': 'brugeridentifikationer'},
+        ),
+        migrations.AlterModelOptions(
+            name='userprofile',
+            options={'verbose_name': 'brugerprofil', 'verbose_name_plural': 'brugerprofiler'},
+        ),
+        migrations.RenameField(
+            model_name='certificate',
+            old_name='figerprint',
+            new_name='fingerprint',
+        ),
+        migrations.AddField(
+            model_name='identityprovideraccount',
+            name='Navn',
+            field=models.CharField(blank=True, default='', max_length=2048),
+        ),
+        migrations.AddField(
+            model_name='identityprovideraccounthistory',
+            name='Navn',
+            field=models.CharField(blank=True, default='', max_length=2048),
+        ),
+        migrations.AlterField(
+            model_name='certificate',
+            name='certificate_blob',
+            field=models.FileField(upload_to=b'', verbose_name='Certifikat (bin\xe6re data)'),
+        ),
+        migrations.AlterModelOptions(
+            name='certificate',
+            options={'verbose_name': 'certifikat', 'verbose_name_plural': 'certifikater'},
+        ),
+        migrations.AlterModelOptions(
+            name='identityprovideraccount',
+            options={'verbose_name': 'organisation', 'verbose_name_plural': 'organisationer'},
         ),
     ]

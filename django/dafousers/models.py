@@ -112,7 +112,8 @@ class HistoryForEntity(object):
             {
                 "__module__": entity_class.__module__,
                 "entity": models.ForeignKey(entity_class),
-                "entity_class": entity_class
+                "entity_class": entity_class,
+                "hide_in_dafoadmin": True,
             }
         )
 
@@ -168,6 +169,13 @@ class HistoryForEntity(object):
 
 
 class UserIdentification(models.Model):
+
+    class Meta:
+        verbose_name = _(u"brugeridentifikation")
+        verbose_name_plural = _(u"brugeridentifikationer")
+
+    hide_in_dafoadmin = True
+
     user_id = models.CharField(
         verbose_name=_(u"Bruger identifikation (e-mail adresse)"),
         max_length=2048
@@ -200,6 +208,10 @@ class AccessAccount(models.Model):
 
 
 class PasswordUser(AccessAccount, EntityWithHistory):
+
+    class Meta:
+        verbose_name = _(u"bruger")
+        verbose_name_plural = _(u"brugere")
 
     fullname = models.CharField(
         verbose_name=_(u"Fulde navn"),
@@ -265,6 +277,10 @@ class EntityWithCertificate(models.Model):
 
 class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
 
+    class Meta:
+        verbose_name = _(u"system")
+        verbose_name_plural = _(u"systemer")
+
     name = models.CharField(
         name=_(u"Navn"),
         max_length=2048,
@@ -282,6 +298,9 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
         default=""
     )
 
+    def __unicode__(self):
+        return unicode(self.name)
+
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser
@@ -291,6 +310,16 @@ CertificateUserHistory = HistoryForEntity.build_from_entity_class(
 class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
                               EntityWithHistory):
 
+    class Meta:
+        verbose_name = _(u"organisation")
+        verbose_name_plural = _(u"organisationer")
+
+    name = models.CharField(
+        name=_(u"Navn"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
     metadata_xml = models.TextField(
         verbose_name=_(u"Metadata XML"),
         blank=True,
@@ -320,6 +349,9 @@ class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
         default=""
     )
 
+    def __unicode__(self):
+        return unicode(self.name)
+
 
 IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
     IdentityProviderAccount
@@ -328,13 +360,17 @@ IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
 
 class Certificate(models.Model):
 
-    figerprint = models.CharField(
+    class Meta:
+        verbose_name = _(u"certifikat")
+        verbose_name_plural = _(u"certifikater")
+
+    fingerprint = models.CharField(
         max_length=4096,
         blank=True,
         null=True,
         default=""
     )
-    certificate_blob = models.BinaryField(
+    certificate_blob = models.FileField(
         verbose_name=_(u"Certifikat (binære data)")
     )
     valid_from = models.DateTimeField(
@@ -344,8 +380,19 @@ class Certificate(models.Model):
         verbose_name=_(u"Gyldig til")
     )
 
+    def __unicode__(self):
+        return unicode(
+            self.fingerprint or
+            _(u"Certifikat uden fingerprint")
+        )
+
 
 class UserProfile(models.Model):
+
+    class Meta:
+        verbose_name = _(u"brugerprofil")
+        verbose_name_plural = _(u"brugerprofiler")
+
     name = models.CharField(
         verbose_name=_(u"Navn"),
         max_length=2048
@@ -370,6 +417,12 @@ class UserProfile(models.Model):
 
 
 class SystemRole(models.Model):
+
+    class Meta:
+        verbose_name = _(u"systemrolle")
+        verbose_name_plural = _(u"systemroller")
+
+    hide_in_dafoadmin = True
 
     constants = model_constants.SystemRole
 
@@ -402,6 +455,13 @@ class SystemRole(models.Model):
 
 
 class AreaRestriction(models.Model):
+
+    class Meta:
+        verbose_name = _(u"områdeafgrænsning")
+        verbose_name_plural = _(u"områdeafgrænsninger")
+
+    hide_in_dafoadmin = True
+
     name = models.CharField(
         verbose_name=_(u"Navn"),
         max_length=2048
@@ -424,8 +484,18 @@ class AreaRestriction(models.Model):
         null=False,
     )
 
+    def __unicode__(self):
+        return unicode(self.name)
+
 
 class AreaRestrictionType(models.Model):
+
+    class Meta:
+        verbose_name = _(u"områdeafgrænsningstype")
+        verbose_name_plural = _(u"områdeafgrænsningstyper")
+
+    hide_in_dafoadmin = True
+
     name = models.CharField(
         verbose_name=_(u"Navn"),
         max_length=2048
@@ -439,3 +509,6 @@ class AreaRestrictionType(models.Model):
         verbose_name=_(u"Navn på associeret service"),
         max_length=2048
     )
+
+    def __unicode__(self):
+        return unicode(self.name)
