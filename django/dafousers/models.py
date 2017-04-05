@@ -213,24 +213,45 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
 
-    fullname = models.CharField(
-        verbose_name=_(u"Fulde navn"),
+    givenname = models.CharField(
+        verbose_name=_(u"Fornavn"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    lastname = models.CharField(
+        verbose_name=_(u"Efternavn"),
         max_length=2048,
         blank=True,
         default=""
     )
     email = models.EmailField(
         verbose_name=_(u"E-mail"),
+        unique=True,
         blank=False
     )
-    organisation = models.TextField(
+    organisation = models.CharField(
         verbose_name=_(u"Information om brugerens organisation"),
+        max_length=2048,
         blank=True,
         default=""
     )
     encrypted_password = models.CharField(
         verbose_name=_(u"Krypteret password"),
-        max_length=4096,
+        max_length=255,
+        blank=True,
+        default=""
+    )
+    # passwords should be generated with:
+    # import hashlib;
+    # import base64;
+    # salt = base64.encode(<16 random bytes>)
+    #  m = hashlib.sha256();
+    # m.update('jacob' + salt);
+    # base64.b64encode(m.digest())
+    password_salt = models.CharField(
+        verbose_name=_(u"Password salt"),
+        max_length=255,
         blank=True,
         default=""
     )
@@ -242,7 +263,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
     )
 
     def __unicode__(self):
-        return '%s <%s>' % (self.fullname, self.email)
+        return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
 
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
@@ -365,7 +386,8 @@ class Certificate(models.Model):
         verbose_name_plural = _(u"certifikater")
 
     fingerprint = models.CharField(
-        max_length=4096,
+        # MSSQL max is 4000
+        max_length=4000,
         blank=True,
         null=True,
         default=""

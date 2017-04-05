@@ -18,6 +18,8 @@ import time
 import platform
 import subprocess
 import ssl
+import django
+import shutil
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BIN_DIR = os.path.join(BASE_DIR, "bin")
@@ -64,6 +66,23 @@ def download(url):
 
 
 if __name__ == '__main__':
-    # TODO add extra requirement stuff here
+
+    print "Replacing auth migration that is incompatible with MSSQL"
+
+    DJANGO_SRC_DIR = os.path.dirname(django.__file__)
+    AUTH_MIGRATION_DIR = os.path.join(
+        DJANGO_SRC_DIR, 'contrib', 'auth', 'migrations'
+    )
+    FIXES_DIR = os.path.join(BASE_DIR, "fixes")
+
+    src = os.path.join(FIXES_DIR, "0008_alter_user_username_max_length.py")
+    dest = os.path.join(
+        AUTH_MIGRATION_DIR, "0008_alter_user_username_max_length.py"
+    )
+    dest_orig = dest + ".orig"
+
+    if not os.path.exists(dest_orig):
+        shutil.copy(dest, dest_orig)
+        shutil.copy(src, dest)
 
     print "Setup complete"

@@ -134,6 +134,7 @@ user_ids = [
 def add_useridentifications(apps, schema_editor):
     add_defaults(apps, schema_editor, "dafousers.UserIdentification", user_ids)
 
+
 def remove_useridentifications(apps, schema_editor):
     remove_defaults(
         apps, schema_editor, "dafousers.UserIdentification", user_ids
@@ -144,29 +145,39 @@ create_time = datetime.datetime(
     2017, 4, 1, 12, 0, 0, 0, tzinfo=timezone.UTC()
 )
 
+
 def get_password_users(apps, schema_editor):
     model = apps.get_model("dafousers.UserIdentification")
     dbh = model.objects.using(schema_editor.connection.alias)
     return [
         {
-            "changed_by": "system@data.nanoq.gl",
-            "updated": create_time,
-            "status": model_constants.AccessAccount.STATUS_ACTIVE,
-            "fullname": "Jakob Administrator",
+            "givenname": "Jakob",
+            "lastname": "Administrator",
             "email": "jakob@data.nanoq.gl",
             "person_identification": None,
-            "identified_user": dbh.get(user_id="jacob@data.nanoq.gl")
-        },
-        {
+            "identified_user": dbh.get(user_id="jacob@data.nanoq.gl"),
+            "encrypted_password":
+                "oqkkxNKw7nVixXoHj6jtNn4dlSmJ+L9Lk7/GBJWA3TE=",
+            "password_salt": "eAxwVKDSNpyXsoi/WIJKTA==",
+            "status": model_constants.AccessAccount.STATUS_ACTIVE,
             "changed_by": "system@data.nanoq.gl",
             "updated": create_time,
-            "status": model_constants.AccessAccount.STATUS_ACTIVE,
-            "fullname": "Amalie Serviceudbyder",
+        },
+        {
+            "givenname": "Amalie",
+            "lastname": "Serviceudbyder",
             "email": "amalie@serviceudbyder.gl",
             "person_identification": None,
-            "identified_user": dbh.get(user_id="amalie@serviceudbyder.gl")
+            "identified_user": dbh.get(user_id="amalie@serviceudbyder.gl"),
+            "encrypted_password":
+                "9QTHekiEX59S7GqF5Za0X7ezZ1E4rXq2/1cvIRbTqfE=",
+            "password_salt": "eAxwVKDSNpyXsoi/WIJKTA==",
+            "status": model_constants.AccessAccount.STATUS_ACTIVE,
+            "changed_by": "system@data.nanoq.gl",
+            "updated": create_time,
         },
     ]
+
 
 def add_password_users(apps, schema_editor):
     password_users = get_password_users(apps, schema_editor)
@@ -188,6 +199,7 @@ def add_password_users(apps, schema_editor):
         )
     )
 
+
 def remove_password_users(apps, schema_editor):
     password_users = get_password_users(apps, schema_editor)
     remove_defaults(
@@ -198,6 +210,7 @@ def remove_password_users(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [(b"dafousers", "0001_initial_tables")]
+    # dependencies = [(b"dafousers", "0004_auto_20170404_1601")]
 
     operations = [
         migrations.RunPython(add_roles, remove_roles),
