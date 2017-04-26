@@ -3,11 +3,17 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+from django.conf import settings
 import codecs
 import re
 
 
 def get_sql():
+    # If not running an SQL server backend, do not try to import SQL server
+    # views.
+    if not settings.DATABASES['default']['ENGINE'] == "sqlserver_ado":
+        return ["SELECT (1)"]
+
     # Filname is same as this script with extension replaced with .sql
     filename = __file__[:__file__.index(".")] + ".sql"
     f = codecs.open(filename, 'r', encoding="utf8")
