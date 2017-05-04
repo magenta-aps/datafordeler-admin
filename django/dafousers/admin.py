@@ -11,7 +11,7 @@ CUSTOM_ADMIN_CLASSES = {
 }
 
 ALWAYS_READONLY_FIELDS = set([
-    'changed_by',
+    # 'changed_by',
     'updated'
 ])
 
@@ -24,6 +24,9 @@ class DefaultModelAdmin(admin.ModelAdmin):
             x.name for x in self.model._meta.get_fields()
             if x.name in ALWAYS_READONLY_FIELDS
         ]
+
+        if hasattr(self.model, "get_readonly_fields"):
+            readonly_list = readonly_list + self.model.get_readonly_fields()
 
         if obj is None:
             pass

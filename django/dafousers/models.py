@@ -2,7 +2,12 @@
 
 from __future__ import unicode_literals
 
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import NameOID
 from django.db import models
+from django.conf import settings
 from django.core.exceptions import FieldError
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import timezone
@@ -10,6 +15,7 @@ from django.utils.translation import ugettext as _
 from dafousers import model_constants
 
 import copy
+import os
 
 
 class EntityWithHistory(models.Model):
@@ -33,7 +39,7 @@ class EntityWithHistory(models.Model):
         if not self.changed_by:
             raise FieldError(
                 '%s skal udfyldes ved hver opdatering' % (
-                    EntityWithHistory.changed_by.verbose_name
+                    self._meta.get_field('changed_by').verbose_name
                 )
             )
 
@@ -305,7 +311,7 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
         verbose_name_plural = _(u"systemer")
 
     name = models.CharField(
-        name=_(u"Navn"),
+        verbose_name=_(u"Navn"),
         max_length=2048,
         blank=True,
         default=""
@@ -387,27 +393,111 @@ class Certificate(models.Model):
         verbose_name = _(u"certifikat")
         verbose_name_plural = _(u"certifikater")
 
+    subject = models.CharField(
+        verbose_name=_("Certifikat subjekt"),
+        max_length=4000,
+        blank=True,
+        null=True,
+        default=""
+    )
+
     fingerprint = models.CharField(
+        verbose_name=_(u"Hex-encoded SHA256 fingerprint"),
         # MSSQL max is 4000
         max_length=4000,
         blank=True,
         null=True,
         default=""
     )
-    certificate_blob = models.FileField(
-        verbose_name=_(u"Certifikat (binære data)")
+    certificate_file = models.FileField(
+        verbose_name=_(u"Certifikat-fil"),
+        null=True,
+        blank=True,
+        upload_to="uploads",
+    )
+    certificate_blob = models.BinaryField(
+        verbose_name=_(u"Certifikat (binære data)"),
+        null=True,
+        blank=True
     )
     valid_from = models.DateTimeField(
-        verbose_name=_(u"Gyldig fra")
+        verbose_name=_(u"Gyldig fra"),
+        null=True,
+        blank=True
     )
     valid_to = models.DateTimeField(
-        verbose_name=_(u"Gyldig til")
+        verbose_name=_(u"Gyldig til"),
+        null=True,
+        blank=True
     )
+
+    def save(self, *args, **kwargs):
+        # Save once, making sure files are written
+        result = super(Certificate, self).save(*args, **kwargs)
+        if(self.certificate_file and
+           os.path.exists(self.certificate_file.path)):
+
+            try:
+                # Store certificate in blob instead of file
+                self.certificate_blob = self.certificate_file.read()
+                x509_cert = x509.load_pem_x509_certificate(
+                    self.certificate_blob,
+                    default_backend()
+                )
+
+                # Calculate and format sha256 fingerprint
+                # (hex encoded bytes separated by ":")
+                fingerprint_bytes = x509_cert.fingerprint(hashes.SHA256())
+                self.fingerprint = ":".join(
+                    "{:02x}".format(ord(c)) for c in fingerprint_bytes
+                )
+
+                # Store valid time interval
+                self.valid_from = x509_cert.not_valid_before.replace(
+                    tzinfo=timezone.UTC()
+                )
+                self.valid_to = x509_cert.not_valid_after.replace(
+                    tzinfo=timezone.UTC()
+                )
+
+                subject_parts = []
+                for (x, y) in (
+                    ("C", NameOID.COUNTRY_NAME),
+                    ("ST", NameOID.STATE_OR_PROVINCE_NAME),
+                    ("L", NameOID.LOCALITY_NAME),
+                    ("O", NameOID.ORGANIZATION_NAME),
+                    ("OU", NameOID.ORGANIZATIONAL_UNIT_NAME),
+                    ("CN", NameOID.COMMON_NAME),
+                    ("emailAddress", NameOID.EMAIL_ADDRESS)
+                ):
+                    attrs = x509_cert.subject.get_attributes_for_oid(y)
+                    if attrs and len(attrs) > 0:
+                        subject_parts.append("%s=%s" % (x, attrs[0].value))
+
+                self.subject = ", ".join(subject_parts)
+
+                # Remove the file so data is only stored in the blob
+                self.certificate_file.close()
+                self.certificate_file.delete()
+                self.certificate_file = None
+
+                # Save once more to store data retrieved from the certificate
+                result = super(Certificate, self).save(*args, **kwargs)
+            except Exception as e:
+                print "Failed to parse certificate, error is: %s" % e
+
+            # TODO: Update next expire date for all related objects.
+
+        return result
+
+    @classmethod
+    def get_readonly_fields(self):
+        return ['fingerprint', 'subject', 'valid_from', 'valid_to']
 
     def __unicode__(self):
         return unicode(
-            self.fingerprint or
-            _(u"Certifikat uden fingerprint")
+            self.subject or
+            _(u"Certifikat uden subjekt")
         )
 
 
