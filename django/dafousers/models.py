@@ -139,6 +139,8 @@ class HistoryForEntity(object):
                     continue
 
                 new_field = copy.deepcopy(f)
+                # Can not have unique fields in a history table
+                new_field._unique = False
                 new_class.add_to_class(f.name, new_field)
 
             for f in field_source._meta.local_many_to_many:
