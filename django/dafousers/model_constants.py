@@ -27,3 +27,14 @@ class AccessAccount(object):
         (STATUS_BLOCKED, _(u"Blokeret")),
         (STATUS_DEACTIVATED, _(u"Deaktiveret")),
     )
+
+
+class CertificateUser(object):
+    MODE_IDENTIFIES_SINGLE_USER = 1
+    MODE_USES_ON_BEHALF_OF = 2
+
+    mode_choices = (
+        (MODE_IDENTIFIES_SINGLE_USER, _(u"Identificerer en enkelt bruger")),
+        (MODE_USES_ON_BEHALF_OF,
+         _(u"Identificerer brugere via 'på-vegne-af'")),
+    )

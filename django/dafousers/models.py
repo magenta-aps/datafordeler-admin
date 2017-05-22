@@ -316,6 +316,11 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
         blank=True,
         default=""
     )
+    identification_mode = models.IntegerField(
+        verbose_name=_("Identifikationsmetode"),
+        choices=model_constants.CertificateUser.mode_choices,
+        default=model_constants.CertificateUser.MODE_IDENTIFIES_SINGLE_USER,
+    )
     organisation = models.TextField(
         verbose_name=_(u"Information om brugerens organisation"),
         blank=True,
