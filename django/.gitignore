@@ -5,3 +5,4 @@
 /*.sqlite3*
 /dafoadmin_site/local_settings.py
 /media
+/web.config
