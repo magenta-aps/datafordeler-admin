@@ -7,4 +7,4 @@ Markdown==2.6.8
 pypiwin32==219
 pyreadline==2.1
 sqlparse==0.2.3
-
+django-windows-tools=0.2

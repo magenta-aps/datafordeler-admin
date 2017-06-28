@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """dafoadmin_site URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -13,9 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
 from django.contrib import admin
+from django.core.urlresolvers import reverse_lazy
+from django.conf.urls import url
+from django.views.generic import RedirectView
+import dafousers.views
+
+root_redirect = RedirectView.as_view(
+    url=reverse_lazy('admin:index'),
+    permanent=False
+)
 
 urlpatterns = [
+    # Redirect root URL to admin
+    url(r'^$', root_redirect, name="index"),
     url(r'^admin/', admin.site.urls),
 ]
