@@ -14,7 +14,9 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from dafousers import model_constants
 
+import base64
 import copy
+import hashlib
 import os
 
 
@@ -250,13 +252,6 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         blank=True,
         default=""
     )
-    # passwords should be generated with:
-    # import hashlib;
-    # import base64;
-    # salt = base64.encode(<16 random bytes>)
-    #  m = hashlib.sha256();
-    # m.update('jacob' + salt);
-    # base64.b64encode(m.digest())
     password_salt = models.CharField(
         verbose_name=_(u"Password salt"),
         max_length=255,
@@ -269,6 +264,13 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         null=True,
         default=""
     )
+
+    @staticmethod
+    def generate_encrypted_password_and_salt(password):
+        salt = base64.b64encode(os.urandom(16))
+        pwdata = hashlib.sha256()
+        pwdata.update(password + salt)
+        return (salt, base64.b64encode(pwdata.digest()))
 
     def __unicode__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
