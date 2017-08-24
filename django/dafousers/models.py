@@ -12,12 +12,14 @@ from django.core.exceptions import FieldError
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.urls import reverse
 from dafousers import model_constants
 
 import base64
 import copy
 import hashlib
 import os
+import uuid
 
 
 class EntityWithHistory(models.Model):
@@ -262,7 +264,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         verbose_name=_(u"Grunddata personidentifikation UUID"),
         blank=True,
         null=True,
-        default=""
+        default=uuid.uuid4
     )
 
     @staticmethod
@@ -270,10 +272,14 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         salt = base64.b64encode(os.urandom(16))
         pwdata = hashlib.sha256()
         pwdata.update(password + salt)
-        return (salt, base64.b64encode(pwdata.digest()))
+        return salt, base64.b64encode(pwdata.digest())
 
     def __unicode__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
+
+
+    def get_absolute_url(self):
+        return reverse('dafousers:passworduser-details', kwargs={'pk': self.pk})
 
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)

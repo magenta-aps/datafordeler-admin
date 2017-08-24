@@ -1,0 +1,197 @@
+
+.small-label {
+    font-size: 11px;
+}
+
+.text_field {
+    width: 240px;
+    border-width:0px;
+    position:absolute;
+}
+
+.text_field input {
+    width: 240px;
+    height: 28px;
+    font-family: 'Verdana normal', 'Verdana';
+    font-size: 12px;
+}
+
+
+.droplist {
+    border-width:0px;
+    position:absolute;
+    width:240px;
+    height:30px;
+    font-family: 'Verdana normal', 'Verdana';
+    font-size: 13px;
+}
+
+.button {
+    cursor: pointer;
+    position: absolute;
+    background-color: rgba(28, 90, 136, 1);
+    width:236px;
+    height: 30px;
+    -moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.349019607843137);
+    -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.349019607843137);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.349019607843137);
+    border-width:0px;
+    border-radius: 2px;
+    font-family: 'Ubuntu Medium', 'Ubuntu';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 13px;
+    color: #FFFFFF;
+    text-indent: 30px;
+    text-align: left;
+}
+
+.small-button {
+    width:120px;
+    height: 30px;
+    text-indent: 0px;
+    text-align: center;
+}
+
+.button-add {
+    background-image: url("/static/dafousers/images/brugerliste/plus-white.png");
+    background-repeat: no-repeat;
+    background-position: 8px;
+}
+
+.button img {
+    border-width:0px;
+    position:absolute;
+    left: 10px;
+    top: 10px;
+    width:17px;
+    height:11px;
+}
+
+
+.info-box {
+    border-width:0px;
+    position:absolute;
+    width:204px;
+    height:329px;
+    -webkit-transform:rotate(90deg);
+    -moz-transform:rotate(90deg);
+    -ms-transform:rotate(90deg);
+    transform:rotate(90deg);
+}
+
+.info-box img {
+    width:250px;
+    height:329px;
+}
+
+.selector {
+    width: 670px;
+    float: left;
+}
+
+.selector-available, .selector-chosen {
+    width: 240px;
+    float: left;
+}
+
+.selector .selector-available #id_user_profiles_filter {
+    display: none;
+}
+
+.selector div h2 {
+    display: none;
+}
+
+.selector select {
+    width: 240px;
+    height: 102px;
+    font-family: 'Verdana normal', 'Verdana';
+    font-size: 13px;
+    text-decoration: none;
+    color: #1B1B1B;
+}
+
+.selector .selector-filter {
+    background: white;
+    border: 1px solid #ccc;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-width: 0 1px;
+    padding: 8px;
+    color: #999;
+    font-size: 10px;
+    margin: 0;
+    text-align: left;
+}
+
+a.active.selector-chooseall, a.active.selector-clearall {
+    opacity: 1;
+}
+
+a.selector-chooseall {
+    padding: 0 18px 0 0;
+    cursor: pointer;
+}
+
+a.selector-chooseall, a.selector-clearall {
+    font-weight: bold;
+    line-height: 16px;
+    color: #666;
+    text-decoration: none;
+    opacity: 0.3;
+}
+
+a.selector-clearall {
+    cursor: pointer;
+}
+
+.selector ul.selector-chooser {
+    float: left;
+    margin: 20px 8px 0 8px;
+    padding: 0;
+}
+
+.selector-chooser li {
+    margin: 0;
+    padding: 3px;
+    list-style-type: none;
+
+    background-color: rgba(228, 228, 228, 1);
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(201, 201, 201, 1);
+    border-radius: 2px;
+}
+
+.selector-chooser li:last-of-type {
+    margin-top: 14px;
+}
+
+.selector-add {
+    background: url(/static/dafousers/images/brugerliste/triangle-blue.png) 0 no-repeat;
+    -webkit-transform:rotate(90deg);
+    -moz-transform:rotate(90deg);
+    -ms-transform:rotate(90deg);
+    transform:rotate(90deg);
+}
+
+.selector-remove {
+    background: url(/static/dafousers/images/brugerliste/triangle-blue.png) 0 no-repeat;
+    -webkit-transform:rotate(270deg);
+    -moz-transform:rotate(270deg);
+    -ms-transform:rotate(270deg);
+    transform:rotate(270deg);
+}
+
+.selector-add, .selector-remove {
+    width: 16px;
+    height: 16px;
+    display: block;
+    text-indent: -3000px;
+    overflow: hidden;
+    cursor: pointer;
+}

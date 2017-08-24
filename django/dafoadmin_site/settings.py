@@ -123,8 +123,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
-MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+#STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
+#MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 
 # FCGI defaults
 FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
