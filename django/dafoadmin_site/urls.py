@@ -27,7 +27,7 @@ root_redirect = RedirectView.as_view(
 
 urlpatterns = [
     # Redirect root URL to admin
-    url(r'^$', root_redirect, name="index"),
+    # url(r'^$', root_redirect, name="index"),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
 ]

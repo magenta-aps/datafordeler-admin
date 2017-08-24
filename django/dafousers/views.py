@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 
+from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -9,6 +10,10 @@ from dafousers.models import PasswordUser, UserIdentification
 from dafousers.forms import PasswordUserForm
 
 # Create your views here.
+
+class IndexView(TemplateView):
+    template_name = 'index.html'
+
 
 class PasswordUserCreate(CreateView):
     template_name = 'dafousers/passworduser-create.html'

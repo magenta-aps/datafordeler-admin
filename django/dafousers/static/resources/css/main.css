@@ -1,0 +1,43 @@
+html {
+  font-family:'Arial normal', 'Arial';
+  font-weight:400;
+  font-style:normal;
+  font-size:13px;
+  color:#333333;
+  line-height:normal;
+}
+
+body {
+  border: 0;
+  margin: 0;
+  padding: 0;
+
+}
+
+#top_bar {
+  border-width:0px;
+  height:67px;
+  background:inherit;
+  background-color:rgba(28, 90, 136, 1);
+  border:none;
+  border-radius:0px;
+  -moz-box-shadow:none;
+  -webkit-box-shadow:none;
+  box-shadow:none;
+}
+
+#contentcontainer {
+    min-height: 50em;
+}
+
+#bottom_bar {
+  border-width:0px;
+  height:38px;
+  background:inherit;
+  background-color:rgba(31, 101, 155, 1);
+  border:none;
+  border-radius:0px;
+  -moz-box-shadow:none;
+  -webkit-box-shadow:none;
+  box-shadow:none;
+}

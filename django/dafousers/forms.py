@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from dafousers.models import PasswordUser, UserProfile
 
+
 class PasswordUserForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.HiddenInput()
@@ -15,7 +16,7 @@ class PasswordUserForm(forms.ModelForm):
         widget=FilteredSelectMultiple(
             "user_profiles",
             False,
-            attrs={'rows':'6'}
+            attrs={'rows': '6'}
         ),
     )
 
