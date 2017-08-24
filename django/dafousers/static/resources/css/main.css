@@ -1,9 +1,13 @@
+:root {
+  --dafo-blue:rgba(28, 90, 136, 1);
+}
+
 html {
-  font-family:'Arial normal', 'Arial';
-  font-weight:400;
-  font-style:normal;
+  font-family: 'Verdana normal', 'Verdana';
+  font-weight: 400;
+  font-style: normal;
   font-size:13px;
-  color:#333333;
+  color:black;
   line-height:normal;
 }
 
@@ -11,33 +15,98 @@ body {
   border: 0;
   margin: 0;
   padding: 0;
-
 }
 
-#top_bar {
-  border-width:0px;
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.top_bar {
   height:67px;
-  background:inherit;
-  background-color:rgba(28, 90, 136, 1);
-  border:none;
-  border-radius:0px;
-  -moz-box-shadow:none;
-  -webkit-box-shadow:none;
-  box-shadow:none;
+  background-color:var(--dafo-blue);
 }
 
-#contentcontainer {
-    min-height: 50em;
+.top_menus {
+  float:right;
+  font-size: 16px;
+  color: white;
+  display: flex;
 }
 
-#bottom_bar {
-  border-width:0px;
+.top_menus .menu {
+  margin-left: 40px;
+  cursor: pointer;
+}
+
+.top_menus .menu:hover {
+  box-sizing:border-box;
+  border: 0 solid white;
+  border-bottom-width: 3px;
+}
+
+.top_menus .menu div,
+.top_menus .buttons a img {
+  padding: 25px 0 20px 0;
+}
+
+.top_menus .buttons {
+  margin-left: 30px;
+  margin-right: 25px;
+}
+
+.top_menus .buttons a img {
+  width: 24px;
+  height: 24px;
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+.logo {
+  padding: 4px 0px 0px 34px;
+  width: 223px;
+  height: 60px;
+}
+
+.content_container {
+  min-height: 53em;
+}
+
+.bottom_bar {
   height:38px;
-  background:inherit;
-  background-color:rgba(31, 101, 155, 1);
-  border:none;
-  border-radius:0px;
-  -moz-box-shadow:none;
-  -webkit-box-shadow:none;
-  box-shadow:none;
+  background-color:var(--dafo-blue);
+}
+
+.bottom_bar p {
+  color: white;
+  padding: 12px 0 0 50px;
+}
+
+.dropdown {
+  display: inline-block;
+  background-color: var(--dafo-blue);
+}
+
+.dropdown-content {
+  position: absolute;
+  z-index: 1;
+  display:block;
+}
+
+.dropdown-content a {
+  padding: 8px 12px;
+  display: block;
+  font-size: 14px;
+}
+
+.slider {
+  overflow-y: hidden;
+  max-height: 0;
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(.83,.3,.3,.83);
+}
+
+.slider.show {
+  max-height: 500px;
 }

@@ -13,17 +13,84 @@
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" type="text/css" rel="stylesheet"/>
     <script src="{% static 'resources/scripts/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'resources/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+
+
+
+      <script>
+          /* When the user clicks on the button,
+          toggle between hiding and showing the dropdown content */
+          function myFunction(id) {
+              document.getElementById(id).classList.toggle("show");
+          }
+
+          // Close the dropdown if the user clicks outside of it
+          window.onclick = function(event) {
+              if (!event.target.matches('.dropbtn')) {
+
+                  var dropdowns = document.getElementsByClassName("dropdown-content");
+                  var i;
+                  for (i = 0; i < dropdowns.length; i++) {
+                      var openDropdown = dropdowns[i];
+                      if (openDropdown.classList.contains('show')) {
+                          openDropdown.classList.remove('show');
+                      }
+                  }
+              }
+          }
+      </script>
+
     {% block head_extra %}{% endblock %}
   </head>
   <body>
-        <div id="top_bar">
+        <div class="top_bar">
+            <a href="{% url 'dafousers:frontpage' %}">
+                <img class="logo" src="{% static 'resources/images/logo.png' %}">
+            </a>
+            <div class="top_menus">
+
+                <div class="menu">
+                    <div onclick="myFunction('adgang')" class="dropbtn">Adgang</div>
+                    <span id="adgang" class="dropdown-content dropdown slider">
+                        <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Opret system</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér organisation</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér bruger</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér system</a>
+                    </span>
+                </div>
+
+                <div class="menu">
+                    <div onclick="myFunction('konfiguration')" class="dropbtn">Konfiguration</div>
+                    <span id="konfiguration" class="dropdown-content dropdown slider">
+                        <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Opret system</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér organisation</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér bruger</a>
+                        <a href="{% url 'dafousers:frontpage' %}">Administrér system</a>
+                    </span>
+                </div>
+
+                <a class="menu" href="{% url 'dafousers:frontpage' %}"><div>Hjælp</div></a>
+                <a class="menu" href="{% url 'dafousers:frontpage' %}"><div>Min Konto</div></a>
+                <div class="buttons">
+                    <a href="{% url 'dafousers:frontpage' %}">
+                        <img src="{% static 'resources/images/home.png' %}">
+                    </a>
+                    <a href="{% url 'dafousers:frontpage' %}">
+                        <img src="{% static 'resources/images/log-off.png' %}">
+                    </a>
+                </div>
+            </div>
         </div>
-        <div id="contentcontainer">
+        <div class="content_container">
             {% block content %}
                 Content for front page goes here
             {% endblock %}
         </div>
-        <div id="bottom_bar">
+        <div class="bottom_bar">
+            <p>Grønlands datafordeler er udviklet af <b>Magenta ApS</b></p>
         </div>
   </body>
 </html>

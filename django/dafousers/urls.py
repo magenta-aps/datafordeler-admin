@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'user/$',
         dafo_views.PasswordUserList.as_view(),
         name='passworduser-list'),
+    url(r'frontpage/$', dafo_views.FrontpageView.as_view(), name="frontpage"),
     url(r'^$', dafo_views.IndexView.as_view(), name="index")
 ]

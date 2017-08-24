@@ -14,6 +14,9 @@ from dafousers.forms import PasswordUserForm
 class IndexView(TemplateView):
     template_name = 'index.html'
 
+class FrontpageView(TemplateView):
+    template_name = 'frontpage.html'
+
 
 class PasswordUserCreate(CreateView):
     template_name = 'dafousers/passworduser-create.html'
