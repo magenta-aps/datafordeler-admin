@@ -229,11 +229,11 @@ input {
 }
 
 
-.button-add.return {
+.button-add.check {
     background-image: url("/static/dafousers/images/brugerliste/check-white.png");
 }
 
-.button-add.continue {
+.button-add.plus {
     background-image: url("/static/dafousers/images/brugerliste/plus-white.png");
 }
 
