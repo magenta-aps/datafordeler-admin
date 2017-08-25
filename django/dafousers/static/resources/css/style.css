@@ -1,5 +1,6 @@
 :root {
   --dafo-blue:rgba(28, 90, 136, 1);
+    --dafo-darkblue:rgba(23, 71, 106, 1);
 }
 
 html {
@@ -7,8 +8,13 @@ html {
   font-weight: 400;
   font-style: normal;
   font-size:13px;
-  color:black;
+  color:rgb(51, 51, 51);
   line-height:normal;
+}
+
+select {
+    font-size:13px;
+    width: 100%;
 }
 
 body {
@@ -17,9 +23,20 @@ body {
   padding: 0;
 }
 
+p {
+    margin: 0;
+}
+
 a {
   text-decoration: none;
   color: inherit;
+}
+
+/* to match IE with C, FF */
+input {
+    padding: 1px 0 1px 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
 }
 
 .top_bar {
@@ -72,8 +89,55 @@ a {
   height: 60px;
 }
 
-.content_container {
-  min-height: 53em;
+.content {
+    margin: 50px 50px 50px 70px;
+    min-height: 45em;
+}
+
+.column {
+    width: 574px;
+    float: left;
+}
+
+.row {
+    float: left;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.row_field {
+    width: 244px;
+    float: left;
+    margin-right: 34px;
+}
+
+.row_field input {
+    width: 100%;
+    height: 25px;
+    font-size: 12px;
+}
+
+.row .selector {
+    width: 670px;
+}
+
+.title {
+    font-size: 22px;
+    float: left;
+}
+
+.back {
+    background: url("/static/dafousers/images/brugerliste/triangle-left-blue.png") 0 no-repeat;
+    padding-left: 18px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--dafo-darkblue);
+    float: right;
+}
+
+#password_display {
+    font-weight: 700;
+    margin-top: 6px;
 }
 
 .bottom_bar {
@@ -112,40 +176,31 @@ a {
 }
 
 .slider.show {
-  max-height: 500px;
+    max-height: 500px;
 }
-
 
 .small-label {
     font-size: 11px;
 }
 
-.text_field {
-    width: 240px;
-    border-width:0px;
-    position:absolute;
+.left {
+    float: left;
 }
 
-.text_field input {
-    width: 240px;
-    height: 28px;
-    font-family: 'Verdana normal', 'Verdana';
-    font-size: 12px;
+.right {
+    float: right;
 }
-
 
 .droplist {
-    border-width:0px;
+    border-width:0;
     position:absolute;
     width:240px;
     height:30px;
-    font-family: 'Verdana normal', 'Verdana';
     font-size: 13px;
 }
 
 .button {
     cursor: pointer;
-    position: absolute;
     background-color: rgba(28, 90, 136, 1);
     width:236px;
     height: 30px;
@@ -154,9 +209,7 @@ a {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.349019607843137);
     border-width:0px;
     border-radius: 2px;
-    font-family: 'Ubuntu Medium', 'Ubuntu';
     font-weight: 500;
-    font-style: normal;
     font-size: 13px;
     color: #FFFFFF;
     text-indent: 30px;
@@ -166,18 +219,26 @@ a {
 .small-button {
     width:120px;
     height: 30px;
-    text-indent: 0px;
+    text-indent: 0;
     text-align: center;
 }
 
 .button-add {
-    background-image: url("/static/dafousers/images/brugerliste/plus-white.png");
     background-repeat: no-repeat;
     background-position: 8px;
 }
 
+
+.button-add.return {
+    background-image: url("/static/dafousers/images/brugerliste/check-white.png");
+}
+
+.button-add.continue {
+    background-image: url("/static/dafousers/images/brugerliste/plus-white.png");
+}
+
 .button img {
-    border-width:0px;
+    border-width:0;
     position:absolute;
     left: 10px;
     top: 10px;
@@ -187,19 +248,22 @@ a {
 
 
 .info-box {
-    border-width:0px;
-    position:absolute;
-    width:204px;
-    height:329px;
-    -webkit-transform:rotate(90deg);
-    -moz-transform:rotate(90deg);
-    -ms-transform:rotate(90deg);
-    transform:rotate(90deg);
+    background: url("/static/dafousers/images/brugerliste/info-box-left.png") no-repeat;
+    -webkit-background-size: cover; /* For WebKit*/
+    -moz-background-size: cover;    /* Mozilla*/
+    -o-background-size: cover;      /* Opera*/
+    background-size: cover;         /* Generic*/
+    width:329px;
+    height:259px;
+    margin-left: -50px;
 }
 
-.info-box img {
-    width:250px;
-    height:329px;
+.text-box {
+    padding: 15px 15px 15px 80px;
+}
+
+.text-box * {
+    margin-bottom: 15px;
 }
 
 .selector {
@@ -223,7 +287,6 @@ a {
 .selector select {
     width: 240px;
     height: 102px;
-    font-family: 'Verdana normal', 'Verdana';
     font-size: 13px;
     text-decoration: none;
     color: #1B1B1B;
@@ -231,12 +294,9 @@ a {
 
 .selector .selector-filter {
     background: white;
-    border: 1px solid #ccc;
-    border-top-width: 1px;
+    border: 0 solid #ccc;
     border-right-width: 1px;
-    border-bottom-width: 1px;
     border-left-width: 1px;
-    border-width: 0 1px;
     padding: 8px;
     color: #999;
     font-size: 10px;
@@ -267,7 +327,7 @@ a.selector-clearall {
 
 .selector ul.selector-chooser {
     float: left;
-    margin: 20px 8px 0 8px;
+    margin: 20px 7px 0 7px;
     padding: 0;
 }
 
@@ -278,9 +338,7 @@ a.selector-clearall {
 
     background-color: rgba(228, 228, 228, 1);
     box-sizing: border-box;
-    border-width: 1px;
-    border-style: solid;
-    border-color: rgba(201, 201, 201, 1);
+    border: 1px solid rgba(201, 201, 201, 1);
     border-radius: 2px;
 }
 
@@ -289,19 +347,11 @@ a.selector-clearall {
 }
 
 .selector-add {
-    background: url(/static/dafousers/images/brugerliste/triangle-blue.png) 0 no-repeat;
-    -webkit-transform:rotate(90deg);
-    -moz-transform:rotate(90deg);
-    -ms-transform:rotate(90deg);
-    transform:rotate(90deg);
+    background: url("/static/dafousers/images/brugerliste/triangle-right-blue.png") 0 no-repeat;
 }
 
 .selector-remove {
-    background: url(/static/dafousers/images/brugerliste/triangle-blue.png) 0 no-repeat;
-    -webkit-transform:rotate(270deg);
-    -moz-transform:rotate(270deg);
-    -ms-transform:rotate(270deg);
-    transform:rotate(270deg);
+    background: url("/static/dafousers/images/brugerliste/triangle-left-blue.png") 0 no-repeat;
 }
 
 .selector-add, .selector-remove {
