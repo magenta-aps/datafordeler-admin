@@ -45,6 +45,10 @@ a {
   border-bottom-width: 3px;
 }
 
+.top_menus .menu a:hover {
+    text-decoration: underline;
+}
+
 .top_menus .menu div,
 .top_menus .buttons a img {
   padding: 20px 0 20px 0;
@@ -63,7 +67,7 @@ a {
 }
 
 .logo {
-  padding: 4px 0px 0px 34px;
+  padding: 4px 0 0 34px;
   width: 223px;
   height: 60px;
 }
