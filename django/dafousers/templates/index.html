@@ -2,42 +2,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Opret bruger</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <meta name="apple-mobile-web-app-capable" content="yes"/>
-    <link href="{% static 'resources/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}" type="text/css" rel="stylesheet"/>
-    <link href="{% static 'resources/css/main.css' %}" type="text/css" rel="stylesheet"/>
-    <!-- link href="data/styles.css" type="text/css" rel="stylesheet"/ -->
-    <!-- link href="files/opret_bruger/styles.css" type="text/css" rel="stylesheet"/ -->
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu" type="text/css" rel="stylesheet"/>
-    <script src="{% static 'resources/scripts/jquery-3.2.1.min.js' %}"></script>
-    <script src="{% static 'resources/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+      <title>
+          {% block title %}
+          Title goes here
+          {% endblock %}
+      </title>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+      <meta name="apple-mobile-web-app-capable" content="yes"/>
+      <link href="{% static 'resources/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}" type="text/css" rel="stylesheet"/>
+      <link href="{% static 'resources/css/style.css' %}" type="text/css" rel="stylesheet"/>
 
-
-
-      <script>
-          /* When the user clicks on the button,
-          toggle between hiding and showing the dropdown content */
-          function myFunction(id) {
-              document.getElementById(id).classList.toggle("show");
-          }
-
-          // Close the dropdown if the user clicks outside of it
-          window.onclick = function(event) {
-              if (!event.target.matches('.dropbtn')) {
-
-                  var dropdowns = document.getElementsByClassName("dropdown-content");
-                  var i;
-                  for (i = 0; i < dropdowns.length; i++) {
-                      var openDropdown = dropdowns[i];
-                      if (openDropdown.classList.contains('show')) {
-                          openDropdown.classList.remove('show');
-                      }
-                  }
-              }
-          }
-      </script>
+      <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+      <script src="/static/admin/js/jquery.init.js"></script>
+      <script src="{% static 'resources/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+      <script src="{% static 'resources/scripts/dafo.js' %}"></script>
 
     {% block head_extra %}{% endblock %}
   </head>
