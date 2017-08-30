@@ -53,6 +53,11 @@ class PasswordUserList(ListView):
     template_name = 'dafousers/passworduser-list.html'
     model = PasswordUser
 
+    def post(self, request, *args, **kwargs):
+        ids = request.POST.getlist('user_id')
+        PasswordUser.objects.filter(id__in=ids).delete()
+        return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+
 class PasswordUserDetails(DetailView):
     template_name = 'dafousers/passworduser-details.html'
     model = PasswordUser
