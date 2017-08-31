@@ -1,5 +1,6 @@
 from django.conf.urls import url
 import dafousers.views as dafo_views
+import django.contrib.auth.views
 
 urlpatterns = [
     url(r'user/(?P<pk>[0-9]+)/$',
@@ -12,5 +13,10 @@ urlpatterns = [
         dafo_views.PasswordUserList.as_view(),
         name='passworduser-list'),
     url(r'frontpage/$', dafo_views.FrontpageView.as_view(), name="frontpage"),
-    url(r'^$', dafo_views.IndexView.as_view(), name="index")
+    url(r'^$', dafo_views.IndexView.as_view(), name="index"),
+    url(r'^login/', django.contrib.auth.views.login,
+        {'template_name': 'dafousers/login.html',
+         'redirect_authenticated_user': True},
+        name='login'
+    ),
 ]
