@@ -40,8 +40,7 @@ input {
     -moz-box-sizing: border-box;
 }
 
-div .button,
-button {
+.button {
     cursor: pointer;
     width:180px;
     height: 30px;
@@ -52,9 +51,6 @@ button {
     border-radius: 2px;
     display: flex;
     flex-flow: row wrap;
-}
-
-div .button {
     -webkit-user-select: none; /* Chrome/Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+ */
@@ -82,18 +78,15 @@ div .button {
     color: white;
 }
 
-div .button > *,
-button > * {
+.button > * {
     flex: 1 100%;
 }
 
-div .button img,
-button img {
+.button img {
     padding: 8px;
 }
 
-div .button .flex-center,
-button .flex-center {
+.button .flex-center {
     text-align: center;
     padding-top: 8px;
     padding-bottom: 8px;

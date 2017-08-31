@@ -73,6 +73,5 @@ var Form = {
     submit : function(inputId, action){
         var input = document.getElementById(inputId);
         input.value = action;
-        input.submit();
     }
 };
