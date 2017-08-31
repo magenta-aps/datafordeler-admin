@@ -218,7 +218,6 @@ class AccessAccount(models.Model):
         blank=True
     )
 
-
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:

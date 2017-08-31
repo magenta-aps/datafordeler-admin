@@ -6,8 +6,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from dafousers.models import PasswordUser, UserIdentification
-from dafousers.forms import PasswordUserForm
+from dafousers import models, model_constants, forms
 
 # Create your views here.
 
@@ -20,13 +19,13 @@ class FrontpageView(TemplateView):
 
 class PasswordUserCreate(CreateView):
     template_name = 'dafousers/passworduser-create.html'
-    form_class = PasswordUserForm
-    model = PasswordUser
+    form_class = forms.PasswordUserForm
+    model = models.PasswordUser
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
 
-        userId = UserIdentification(user_id=form.instance.email)
+        userId = models.UserIdentification(user_id=form.instance.email)
         userId.save()
         form.instance.identified_user = userId
         salt, encrypted_password = form.instance.generate_encrypted_password_and_salt(form.cleaned_data['password'])
@@ -43,21 +42,39 @@ class PasswordUserCreate(CreateView):
 
         super(CreateView, self).post(request, *args, **kwargs)
 
-        if request.POST.get("_addanother"):
+        for key, value in request.POST.items():
+            print(key, value)
+
+        action = request.POST.get('action')
+        if action == '_addanother':
             return HttpResponseRedirect(reverse('dafousers:passworduser-add'))
-        elif request.POST.get("_save"):  # You can use else in here too if there is only 2 submit types.
+        elif action == '_save':
             return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
 
 
 class PasswordUserList(ListView):
     template_name = 'dafousers/passworduser-list.html'
-    model = PasswordUser
+    model = models.PasswordUser
+
+    def get_context_data(self,**kwargs):
+        context = super(PasswordUserList,self).get_context_data(**kwargs)
+        context['action'] = ""
+        return context
 
     def post(self, request, *args, **kwargs):
+        constants = model_constants.AccessAccount
         ids = request.POST.getlist('user_id')
-        PasswordUser.objects.filter(id__in=ids).delete()
+        users = models.PasswordUser.objects.filter(id__in=ids)
+
+        if request.POST.get("_status_active"):
+            users.update(status=constants.STATUS_ACTIVE)
+        elif request.POST.get("_status_blocked"):
+            users.update(status=constants.STATUS_BLOCKED)
+        elif request.POST.get("_status_deactive"):
+            users.update(status=constants.STATUS_DEACTIVATED)
+
         return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
 
 class PasswordUserDetails(DetailView):
     template_name = 'dafousers/passworduser-details.html'
-    model = PasswordUser
+    model = models.PasswordUser
