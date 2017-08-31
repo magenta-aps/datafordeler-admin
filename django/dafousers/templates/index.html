@@ -34,8 +34,8 @@
 
                 {% block top_menus %}
                 <div class="menu">
-                    <div onclick="myFunction('adgang')" class="dropbtn">Adgang</div>
-                    <span id="adgang" class="dropdown-content dropdown slider">
+                    <div onclick="toggleShow('adgang')" class="dropbtn">Adgang</div>
+                    <span id="adgang" class="dropdown-content blue">
                         <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
                         <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
                         <a href="{% url 'dafousers:frontpage' %}">Opret system</a>
@@ -46,8 +46,8 @@
                 </div>
 
                 <div class="menu">
-                    <div onclick="myFunction('konfiguration')" class="dropbtn">Konfiguration</div>
-                    <span id="konfiguration" class="dropdown-content dropdown slider">
+                    <div onclick="toggleShow('konfiguration')" class="dropbtn">Konfiguration</div>
+                    <span id="konfiguration" class="dropdown-content blue">
                         <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
                         <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
                         <a href="{% url 'dafousers:frontpage' %}">Opret system</a>

@@ -1,13 +1,13 @@
 
 /* When the user clicks on the button,
 toggle between hiding and showing the dropdown content */
-function myFunction(id) {
+function toggleShow(id) {
     document.getElementById(id).classList.toggle("show");
 }
 
 // Close the dropdown if the user clicks outside of it
 window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
+    if (event.target.closest('.dropbtn') == null) {
 
         var dropdowns = document.getElementsByClassName("dropdown-content");
         var i;
@@ -67,4 +67,12 @@ var Password = {
     }
 
 
+};
+
+var Form = {
+    submit : function(inputId, action){
+        var input = document.getElementById(inputId);
+        input.value = action;
+        input.submit();
+    }
 };

@@ -2,7 +2,7 @@
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from dafousers.models import PasswordUser, UserProfile
+from dafousers import models
 
 
 class PasswordUserForm(forms.ModelForm):
@@ -10,7 +10,7 @@ class PasswordUserForm(forms.ModelForm):
         widget=forms.HiddenInput()
     )
     user_profiles = forms.ModelMultipleChoiceField(
-        queryset=UserProfile.objects.all(),
+        queryset=models.UserProfile.objects.all(),
         label="brugerprofiler",
         required=False,
         widget=FilteredSelectMultiple(
@@ -25,8 +25,9 @@ class PasswordUserForm(forms.ModelForm):
         js = ['/admin/jsi18n/']
 
     class Meta:
-        model = PasswordUser
+        model = models.PasswordUser
         fields = ['givenname', 'lastname', 'email', 'organisation', 'status']
 
     def save(self, commit=True):
         return super(PasswordUserForm, self).save(commit=commit)
+
