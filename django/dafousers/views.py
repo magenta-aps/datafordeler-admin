@@ -42,9 +42,6 @@ class PasswordUserCreate(CreateView):
 
         super(CreateView, self).post(request, *args, **kwargs)
 
-        for key, value in request.POST.items():
-            print(key, value)
-
         action = request.POST.get('action')
         if action == '_addanother':
             return HttpResponseRedirect(reverse('dafousers:passworduser-add'))
