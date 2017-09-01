@@ -23,9 +23,6 @@ body {
   padding: 0;
 }
 
-p {
-    margin: 0;
-}
 
 a {
   text-decoration: none;
@@ -34,6 +31,7 @@ a {
 
 select[multiple] {
     height: 80px;
+    width: 100%;
 }
 
 /* to match IE with C, FF */
@@ -263,6 +261,10 @@ input {
     font-size: 11px;
 }
 
+.label {
+    font-size: 14px;
+}
+
 .left {
     float: left;
 }
@@ -299,10 +301,6 @@ input {
 
 .text-box {
     padding: 15px 15px 15px 80px;
-}
-
-.text-box * {
-    margin-bottom: 15px;
 }
 
 .selector {
@@ -407,14 +405,32 @@ a.selector-clearall {
     background: white;
     border-width: 0px;
     position: absolute;
+    min-width: 450px;
+    min-height: 100px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1001;
 }
 
-.popup .title {
+.popup-title {
+    font-size: 22px;
+    padding: 0.75em;
+    background-color: var(--dafo-blue);
+    color: white;
+    height: 1em;
+}
 
+.popup-content {
+    padding: 1.5em 5.5em 1.5em 5.5em;
+}
+.popup-content > * {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.popup-buttons {
+    display: flex;
 }
 
 .hidden {
