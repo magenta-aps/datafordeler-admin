@@ -32,6 +32,10 @@ a {
   color: inherit;
 }
 
+select[multiple] {
+    height: 80px;
+}
+
 /* to match IE with C, FF */
 input {
     padding: 1px 0 1px 0;
@@ -319,7 +323,7 @@ input {
     display: none;
 }
 
-.selector select {
+.selector select[multiple] {
     width: 240px;
     height: 102px;
     font-size: 13px;
@@ -399,6 +403,7 @@ a.selector-clearall {
 }
 
 .popup {
+    display: inline-grid;
     background: white;
     border-width: 0px;
     position: absolute;
@@ -406,6 +411,10 @@ a.selector-clearall {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1001;
+}
+
+.popup .title {
+
 }
 
 .hidden {

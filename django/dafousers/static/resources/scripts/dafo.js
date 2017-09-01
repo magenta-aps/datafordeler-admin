@@ -4,7 +4,7 @@ var DAFO = window.DAFO || {};
 
     // Close the dropdown if the user clicks outside of it
     w.onclick = function(event) {
-        if (event.target.closest('.dropbtn') == null) {
+        if (event.target.closest('.dropbtn') === null) {
 
             var dropdowns = document.getElementsByClassName("dropdown-content");
             var i;
@@ -12,6 +12,18 @@ var DAFO = window.DAFO || {};
                 var openDropdown = dropdowns[i];
                 if (openDropdown.classList.contains('show')) {
                     openDropdown.classList.remove('show');
+                }
+            }
+        }
+        if (event.target.id === "lightbox") {
+            event.target.classList.add('hidden');
+
+            var popups = document.getElementsByClassName("popup");
+
+            for (i = 0; i < popups.length; i++) {
+                var openPopup = popups[i];
+                if (!openPopup.classList.contains('hidden')) {
+                    openPopup.classList.add('hidden');
                 }
             }
         }
