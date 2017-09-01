@@ -29,7 +29,7 @@ class LoginRequiredMixin(object):
         return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-class PasswordUserCreate(CreateView):
+class PasswordUserCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/passworduser-create.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
@@ -61,7 +61,7 @@ class PasswordUserCreate(CreateView):
             return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
 
 
-class PasswordUserList(ListView):
+class PasswordUserList(LoginRequiredMixin, ListView):
     template_name = 'dafousers/passworduser-list.html'
     model = models.PasswordUser
 
@@ -90,8 +90,9 @@ class PasswordUserList(ListView):
         elif action == '_status_deactive':
             users.update(status=constants.STATUS_DEACTIVATED)
 
-        return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+        ordering = self.get_ordering()
+        return HttpResponseRedirect(reverse('dafousers:passworduser-list') + "?ordering=" + ordering)
 
-class PasswordUserDetails(DetailView):
+class PasswordUserDetails(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/passworduser-details.html'
     model = models.PasswordUser
