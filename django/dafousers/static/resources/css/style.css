@@ -437,3 +437,86 @@ tbody tr:first-child {
 .ordering .desc {
     background-image: url("/static/dafousers/images/brugerliste/sort-desc.png");
 }
+
+.clearfix {
+    clear: both;
+}
+
+/* DAFO login page, templates/dafousers/login.html */
+body.dafologin {
+    max-width: 1600px;
+    background-image: url(../images/login_background.png);
+    background-repeat: no-repeat;
+}
+
+body.dafologin div.content {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#dafologin .logintopbar {
+    margin: 8em 0 0 0;
+    background-color: rgba(121, 182, 229, 1);
+    padding: 0;
+}
+
+#dafologin .logintopbar div.label {
+    position: absolute;
+    text-align: right;
+    width: 20em;
+}
+
+#dafologin .logintopbar div.label h3 {
+    margin-right: 1em;
+}
+
+#dafologin ul.nav-tabs {
+    margin: 0 0 0 20em;
+    padding: 0;
+    list-style-type: none;
+    vertical-align: bottom;
+}
+
+#dafologin ul.nav-tabs li {
+    padding: 0.5em 1.5em 0.5em 1.5em;
+    margin: 0.5em 0.1em 0 0;
+    display: inline-block;
+    border-width: 2px 2px 0 2px;
+    border-color: #fff;
+    border-style: solid;
+}
+
+#dafologin ul.nav-tabs li.active {
+    background-color: #fff;
+}
+
+#dafologin ul.nav-tabs li a {
+    font-family: 'Arial normal', 'Arial';
+    font-size: 1.4em;
+    font-feature-settings: 'kern' 1;
+    font-kerning: normal;
+    font-weight: normal;
+}
+
+#dafologin .logincontent {
+    background-color: #fff;
+    margin: 0;
+    padding: 1em 1em 2em 20em;
+}
+
+#dafologin .tab-content {
+    margin: 0;
+    padding: 0;
+    max-width: 52em;
+}
+
+#dafologin .tab-pane {
+    cursor: pointer;
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+#dafologin .tab-pane.active {
+    display: block;
+}

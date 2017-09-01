@@ -16,18 +16,23 @@
 
       <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
       <script src="/static/admin/js/jquery.init.js"></script>
+      <script type="text/javascript"><!--
+        // Re-establish default jQuery variables
+        jQuery = $ = django.jQuery
+      //--></script>
       <script src="{% static 'resources/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
       <script src="{% static 'resources/scripts/dafo.js' %}"></script>
 
     {% block head_extra %}{% endblock %}
   </head>
-  <body>
+  <body class="{%block body_class%}{% endblock %}">
         <div class="top_bar">
             <a href="{% url 'dafousers:frontpage' %}">
                 <img class="logo" src="{% static 'resources/images/logo.png' %}">
             </a>
             <div class="top_menus">
 
+                {% block top_menus %}
                 <div class="menu">
                     <div onclick="toggleShow('adgang')" class="dropbtn">Adgang</div>
                     <span id="adgang" class="dropdown-content blue">
@@ -51,9 +56,14 @@
                         <a href="{% url 'dafousers:frontpage' %}">Administrér system</a>
                     </span>
                 </div>
+                {% endblock %}
 
+                {% block top_links %}
                 <a class="menu" href="{% url 'dafousers:frontpage' %}"><div>Hjælp</div></a>
                 <a class="menu" href="{% url 'dafousers:frontpage' %}"><div>Min Konto</div></a>
+                {% endblock %}
+
+                {% block buttons %}
                 <div class="buttons">
                     <a href="{% url 'dafousers:frontpage' %}">
                         <img src="{% static 'resources/images/home.png' %}">
@@ -62,6 +72,7 @@
                         <img src="{% static 'resources/images/log-off.png' %}">
                     </a>
                 </div>
+                {% endblock %}
             </div>
         </div>
         <div class="content">
@@ -69,8 +80,11 @@
                 Content for front page goes here
             {% endblock %}
         </div>
+        {% block bottom_bar %}
         <div class="bottom_bar">
             <p>Grønlands datafordeler er udviklet af <b>Magenta ApS</b></p>
         </div>
+        {% endblock %}
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

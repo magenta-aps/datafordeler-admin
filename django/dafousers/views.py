@@ -1,5 +1,7 @@
 # from django.shortcuts import render
 
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
@@ -8,13 +10,23 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from dafousers import models, model_constants, forms
 
-# Create your views here.
 
+# Create your views here.
 class IndexView(TemplateView):
     template_name = 'index.html'
 
+
 class FrontpageView(TemplateView):
     template_name = 'frontpage.html'
+
+
+class LoginRequiredMixin(object):
+    """Include to require login."""
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        """Check for login and dispatch the view."""
+        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 class PasswordUserCreate(CreateView):
