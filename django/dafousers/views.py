@@ -56,18 +56,26 @@ class PasswordUserList(ListView):
     def get_context_data(self,**kwargs):
         context = super(PasswordUserList,self).get_context_data(**kwargs)
         context['action'] = ""
+        context['ordering'] = self.get_ordering()
         return context
 
+    def get_ordering(self):
+        return self.request.GET.get('ordering', 'organisation')
+
     def post(self, request, *args, **kwargs):
+        for key, value in request.POST.items():
+            print(key, value)
         constants = model_constants.AccessAccount
         ids = request.POST.getlist('user_id')
         users = models.PasswordUser.objects.filter(id__in=ids)
 
-        if request.POST.get("_status_active"):
+        action = request.POST.get('action')
+        print action
+        if action == '_status_active':
             users.update(status=constants.STATUS_ACTIVE)
-        elif request.POST.get("_status_blocked"):
+        elif action == '_status_blocked':
             users.update(status=constants.STATUS_BLOCKED)
-        elif request.POST.get("_status_deactive"):
+        elif action == '_status_deactive':
             users.update(status=constants.STATUS_DEACTIVATED)
 
         return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
