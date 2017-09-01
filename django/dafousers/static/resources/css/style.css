@@ -232,7 +232,7 @@ input {
 }
 
 .back {
-    background: url("/static/dafousers/images/brugerliste/triangle-left-blue.png") 0 no-repeat;
+    background: url(../images/brugerliste/triangle-left-blue.png) 0 no-repeat;
     padding-left: 18px;
     font-weight: 700;
     font-size: 14px;
@@ -283,7 +283,7 @@ input {
 }
 
 .info-box {
-    background: url("/static/dafousers/images/brugerliste/info-box-left.png") no-repeat;
+    background: url(../images/brugerliste/info-box-left.png) no-repeat;
     -webkit-background-size: cover; /* For WebKit*/
     -moz-background-size: cover;    /* Mozilla*/
     -o-background-size: cover;      /* Opera*/
@@ -382,11 +382,11 @@ a.selector-clearall {
 }
 
 .selector-add {
-    background: url("/static/dafousers/images/brugerliste/triangle-right-blue.png") 0 no-repeat;
+    background: url(../images/brugerliste/triangle-right-blue.png) 0 no-repeat;
 }
 
 .selector-remove {
-    background: url("/static/dafousers/images/brugerliste/triangle-left-blue.png") 0 no-repeat;
+    background: url(../images/brugerliste/triangle-left-blue.png) 0 no-repeat;
 }
 
 .selector-add, .selector-remove {
@@ -399,12 +399,28 @@ a.selector-clearall {
 }
 
 .popup {
+    background: white;
     border-width: 0px;
     position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 462px;
-    height: 272px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+}
+
+.hidden {
+    display: none;
+}
+
+#lightbox {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 10000px;
+    height: 10000px;
+    background-color: rgb(54, 54, 54);
+    opacity: 0.698039;
+    z-index: 1000;
 }
 
 table {
@@ -423,19 +439,19 @@ tbody tr:first-child {
 }
 
 .ordering a {
-    background-image: url("/static/dafousers/images/brugerliste/sort.png");
+    background-image: url(../images/brugerliste/ordering.png);
     background-repeat: no-repeat;
     display: inline-block;
     background-position: right;
     padding-right: 20px;
 }
 
-.ordering .asc {
-    background-image: url("/static/dafousers/images/brugerliste/sort-asc.png");
+.ordering.asc a {
+    background-image: url(../images/brugerliste/ordering-asc.png);
 }
 
-.ordering .desc {
-    background-image: url("/static/dafousers/images/brugerliste/sort-desc.png");
+.ordering.desc a {
+    background-image: url(../images/brugerliste/ordering-desc.png);
 }
 
 .clearfix {

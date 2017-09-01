@@ -23,6 +23,10 @@ var DAFO = window.DAFO || {};
         document.getElementById(id).classList.toggle("show");
     };
 
+    w.toggleHidden = function(id) {
+        document.getElementById(id).classList.toggle("hidden");
+    };
+
     w.toggleAllCheckboxes = function(checkbox) {
         var inputs = document.getElementsByName("user_id");
         for (var i = 0; i < inputs.length; ++i) {
@@ -35,6 +39,10 @@ var DAFO = window.DAFO || {};
         input.value = action;
     };
 
+    w.showPopup = function(popupId) {
+        w.toggleHidden(popupId);
+        w.toggleHidden("lightbox");
+    };
 
     w.Password = {
 

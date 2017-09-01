@@ -69,6 +69,7 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         context = super(PasswordUserList,self).get_context_data(**kwargs)
         context['action'] = ""
         context['ordering'] = self.get_ordering()
+        context['user_profiles'] = models.UserProfile.objects.all()
         return context
 
     def get_ordering(self):
