@@ -17,6 +17,8 @@ urlpatterns = [
     url(r'^login/', django.contrib.auth.views.login,
         {'template_name': 'dafousers/login.html',
          'redirect_authenticated_user': True},
-        name='login'
-    ),
+        name='login'),
+    url(r'^logout/', django.contrib.auth.views.logout,
+        {'template_name': 'dafousers/logged_out.html'},
+        name='logout'),
 ]

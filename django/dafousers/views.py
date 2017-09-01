@@ -13,7 +13,7 @@ from dafousers import models, model_constants, forms
 
 # Create your views here.
 class IndexView(TemplateView):
-    template_name = 'index.html'
+    template_name = 'start.html'
 
 
 class FrontpageView(TemplateView):
