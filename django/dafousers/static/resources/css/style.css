@@ -468,7 +468,8 @@ tbody tr:first-child {
     font-weight: 600;
 }
 
-.ordering a {
+.ordering div {
+    cursor: pointer;
     background-image: url(../images/brugerliste/ordering.png);
     background-repeat: no-repeat;
     display: inline-block;
@@ -476,11 +477,11 @@ tbody tr:first-child {
     padding-right: 20px;
 }
 
-.ordering.asc a {
+.ordering div.asc {
     background-image: url(../images/brugerliste/ordering-asc.png);
 }
 
-.ordering.desc a {
+.ordering div.desc {
     background-image: url(../images/brugerliste/ordering-desc.png);
 }
 

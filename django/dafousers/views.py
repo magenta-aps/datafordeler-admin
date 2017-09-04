@@ -9,6 +9,8 @@ from django.views.generic.detail import DetailView
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from dafousers import models, model_constants, forms
+from model_constants import AccessAccount as constants
+import urllib
 
 
 # Create your views here.
@@ -68,17 +70,33 @@ class PasswordUserList(LoginRequiredMixin, ListView):
     def get_context_data(self,**kwargs):
         context = super(PasswordUserList,self).get_context_data(**kwargs)
         context['action'] = ""
-        context['ordering'] = self.get_ordering()
         context['user_profiles'] = models.UserProfile.objects.all()
+
+        context['order'] = self.get_order()
+        context['filter'] = self.get_filter()
+
+        if context['filter'] == 'active':
+            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_ACTIVE)
+        elif context['filter'] == 'blocked':
+            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_BLOCKED)
+        elif context['filter'] == 'deactivated':
+            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_DEACTIVATED)
+        else:
+            context['object_list'] = models.PasswordUser.objects.all()
+        context['object_list'] = context['object_list'].order_by(context['order'])
         return context
 
-    def get_ordering(self):
-        return self.request.GET.get('ordering', 'givenname')
+    def get_order(self):
+        return self.request.GET.get('order', 'givenname')
+
+    def get_filter(self):
+        return self.request.GET.get('filter', '')
+
+    def get_redirect(self, url, params):
+        url += "?" + urllib.urlencode(params)
+        return HttpResponseRedirect(url)
 
     def post(self, request, *args, **kwargs):
-        for key, value in request.POST.items():
-            print(key, value)
-        constants = model_constants.AccessAccount
 
         ids = request.POST.getlist('user_id')
         users = models.PasswordUser.objects.filter(id__in=ids)
@@ -99,12 +117,22 @@ class PasswordUserList(LoginRequiredMixin, ListView):
                 for user in users:
                     user.user_profiles.add(user_profile)
 
-        parameter = ""
-        ordering = self.get_ordering()
-        if ordering != 'givenname':
-            parameter = "?ordering=" + ordering
+        params = {}
+        filter = self.get_filter()
+        post_filter = request.POST.get('filter')
+        if post_filter != filter:
+            filter = post_filter
+        if filter is not None:
+            params["filter"] = filter
 
-        return HttpResponseRedirect(reverse('dafousers:passworduser-list') + parameter)
+        order = self.get_order()
+        post_order = request.POST.get('order')
+        if post_order != order:
+            order = post_order
+        if order is not None:
+            params["order"] = order
+
+        return self.get_redirect(reverse('dafousers:passworduser-list'), params)
 
 
 class PasswordUserDetails(LoginRequiredMixin, DetailView):

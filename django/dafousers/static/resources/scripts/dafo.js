@@ -61,6 +61,7 @@ var DAFO = window.DAFO || {};
     w.submitForm = function(inputId, action) {
         var input = document.getElementById(inputId);
         input.value = action;
+        input.closest('form').submit();
     };
 
     w.showPopup = function(popupId) {
