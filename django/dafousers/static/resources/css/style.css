@@ -424,13 +424,18 @@ a.selector-clearall {
 .popup-content {
     padding: 1.5em 5.5em 1.5em 5.5em;
 }
+
 .popup-content > * {
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin: 1em 0;
 }
 
 .popup-buttons {
     display: flex;
+    justify-content: center;
+}
+
+.popup-buttons > * {
+    margin: 0 1em;
 }
 
 .hidden {

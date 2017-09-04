@@ -73,12 +73,13 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         return context
 
     def get_ordering(self):
-        return self.request.GET.get('ordering', 'organisation')
+        return self.request.GET.get('ordering', 'givenname')
 
     def post(self, request, *args, **kwargs):
         for key, value in request.POST.items():
             print(key, value)
         constants = model_constants.AccessAccount
+
         ids = request.POST.getlist('user_id')
         users = models.PasswordUser.objects.filter(id__in=ids)
 
@@ -90,9 +91,21 @@ class PasswordUserList(LoginRequiredMixin, ListView):
             users.update(status=constants.STATUS_BLOCKED)
         elif action == '_status_deactive':
             users.update(status=constants.STATUS_DEACTIVATED)
+        elif action == '_add_user_profiles':
+            user_profiles_ids = request.POST.getlist('user_profiles')
+            user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
+            print user_profiles
+            for user_profile in user_profiles:
+                for user in users:
+                    user.user_profiles.add(user_profile)
 
+        parameter = ""
         ordering = self.get_ordering()
-        return HttpResponseRedirect(reverse('dafousers:passworduser-list') + "?ordering=" + ordering)
+        if ordering != 'givenname':
+            parameter = "?ordering=" + ordering
+
+        return HttpResponseRedirect(reverse('dafousers:passworduser-list') + parameter)
+
 
 class PasswordUserDetails(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/passworduser-details.html'

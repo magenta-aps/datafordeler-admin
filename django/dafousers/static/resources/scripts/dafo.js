@@ -16,16 +16,28 @@ var DAFO = window.DAFO || {};
             }
         }
         if (event.target.id === "lightbox") {
-            event.target.classList.add('hidden');
+            closePopups();
+        }
+    };
 
-            var popups = document.getElementsByClassName("popup");
+    w.closePopups = function() {
+        document.getElementById("lightbox").classList.add("hidden");
 
-            for (i = 0; i < popups.length; i++) {
-                var openPopup = popups[i];
-                if (!openPopup.classList.contains('hidden')) {
-                    openPopup.classList.add('hidden');
-                }
+        var popups = document.getElementsByClassName("popup");
+
+        for (i = 0; i < popups.length; i++) {
+            var openPopup = popups[i];
+            if (!openPopup.classList.contains('hidden')) {
+                openPopup.classList.add('hidden');
             }
+        }
+    };
+
+    w.onkeydown = function(evt) {
+        evt = evt || window.event;
+        // Escape
+        if (evt.keyCode === 27) {
+            closePopups();
         }
     };
 
