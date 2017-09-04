@@ -218,6 +218,7 @@ class AccessAccount(models.Model):
         blank=True
     )
 
+
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:
@@ -276,10 +277,13 @@ class PasswordUser(AccessAccount, EntityWithHistory):
     def __unicode__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
 
-
     def get_absolute_url(self):
         return reverse('dafousers:passworduser-details', kwargs={'pk': self.pk})
 
+    def check_password(self, password):
+        pwdata = hashlib.sha256()
+        pwdata.update(password + self.password_salt)
+        return base64.b64encode(pwdata.digest()) == self.encrypted_password
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 

@@ -132,6 +132,11 @@ FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/frontpage/'
 
+AUTHENTICATION_BACKENDS = [
+    'dafousers.auth.DafoUsersAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 LOCAL_SETTINGS_FILE = os.path.join(SITE_DIR, "local_settings.py")
 if os.path.exists(LOCAL_SETTINGS_FILE):
     from local_settings import *  # noqa
