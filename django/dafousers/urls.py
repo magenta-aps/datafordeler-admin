@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'user/add/$',
         dafo_views.PasswordUserCreate.as_view(),
         name='passworduser-add'),
-    url(r'user/$',
+    url(r'user/list/$',
         dafo_views.PasswordUserList.as_view(),
         name='passworduser-list'),
     url(r'frontpage/$', dafo_views.FrontpageView.as_view(), name="frontpage"),

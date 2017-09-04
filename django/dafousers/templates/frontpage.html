@@ -7,8 +7,113 @@
 
 {% block content %}
 
-<div>FRONTPAGE --sf sdf sdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoifsdfsdfsgfdgjnjlahsdufihouifhusihfhdshauisdhfoshufhsuhsuofuahsfoiuhsuiofhuiahsuoif</div>
+    <div class="frontpage">
+        <div class="block">
+            <div class="block-title">
+                <img src="/static/resources/images/brugerliste/access.png">
+                <div>ADGANG</div>
+            </div>
+            <div class="block-content">
+                <div class="block-row">
+                    <a href="{% url 'dafousers:passworduser-add' %}" class="block-link blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-add-organisation"></div>
+                        </div>
+                        <div class="block-link-title">OPRET ORGANISATION</div>
+                    </a>
 
-<a href="{% url 'dafousers:passworduser-list' %}">BRUGERLISTE</a>
+                    <a href="{% url 'dafousers:passworduser-add' %}" class="block-link light-blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-add-user"></div>
+                        </div>
+                        <div class="block-link-title">OPRET BRUGER</div>
+                    </a>
+
+                    <a href="{% url 'dafousers:passworduser-add' %}" class="block-link beige">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-add-system"></div>
+                        </div>
+                        <div class="block-link-title">OPRET SYSTEM</div>
+                    </a>
+                </div>
+
+                <div class="block-search">
+                    <p>Søg og ret oplysninger på organisation, bruger eller system</p>
+                    <div class="search-bar">
+                        <input id="org_user_system_auto" value=""
+                               placeholder="Skriv navn på organisation, bruger (evt. email) eller system">
+                        <div class="search-button"></div>
+                    </div>
+                    <p>Eller vælg fra en af nedenstående lister</p>
+                </div>
+
+                <div class="block-row">
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link beige">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-list-organisation"></div>
+                        </div>
+                        <div class="block-link-title">LISTE OVER ORGANISATIONER</div>
+                    </a>
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-list-user"></div>
+                        </div>
+                        <div class="block-link-title">LISTE OVER BRUGERE</div>
+                    </a>
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link light-blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-list-system"></div>
+                        </div>
+                        <div class="block-link-title">LISTE OVER SYSTEMER</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="block">
+            <div class="block-title">
+                <img src="/static/resources/images/brugerliste/configuration.png">
+                <div>KONFIGURATION</div>
+            </div>
+            <div class="block-content">
+                <div class="block-row">
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-administer-registers"></div>
+                        </div>
+                        <div class="block-link-title">ADMINISTRÉR REGISTRE</div>
+                    </a>
+                </div>
+
+
+                <div class="block-search">
+                    <p>Søg og ret oplysninger på brugerprofiler</p>
+                    <div class="search-bar">
+                        <input id="org_user_system_auto" value=""
+                               placeholder=" Skriv navn på brugerprofil">
+                        <div class="search-button"></div>
+                    </div>
+                    <p>Eller vælg fra en af nedenstående lister</p>
+                </div>
+
+                <div class="block-row">
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link light-blue">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-list-user-profile"></div>
+                        </div>
+                        <div class="block-link-title">LISTE OVER BRUGERPROFILER</div>
+                    </a>
+                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link beige">
+                        <div class="block-link-content">
+                            <div class="block-link-icon icon-add-user-profile"></div>
+                        </div>
+                        <div class="block-link-title">OPRET BRUGERPROFIL</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 
 {% endblock %}

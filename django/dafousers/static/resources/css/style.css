@@ -2,6 +2,8 @@
     --dafo-blue:rgb(28, 90, 136);
     --dafo-darkblue:rgb(23, 71, 106);
     --dafo-gray:rgb(242, 242, 242);
+    --dafo-lightblue:rgb(121, 182, 229);
+    --dafo-beige:rgb(228, 228, 228);
 }
 
 html {
@@ -77,6 +79,14 @@ input {
 .blue {
     background-color: var(--dafo-blue);
     color: white;
+}
+
+.light-blue {
+    background-color: var(--dafo-lightblue);;
+}
+
+.beige {
+    background-color: var(--dafo-beige);
 }
 
 .button > * {
@@ -566,4 +576,130 @@ body.dafologin div.content {
 
 #dafologin .tab-pane.active {
     display: block;
+}
+
+.frontpage {
+    margin: 0em 8em;
+}
+.block {
+    display: inline-grid;
+}
+.block-title {
+    padding: 0.75em 1.5em;
+    background-color: var(--dafo-lightblue);
+    color: white;
+    display: inline-flex;
+}
+.block-title div {
+    padding: 0.2em;
+    font-size: 30px;
+}
+.block-content {
+    display: inline-grid;
+    background-image: url(../images/brugerliste/sky.jpg);
+    background-repeat: no-repeat;
+}
+
+.block-row {
+    display: inline-flex;
+}
+
+.block-link:only-child {
+    margin: 1em auto;
+}
+
+.block-link {
+    margin: 1em;
+    width: 211px;
+    height: 105px;
+}
+
+.block-link:hover {
+    border-radius: 2px;
+    -moz-box-shadow: 8px 8px 5px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 8px 8px 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 8px 8px 5px rgba(0, 0, 0, 0.4);
+}
+
+.block-link > * {
+    margin: 0.75em 2em;
+}
+
+.block-link-icon {
+    margin: 0 auto;
+    width: 63px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 70px;
+    background-repeat: no-repeat;
+    background-position: 40%;
+}
+
+.icon-add-organisation {
+    background-image: url(/static/resources/images/brugerliste/add_organisation.png);
+}
+
+.icon-add-user {
+    background-image: url(/static/resources/images/brugerliste/add_user.png);
+}
+
+.icon-add-system {
+    background-image: url(/static/resources/images/brugerliste/add_system.png);
+}
+
+.icon-list-organisation {
+    background-image: url(/static/resources/images/brugerliste/list_organisation.png);
+}
+
+.icon-list-user {
+    background-image: url(/static/resources/images/brugerliste/list_user.png);
+}
+
+.icon-list-system {
+    background-image: url(/static/resources/images/brugerliste/list_system.png);
+}
+
+.icon-administer-registers {
+    background-image: url(/static/resources/images/brugerliste/administer_registers.png);
+}
+
+.icon-add-user-profile {
+    background-image: url(/static/resources/images/brugerliste/add_user_profile.png);
+}
+
+.icon-list-user-profile {
+    background-image: url(/static/resources/images/brugerliste/list_user_profile.png);
+}
+
+.block-link-title {
+    text-align: center;
+    font-size: 14px;
+}
+
+.block-search {
+    color: white;
+    width: 100%;
+    height: 140px;
+    font-size: 16px;
+    background-color: rgba(52, 73, 94, 0.8);
+}
+
+.block-search > * {
+    margin: 0.7em 1em;
+}
+
+.search-bar {
+    display: flex;
+}
+
+.search-bar input {
+    border-color: transparent;
+    width: 100%;
+}
+
+.search-button {
+    width: 26px;
+    height: 26px;
+    padding: 0 10px;
+    background: var(--dafo-lightblue) url(/static/resources/images/brugerliste/search.png) no-repeat 12px;
 }
