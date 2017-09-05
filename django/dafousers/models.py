@@ -218,11 +218,21 @@ class AccessAccount(models.Model):
         blank=True
     )
 
+
+class PasswordUserQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(givenname__contains=term) | models.Q(lastname__contains=term)
+        )
+
+
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
+
+    objects = PasswordUserQuerySet.as_manager()
 
     givenname = models.CharField(
         verbose_name=_(u"Fornavn"),
@@ -311,11 +321,20 @@ class EntityWithCertificate(models.Model):
     )
 
 
+class CertificateUserQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
+
+
 class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"system")
         verbose_name_plural = _(u"systemer")
+
+    objects = CertificateUserQuerySet.as_manager()
 
     name = models.CharField(
         verbose_name=_(u"Navn"),
@@ -348,12 +367,21 @@ CertificateUserHistory = HistoryForEntity.build_from_entity_class(
 )
 
 
+class IdentityProviderAccountQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(Navn__contains=term)
+        )
+
+
 class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
                               EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"organisation")
         verbose_name_plural = _(u"organisationer")
+
+    objects = IdentityProviderAccountQuerySet.as_manager()
 
     name = models.CharField(
         name=_(u"Navn"),

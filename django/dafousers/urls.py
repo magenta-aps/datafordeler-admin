@@ -19,4 +19,5 @@ urlpatterns = [
          'redirect_authenticated_user': True},
         name='login'
     ),
+    url(r'^ajax/search_org_user_system/$', dafo_views.search_org_user_system, name='search_org_user_system'),
 ]

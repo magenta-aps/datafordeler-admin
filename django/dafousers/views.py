@@ -1,16 +1,18 @@
 # from django.shortcuts import render
 
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
 from dafousers import models, model_constants, forms
 from model_constants import AccessAccount as constants
-import urllib
+import urllib, json
 
 
 # Create your views here.
@@ -138,3 +140,34 @@ class PasswordUserList(LoginRequiredMixin, ListView):
 class PasswordUserDetails(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/passworduser-details.html'
     model = models.PasswordUser
+
+
+def search_org_user_system(request):
+    search_term = request.GET.get('search_term', None)
+    result = []
+    if search_term == "":
+        return render(request, 'org_user_system_auto.html', {'object_list': result})
+
+    users = models.PasswordUser.objects.search(search_term)
+    organisations = models.IdentityProviderAccount.objects.search(search_term)
+    systems = models.CertificateUser.objects.search(search_term)
+
+    for user in users:
+        result.append({
+            "text": "Bruger: " + user.givenname + " " + user.lastname,
+            "url": reverse('dafousers:passworduser-details', kwargs={"pk": user.id})
+        })
+
+    for organisation in organisations:
+        result.append({
+            "text": "Organisation: " + organisation.name,
+            "url": reverse('dafousers:passworduser-details', kwargs={"pk": organisation.id})
+        })
+
+    for system in systems:
+        result.append({
+            "text": "System: " + system.name,
+            "url": reverse('dafousers:passworduser-details', kwargs={"pk": system.id})
+        })
+
+    return render(request, 'search_org_user_system.html', {'object_list': result})

@@ -116,4 +116,22 @@ var DAFO = window.DAFO || {};
         }
     };
 
+
+    $(document).ready(function() {
+
+        $(".search-term").on("change paste keyup", function () {
+            var search_term = $(this).val();
+            var id = this.id;
+
+            var search_body = $('.' + id + '_body');
+
+            search_body.html('').load(
+                "/ajax/" + id + "/?search_term=" + search_term
+            );
+            if(search_body !== "")
+                search_body.addClass("show");
+
+        });
+    });
+
 })(django.jQuery, window, DAFO);

@@ -40,9 +40,12 @@
                 <div class="block-search">
                     <p>Søg og ret oplysninger på organisation, bruger eller system</p>
                     <div class="search-bar">
-                        <input id="org_user_system_auto" value=""
+                        <input id="search_org_user_system" class="search-term"
                                placeholder="Skriv navn på organisation, bruger (evt. email) eller system">
                         <div class="search-button"></div>
+                    </div>
+                    <div class="search_org_user_system_body dropdown-content scroll white">
+                        {% include 'search_org_user_system.html' %}
                     </div>
                     <p>Eller vælg fra en af nedenstående lister</p>
                 </div>

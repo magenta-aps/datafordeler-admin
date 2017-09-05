@@ -64,7 +64,7 @@ input {
 
 .white {
     background-color: white;
-    color: inherit;
+    color: black;
     box-sizing: border-box;
     border: 1px solid rgba(228, 228, 228, 1);
     border-radius: 0;
@@ -73,7 +73,7 @@ input {
 
 .gray {
     background-color: var(--dafo-gray);
-    color: inherit;
+    color: black;
 }
 
 .blue {
@@ -119,11 +119,15 @@ input {
     position: absolute;
     z-index: 1;
     display:none;
-    overflow-y: hidden;
+    overflow-y: auto;
     max-height: 0;
     transition-property: all;
     transition-duration: .5s;
     transition-timing-function: cubic-bezier(.83,.3,.3,.83);
+}
+
+.dropdown-content.scroll.show {
+    max-height: 150px;
 }
 
 .dropdown-content > * {
@@ -687,6 +691,12 @@ body.dafologin div.content {
 .block-search > * {
     margin: 0.7em 1em;
 }
+
+.block-search .dropdown-content {
+    margin: -0.7em 1em;
+    min-width: 20em;
+}
+
 
 .search-bar {
     display: flex;
