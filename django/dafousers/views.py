@@ -3,7 +3,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, UpdateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -135,6 +135,13 @@ class PasswordUserList(LoginRequiredMixin, ListView):
             params["order"] = order
 
         return self.get_redirect(reverse('dafousers:passworduser-list'), params)
+
+
+class PasswordUserEdit(LoginRequiredMixin, UpdateView):
+    template_name = 'dafousers/passworduser-edit.html'
+    model = models.PasswordUser
+    form_class = forms.PasswordUserForm
+    success_url = 'user/list/'
 
 
 class PasswordUserDetails(LoginRequiredMixin, DetailView):

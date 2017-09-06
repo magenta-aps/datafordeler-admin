@@ -6,6 +6,9 @@ urlpatterns = [
     url(r'user/(?P<pk>[0-9]+)/$',
         dafo_views.PasswordUserDetails.as_view(),
         name='passworduser-details'),
+    url(r'user/(?P<pk>[0-9]+)/edit/$',
+        dafo_views.PasswordUserEdit.as_view(),
+        name='passworduser-edit'),
     url(r'user/add/$',
         dafo_views.PasswordUserCreate.as_view(),
         name='passworduser-add'),
@@ -18,7 +21,7 @@ urlpatterns = [
         {'template_name': 'dafousers/login.html',
          'redirect_authenticated_user': True},
         name='login'
-    ),
+        ),
     url(r'^ajax/search_org_user_system/$', dafo_views.search_org_user_system, name='search_org_user_system'),
     url(r'^ajax/search_user_profile/$', dafo_views.search_user_profile, name='search_user_profile'),
 ]

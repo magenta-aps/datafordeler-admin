@@ -1,7 +1,8 @@
 :root {
     --dafo-blue:rgb(28, 90, 136);
     --dafo-darkblue:rgb(23, 71, 106);
-    --dafo-gray:rgb(242, 242, 242);
+    --dafo-gray:rgb(228, 228, 228);
+    --dafo-lightgray:rgb(242, 242, 242);
     --dafo-lightblue:rgb(121, 182, 229);
     --dafo-beige:rgb(228, 228, 228);
 }
@@ -302,6 +303,38 @@ input {
     text-align: center;
 }
 
+.new-password-box {
+    background-color: var(--dafo-lightgray);
+    margin-top: 5em;
+    padding: 1em;
+    max-width: 30em;
+}
+
+.new-password-box > * {
+    margin: 0.5em 0;
+}
+
+.new-password-top {
+    box-sizing: border-box;
+    border: 1px solid var(--dafo-blue);
+}
+
+.new-password-top p {
+    text-align: center;
+}
+
+.new-password-content {
+    display: flex;
+}
+
+.new-password-left {
+    margin: 1em 0;
+}
+
+.new-password-right {
+    margin-left: 1em;
+}
+
 .info-box {
     background: url(../images/brugerliste/info-box-left.png) no-repeat;
     -webkit-background-size: cover; /* For WebKit*/
@@ -314,7 +347,7 @@ input {
 }
 
 .text-box {
-    padding: 15px 15px 15px 80px;
+    padding: 20px 15px 15px 67px;
 }
 
 .selector {

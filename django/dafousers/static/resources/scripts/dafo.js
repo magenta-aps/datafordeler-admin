@@ -65,7 +65,14 @@ var DAFO = window.DAFO || {};
         input.closest('form').submit();
     };
 
-    w.Password = {
+
+    w.newPassword = function() {
+        var new_pw = Password.generate(16);
+        document.getElementById("id_password").value = new_pw;
+        document.getElementById("password_display").innerHTML = new_pw;
+    };
+
+    var Password = {
 
         _pattern : /[a-zA-Z0-9]/,
 
@@ -103,12 +110,6 @@ var DAFO = window.DAFO || {};
                     }
                 }, this)
                 .join('');
-        },
-
-        new_password : function() {
-            var new_pw = this.generate(16);
-            document.getElementById("id_password").value = new_pw;
-            document.getElementById("password_display").innerHTML = new_pw;
         }
     };
 
