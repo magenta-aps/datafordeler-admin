@@ -415,7 +415,7 @@ a.selector-clearall {
 }
 
 .popup {
-    display: inline-grid;
+    display: none;
     background: white;
     border-width: 0px;
     position: absolute;
@@ -425,6 +425,10 @@ a.selector-clearall {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1001;
+}
+
+.popup.show {
+    display: inline-grid;
 }
 
 .popup-title {
@@ -452,11 +456,12 @@ a.selector-clearall {
     margin: 0 1em;
 }
 
-.hidden {
-    display: none;
+#lightbox.show {
+    display: inherit;
 }
 
 #lightbox {
+    display: none;
     position: fixed;
     left: 0;
     top: 0;

@@ -4,33 +4,33 @@ var DAFO = window.DAFO || {};
 
     // Close the dropdown if the user clicks outside of it
     w.onclick = function(event) {
-        if (event.target.closest('.dropbtn') === null) {
-
-            var dropdowns = document.getElementsByClassName("dropdown-content");
-            var i;
-            for (i = 0; i < dropdowns.length; i++) {
-                var openDropdown = dropdowns[i];
-                if (openDropdown.classList.contains('show')) {
-                    openDropdown.classList.remove('show');
-                }
-            }
+        if (event.target.closest('.dropbtn') === null &&
+            event.target.closest('.search-term') === null) {
+            closeDropDowns();
         }
         if (event.target.id === "lightbox") {
             closePopups();
         }
     };
 
-    w.closePopups = function() {
-        document.getElementById("lightbox").classList.add("hidden");
-
-        var popups = document.getElementsByClassName("popup");
-
-        for (i = 0; i < popups.length; i++) {
-            var openPopup = popups[i];
-            if (!openPopup.classList.contains('hidden')) {
-                openPopup.classList.add('hidden');
+    w.closeElementsByClassName = function(className) {
+        var elements = document.getElementsByClassName(className);
+        var i;
+        for (i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            if (element.classList.contains('show')) {
+                element.classList.remove('show');
             }
         }
+    };
+
+    w.closeDropDowns = function() {
+        closeElementsByClassName("dropdown-content");
+    };
+
+    w.closePopups = function() {
+        toggleShow("lightbox");
+        closeElementsByClassName("popup");
     };
 
     w.onkeydown = function(evt) {
@@ -47,8 +47,9 @@ var DAFO = window.DAFO || {};
         document.getElementById(id).classList.toggle("show");
     };
 
-    w.toggleHidden = function(id) {
-        document.getElementById(id).classList.toggle("hidden");
+    w.showPopup = function(popupId) {
+        toggleShow(popupId);
+        toggleShow("lightbox");
     };
 
     w.toggleAllCheckboxes = function(checkbox) {
@@ -62,11 +63,6 @@ var DAFO = window.DAFO || {};
         var input = document.getElementById(inputId);
         input.value = action;
         input.closest('form').submit();
-    };
-
-    w.showPopup = function(popupId) {
-        w.toggleHidden(popupId);
-        w.toggleHidden("lightbox");
     };
 
     w.Password = {
@@ -119,7 +115,7 @@ var DAFO = window.DAFO || {};
 
     $(document).ready(function() {
 
-        $(".search-term").on("change paste keyup", function () {
+        $(".search-term").on("change paste keyup focus", function () {
             var search_term = $(this).val();
             var id = this.id;
 
@@ -128,8 +124,10 @@ var DAFO = window.DAFO || {};
             search_body.html('').load(
                 "/ajax/" + id + "/?search_term=" + search_term
             );
-            if(search_body !== "")
+            if(search_body !== "") {
+                closeDropDowns();
                 search_body.addClass("show");
+            }
 
         });
     });
