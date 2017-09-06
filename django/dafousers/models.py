@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.urls import reverse
 from dafousers import model_constants
+from xml.etree import ElementTree
 
 import base64
 import copy
@@ -166,6 +167,9 @@ class HistoryForEntity(object):
 
         new_class._meta.verbose_name = "Historik for %s" % (
             entity_class._meta.verbose_name
+        )
+        new_class._meta.verbose_name_plural = "Historik for %s" % (
+            entity_class._meta.verbose_name_plural
         )
 
         return new_class
@@ -352,43 +356,85 @@ CertificateUserHistory = HistoryForEntity.build_from_entity_class(
 )
 
 
-class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
-                              EntityWithHistory):
+class IdentityProviderAccount(AccessAccount, EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"organisation")
         verbose_name_plural = _(u"organisationer")
 
+    CONSTANTS = model_constants.IdentityProviderAccount
+
     name = models.CharField(
-        name=_(u"Navn"),
+        verbose_name=_(u"Navn"),
         max_length=2048,
         blank=True,
         default=""
+    )
+    idp_entity_id = models.CharField(
+        verbose_name=_(u"EntityID"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    idp_type = models.IntegerField(
+        verbose_name=_(u"IdP type"),
+        choices=CONSTANTS.idp_type_choices,
+        default=CONSTANTS.IDP_TYPE_SECONDARY
+    )
+    metadata_xml_file = models.FileField(
+        verbose_name=_(u"Metadata-xml-fil"),
+        null=True,
+        blank=True,
+        upload_to="uploads",
     )
     metadata_xml = models.TextField(
         verbose_name=_(u"Metadata XML"),
         blank=True,
         default=""
     )
-    sso_endpoint = models.CharField(
-        name=_(u"Single-Sign-On Endpoint"),
+    contact_name = models.CharField(
+        verbose_name=_(u"Navn på kontaktperson"),
         max_length=2048,
         blank=True,
         default=""
     )
-    slo_endpoint = models.CharField(
-        name=_(u"Single-Log-Out Endpoint"),
-        max_length=2048,
-        blank=True,
-        default=""
+    contact_email = models.EmailField(
+        verbose_name=_(u"E-mailadresse på kontaktperson"),
+        blank=False
     )
     organisation = models.TextField(
-        verbose_name=_(u"Information om brugerens organisation"),
+        verbose_name=_(u"Yderligere information om organisationen"),
         blank=True,
         default=""
     )
-    nameid_format = models.CharField(
-        name=_(u"NameID format"),
+    next_expiration = models.DateTimeField(
+        verbose_name=_(u"Næste udløbsdato for metadata og/eller certifikat"),
+        blank=True,
+        null=True,
+        default=None
+    )
+
+    userprofile_attribute = models.CharField(
+        verbose_name=_(u"SAML-attribut der indeholder brugerprofiler"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+
+    userprofile_attribute_format = models.IntegerField(
+        verbose_name=_(u"Format for brugerprofil attribut"),
+        choices=CONSTANTS.userprofile_attribute_format_choices,
+        default=CONSTANTS.USERPROFILE_FORMAT_MULTIVALUE,
+    )
+
+    userprofile_adjustment_filter_type = models.IntegerField(
+        verbose_name=_(u"Tilpasninger til brugerprofil værdier"),
+        choices=CONSTANTS.userprofile_filter_choices,
+        default=CONSTANTS.USERPROFILE_FILTER_NONE
+    )
+
+    userprofile_adjustment_filter_value = models.CharField(
+        verbose_name=_(u"Værdi brugt ved tilpasning af brugerprofiler"),
         max_length=2048,
         blank=True,
         default=""
@@ -396,6 +442,40 @@ class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
 
     def __unicode__(self):
         return unicode(self.name)
+
+    def save(self, *args, **kwargs):
+        result = super(IdentityProviderAccount, self).save(*args, **kwargs)
+
+        if(self.metadata_xml_file and
+            os.path.exists(self.metadata_xml_file.path)):
+
+            try:
+                # Store certificate in blob instead of file
+                self.metadata_xml = self.metadata_xml_file.read()
+
+                xml_root = ElementTree.fromstring(self.metadata_xml)
+                self.idp_entity_id = xml_root.get("entityID")
+
+                # Remove the file so data is only stored in the blob
+                self.metadata_xml_file.close()
+                self.metadata_xml_file.delete()
+                self.metadata_xml_file = None
+
+                # Save once more to store data retrieved from the uploaded file
+                result = super(IdentityProviderAccount, self).save(
+                    *args, **kwargs
+                )
+            except Exception as e:
+                print "Failed to parse uploaded xml, error is: %s" % e
+
+        # Update the last-update-of-idp-data timestamp
+        UpdateTimestamps.touch(self.CONSTANTS.IDP_UPDATE_TIMESTAMP_NAME)
+
+        return result
+
+    @classmethod
+    def get_readonly_fields(self):
+        return ['metadata_xml', 'idp_entity_id']
 
 
 IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
@@ -642,3 +722,38 @@ class AreaRestrictionType(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+
+class UpdateTimestamps(models.Model):
+
+    class Meta:
+        verbose_name = _(u"Tidsstempel for opdatering")
+        verbose_name_plural = _(u"Tidsstempler for opdatering")
+
+    hide_in_dafoadmin = True
+
+    name = models.CharField(
+        verbose_name=_(u"Navn"),
+        max_length=2048
+    )
+    description = models.TextField(
+        verbose_name=_(u"Beskrivelse"),
+        blank=True,
+        default=""
+    )
+    updated = models.DateTimeField(
+        verbose_name=_(u"Opdateret"),
+        default=timezone.now
+    )
+
+    @classmethod
+    def touch(cls, name):
+        try:
+            item = cls.objects.get(name=name)
+        except UpdateTimestamps.DoesNotExist:
+            item = cls(
+                name=name,
+                description=(_(u"Auto-genereret tidsstempel for %s") % name)
+            )
+        item.updated = timezone.now()
+        item.save()
