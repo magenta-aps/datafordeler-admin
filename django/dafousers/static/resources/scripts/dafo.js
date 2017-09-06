@@ -59,6 +59,13 @@ var DAFO = window.DAFO || {};
         }
     };
 
+    w.show = function(id) {
+        var element = document.getElementById(id);
+        if (!element.classList.contains('show')) {
+            element.classList.add('show');
+        }
+    };
+
     w.submitForm = function(inputId, action) {
         var input = document.getElementById(inputId);
         input.value = action;

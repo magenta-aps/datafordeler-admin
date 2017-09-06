@@ -304,10 +304,14 @@ input {
 }
 
 .new-password-box {
+    display: none;
     background-color: var(--dafo-lightgray);
     margin-top: 5em;
     padding: 1em;
     max-width: 30em;
+}
+.new-password-box.show {
+    display: inherit;
 }
 
 .new-password-box > * {

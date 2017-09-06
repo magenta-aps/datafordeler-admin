@@ -137,16 +137,31 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         return self.get_redirect(reverse('dafousers:passworduser-list'), params)
 
 
+class PasswordUserHistory(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/passworduser-history.html'
+    model = models.PasswordUserHistory
+
+    def get_context_data(self, **kwargs):
+        context = super(PasswordUserHistory, self).get_context_data(**kwargs)
+        context['password_user_id'] = self.kwargs['pk']
+        return context
+
+
 class PasswordUserEdit(LoginRequiredMixin, UpdateView):
     template_name = 'dafousers/passworduser-edit.html'
     model = models.PasswordUser
     form_class = forms.PasswordUserForm
     success_url = 'user/list/'
 
+    def post(self, request, *args, **kwargs):
 
-class PasswordUserDetails(LoginRequiredMixin, DetailView):
-    template_name = 'dafousers/passworduser-details.html'
-    model = models.PasswordUser
+        super(UpdateView, self).post(request, *args, **kwargs)
+
+        action = request.POST.get('action')
+        if action == '_goto_history':
+            return HttpResponseRedirect(reverse('dafousers:passworduser-history', kwargs={"pk": self.object.id}))
+        elif action == '_save':
+            return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
 
 
 def search_org_user_system(request):

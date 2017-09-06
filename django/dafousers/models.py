@@ -288,7 +288,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
 
 
     def get_absolute_url(self):
-        return reverse('dafousers:passworduser-details', kwargs={'pk': self.pk})
+        return reverse('dafousers:passworduser-list')
 
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
