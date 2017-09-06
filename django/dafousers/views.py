@@ -170,4 +170,21 @@ def search_org_user_system(request):
             "url": reverse('dafousers:passworduser-details', kwargs={"pk": system.id})
         })
 
-    return render(request, 'search_org_user_system.html', {'object_list': result})
+    return render(request, 'search-autocomplete.html', {'object_list': result})
+
+
+def search_user_profile(request):
+    search_term = request.GET.get('search_term', None)
+    result = []
+    if search_term == "":
+        return render(request, 'org_user_system_auto.html', {'object_list': result})
+
+    user_profiles = models.UserProfile.objects.search(search_term)
+
+    for user_profile in user_profiles:
+        result.append({
+            "text": user_profile.name,
+            "url": reverse('dafousers:passworduser-details', kwargs={"pk": user_profile.id})
+        })
+
+    return render(request, 'search-autocomplete.html', {'object_list': result})

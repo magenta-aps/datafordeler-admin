@@ -541,11 +541,20 @@ class Certificate(models.Model):
         )
 
 
+class UserProfileQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
+
+
 class UserProfile(models.Model):
 
     class Meta:
         verbose_name = _(u"brugerprofil")
         verbose_name_plural = _(u"brugerprofiler")
+
+    objects = UserProfileQuerySet.as_manager()
 
     name = models.CharField(
         verbose_name=_(u"Navn"),

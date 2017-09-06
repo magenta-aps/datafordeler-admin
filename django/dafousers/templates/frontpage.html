@@ -45,7 +45,7 @@
                         <div class="search-button"></div>
                     </div>
                     <div class="search_org_user_system_body dropdown-content scroll white">
-                        {% include 'search_org_user_system.html' %}
+                        {% include 'search-autocomplete.html' %}
                     </div>
                     <p>Eller vælg fra en af nedenstående lister</p>
                 </div>
@@ -92,9 +92,12 @@
                 <div class="block-search">
                     <p>Søg og ret oplysninger på brugerprofiler</p>
                     <div class="search-bar">
-                        <input id="org_user_system_auto" value=""
-                               placeholder=" Skriv navn på brugerprofil">
+                        <input id="search_user_profile" class="search-term"
+                               placeholder="Skriv navn på brugerprofil">
                         <div class="search-button"></div>
+                    </div>
+                    <div class="search_user_profile_body dropdown-content scroll white">
+                        {% include 'search-autocomplete.html' %}
                     </div>
                     <p>Eller vælg fra en af nedenstående lister</p>
                 </div>

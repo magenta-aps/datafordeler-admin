@@ -20,4 +20,5 @@ urlpatterns = [
         name='login'
     ),
     url(r'^ajax/search_org_user_system/$', dafo_views.search_org_user_system, name='search_org_user_system'),
+    url(r'^ajax/search_user_profile/$', dafo_views.search_user_profile, name='search_user_profile'),
 ]
