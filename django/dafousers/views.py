@@ -153,6 +153,11 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
     form_class = forms.PasswordUserForm
     success_url = 'user/list/'
 
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(PasswordUserEdit, self).get_form_kwargs(**kwargs)
+        kwargs['pk'] = self.kwargs.get('pk')
+        return kwargs
+
     def post(self, request, *args, **kwargs):
 
         super(UpdateView, self).post(request, *args, **kwargs)

@@ -28,6 +28,14 @@ class PasswordUserForm(forms.ModelForm):
         model = models.PasswordUser
         fields = ['givenname', 'lastname', 'email', 'organisation', 'status']
 
+
+    def __init__(self, *args, **kwargs):
+        self.pk = kwargs.pop('pk')
+        super(PasswordUserForm, self).__init__(*args, **kwargs)
+        print self.pk
+        self.initial['user_profiles'] = models.PasswordUser.objects.get(id=self.pk).user_profiles.all()
+        print self.initial['user_profiles']
+
     def save(self, commit=True):
         return super(PasswordUserForm, self).save(commit=commit)
 
