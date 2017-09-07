@@ -143,7 +143,9 @@ class PasswordUserHistory(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(PasswordUserHistory, self).get_context_data(**kwargs)
-        context['password_user_id'] = self.kwargs['pk']
+        pk = self.kwargs['pk']
+        context['password_user_id'] = pk
+        context['history'] = models.PasswordUserHistory.objects.filter(entity=models.PasswordUser.objects.get(pk=pk))
         return context
 
 

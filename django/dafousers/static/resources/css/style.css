@@ -200,6 +200,7 @@ input {
 .content {
     margin: 50px 50px 50px 70px;
     min-height: 45em;
+    display: flex;
 }
 
 .column {
@@ -754,4 +755,27 @@ body.dafologin div.content {
     height: 26px;
     padding: 0 10px;
     background: var(--dafo-lightblue) url(/static/resources/images/brugerliste/search.png) no-repeat 12px;
+}
+
+.history-entry-top {
+    background-color: var(--dafo-lightgray);
+}
+
+.history-entry > * {
+    padding: 1em;
+}
+
+.history-entry-content {
+    display: inline-block;
+}
+
+.history-entry .row_field {
+    margin-right: 30px;
+    padding: 0.3em 0;
+    min-height: 1.25em;
+}
+
+.history-entry .row_field.password {
+    word-break: break-all;
+    word-wrap: break-word;
 }
