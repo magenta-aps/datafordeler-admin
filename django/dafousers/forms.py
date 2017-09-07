@@ -7,7 +7,8 @@ from dafousers import models
 
 class PasswordUserForm(forms.ModelForm):
     password = forms.CharField(
-        widget=forms.HiddenInput()
+        widget=forms.HiddenInput(),
+        initial="*"
     )
     user_profiles = forms.ModelMultipleChoiceField(
         queryset=models.UserProfile.objects.all(),
@@ -30,12 +31,10 @@ class PasswordUserForm(forms.ModelForm):
 
 
     def __init__(self, *args, **kwargs):
-        self.pk = kwargs.pop('pk')
-        super(PasswordUserForm, self).__init__(*args, **kwargs)
-        print self.pk
-        self.initial['user_profiles'] = models.PasswordUser.objects.get(id=self.pk).user_profiles.all()
-        print self.initial['user_profiles']
-
-    def save(self, commit=True):
-        return super(PasswordUserForm, self).save(commit=commit)
+        if 'pk' in kwargs:
+            self.pk = kwargs.pop('pk')
+            super(PasswordUserForm, self).__init__(*args, **kwargs)
+            self.initial['user_profiles'] = models.PasswordUser.objects.get(id=self.pk).user_profiles.all()
+        else:
+            super(PasswordUserForm, self).__init__(*args, **kwargs)
 

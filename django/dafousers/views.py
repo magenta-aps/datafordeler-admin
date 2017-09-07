@@ -158,15 +158,37 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
         kwargs['pk'] = self.kwargs.get('pk')
         return kwargs
 
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+
+        userId = models.UserIdentification(user_id=form.instance.email)
+        userId.save()
+        form.instance.identified_user = userId
+        if form.cleaned_data['password'] != "*":
+            salt, encrypted_password = form.instance.generate_encrypted_password_and_salt(form.cleaned_data['password'])
+            form.instance.password_salt = salt
+            form.instance.encrypted_password = encrypted_password
+
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.instance.user_profiles = form.cleaned_data['user_profiles']
+
+        return super(PasswordUserEdit, self).form_valid(form)
+
     def post(self, request, *args, **kwargs):
 
-        super(UpdateView, self).post(request, *args, **kwargs)
+        result = super(PasswordUserEdit, self).post(request, *args, **kwargs)
 
-        action = request.POST.get('action')
-        if action == '_goto_history':
-            return HttpResponseRedirect(reverse('dafousers:passworduser-history', kwargs={"pk": self.object.id}))
-        elif action == '_save':
-            return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            action = request.POST.get('action')
+            if action == '_goto_history':
+                return HttpResponseRedirect(reverse('dafousers:passworduser-history', kwargs={"pk": self.object.id}))
+            elif action == '_save':
+                return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+        else:
+            return result
 
 
 def search_org_user_system(request):
