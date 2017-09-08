@@ -1391,7 +1391,7 @@ body.dafologin div.content {
 }
 
 #dafologin .tab-pane form p {
-    margin: 0em 0 2em 0;
+    margin: 1em 0 1em 0;
 }
 
 #dafologin .tab-pane label {
@@ -1412,6 +1412,11 @@ body.dafologin div.content {
     color: #fff;
     text-transform: uppercase;
     cursor: pointer;
+}
+
+#dafologin select {
+    width: auto;
+    font-size: 1em;
 }
 
 /* Log ud side, templates/dafousers/logged_out.html */

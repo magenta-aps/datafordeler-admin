@@ -264,8 +264,11 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         blank=True,
         default=""
     )
-    person_identification = models.UUIDField(
+    # Have to use CharField for UUID since SQL Server and Django does not
+    # agree on how to handle UUIDs.
+    person_identification = models.CharField(
         verbose_name=_(u"Grunddata personidentifikation UUID"),
+        max_length=40,
         blank=True,
         null=True,
         default=uuid.uuid4
@@ -447,7 +450,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
         result = super(IdentityProviderAccount, self).save(*args, **kwargs)
 
         if(self.metadata_xml_file and
-            os.path.exists(self.metadata_xml_file.path)):
+                os.path.exists(self.metadata_xml_file.path)):
 
             try:
                 # Store certificate in blob instead of file
