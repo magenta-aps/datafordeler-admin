@@ -518,6 +518,10 @@ a.selector-clearall {
     z-index: 1000;
 }
 
+#list_form {
+    width: 100%;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;

@@ -112,16 +112,23 @@ var DAFO = window.DAFO || {};
         }
     };
 
+    var objectType;
+
 
     $(document).ready(function() {
 
+        // Set object type
+        $(document).ready(function() {
+            objectType = document.getElementById("object_type").value;
+        });
+
         $("#list_form").on("submit", function(event){
             $.ajax({
-                url:"/ajax/update_passworduser/",
+                url:"/ajax/update_" + objectType +"/",
                 type:"POST",
                 data: $('form').serialize(),
                 success: function(){
-                    update_passworduser();
+                    update_object();
                 }
             });
             event.preventDefault();
@@ -148,14 +155,14 @@ var DAFO = window.DAFO || {};
                 var element = $(this)[0].children[0];
                 var id = element.id;
                 var order = id.split("-")[1];
-                toggle_order_passworduser(order).then(function (isDescending) {
+                toggle_order(order).then(function (isDescending) {
                     var addClass = isDescending ? "desc" : "asc";
                     var newElement = document.getElementById(id);
                     newElement.classList.add(addClass);
                 });
             })
             .on("change", "#filter", function () {
-                update_passworduser().then(function (order) {
+                update_object().then(function (order) {
                     var id = "order-" + order.replace("-", "");
                     var isDescending = order.indexOf("-") !== -1;
                     var addClass = isDescending ? "desc" : "asc";
@@ -171,8 +178,7 @@ var DAFO = window.DAFO || {};
                 }
             });
 
-
-        function update_passworduser() {
+        function update_object() {
 
             var orderKey = "order";
             var orderElement = document.getElementById(orderKey);
@@ -188,12 +194,12 @@ var DAFO = window.DAFO || {};
             if(filter !== "*")
                 query += "&" + filterKey + "=" + filter;
 
-            return update_passworduser_queryset(query).then(function(response){
+            return update_object_queryset(query).then(function(response){
                 return order;
             });
         }
 
-        function toggle_order_passworduser(orderValue) {
+        function toggle_order(orderValue) {
 
             var orderKey = "order";
             var orderElement = document.getElementById(orderKey);
@@ -210,14 +216,14 @@ var DAFO = window.DAFO || {};
             if(filter !== "*")
                 query += "&" + filterKey + "=" + filter;
 
-            return update_passworduser_queryset(query).then(function(response){
+            return update_object_queryset(query).then(function(response){
                 orderElement.value = orderValue;
                 return isDescending;
             });
         }
 
-        function update_passworduser_queryset(query) {
-            return update_call("update_passworduser_queryset", "?" + query);
+        function update_object_queryset(query) {
+            return update_call("update_" + objectType + "_queryset", "?" + query);
         }
 
         function update_call(call, query) {
