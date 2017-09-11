@@ -22,9 +22,9 @@ urlpatterns = [
     url(r'system/add/$',
         dafo_views.CertificateUserCreate.as_view(),
         name='certificateuser-add'),
-    #url(r'system/list/$',
-    #    dafo_views.CertificateUserList.as_view(),
-    #    name='certificateuser-list'),
+    url(r'system/list/$',
+        dafo_views.CertificateUserList.as_view(),
+        name='certificateuser-list'),
 
     url(r'frontpage/$',
         dafo_views.FrontpageView.as_view(),
@@ -51,4 +51,10 @@ urlpatterns = [
     url(r'^ajax/update_passworduser/$',
         dafo_views.update_passworduser,
         name='update_passworduser'),
+    url(r'^ajax/update_certificateuser_queryset/$',
+        dafo_views.update_certificateuser_queryset,
+        name='update_certificateuser_queryset'),
+    url(r'^ajax/update_certificateuser/$',
+        dafo_views.update_certificateuser,
+        name='update_certificateuser'),
 ]

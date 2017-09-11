@@ -1,0 +1,45 @@
+<table>
+    <tr>
+        <td>
+            <input class="checkbox" type="checkbox" id="checkbox_all">
+        </td>
+
+        <td class="ordering">
+            <div id="order-name">Navn</div>
+        </td>
+        <td class="ordering">
+            <div id="order-next_expiration">Næste udløbsdato</div>
+        </td>
+        <td class="ordering">
+            <div id="order-identification_mode">Identifikationsmetode</div>
+        </td>
+        <td class="ordering">
+            <div id="order-contact_name">Navn på kontaktperson</div>
+        </td>
+        <td class="ordering">
+            <div id="order-contact_email">E-mailadresse på kontaktperson</div>
+        </td>
+        <td class="ordering">
+            <div id="order-contact_name">Certifikat subjekt</div>
+        </td>
+        <td class="ordering">
+            <div id="order-status">Status</div>
+        </td>
+    </tr>
+    {% for user in object_list %}
+        <tr>
+            <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user.id }}"
+                       value="{{ user.id }}"></td>
+            <td class="txtdata">
+                <a href="{% url 'dafousers:passworduser-edit' user.id %}">
+                {{ user.name }}</a>
+            </td>
+            <td class="txtdata">{{ user.next_expiration }}</td>
+            <td class="txtdata">{{ user.get_identification_mode_display }}</td>
+            <td class="txtdata">{{ user.contact_name }}</td>
+            <td class="txtdata">{{ user.contact_email }}</td>
+            <td class="txtdata">{{ user.latest_certificate.subject }}</td>
+            <td class="txtdata">{{ user.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+</table>

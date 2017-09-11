@@ -202,9 +202,62 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
             if action == '_addanother':
                 return HttpResponseRedirect(reverse('dafousers:certificateuser-add'))
             elif action == '_save':
-                return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+                return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
         else:
             return result
+
+
+class CertificateUserList(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/certificateuser/list.html'
+    model = models.PasswordUser
+
+    def get_context_data(self,**kwargs):
+        context = super(CertificateUserList,self).get_context_data(**kwargs)
+        context['action'] = ""
+        context['user_profiles'] = models.UserProfile.objects.all()
+        context['filter'] = ''
+        context['order'] = 'next_expiration'
+        context['object_list'] = get_certificateuser_queryset(context['filter'], context['order'])
+        return context
+
+
+def update_certificateuser(request):
+
+    ids = request.POST.getlist('user_id')
+    systems = models.CertificateUser.objects.filter(id__in=ids)
+    action = request.POST.get('action')
+    if '_status' in action:
+        parts = action.split("_")
+        status = parts[2]
+        systems.update(status=status)
+    elif action == '_add_user_profiles':
+        user_profiles_ids = request.POST.getlist('user_profiles')
+        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
+        for user_profile in user_profiles:
+            for system in systems:
+                system.user_profiles.add(user_profile)
+    return HttpResponse("Success")
+
+
+def update_certificateuser_queryset(request):
+    filter = request.GET.get('filter', None)
+    order = request.GET.get('order', None)
+    password_users = get_certificateuser_queryset(filter, order)
+    return render(request, 'dafousers/certificateuser/table.html', {'object_list': password_users})
+
+
+def get_certificateuser_queryset(filter, order):
+    # If a filter param is passed, we use it to filter
+    if filter:
+        certificate_users = models.CertificateUser.objects.filter(status=filter)
+    else:
+        certificate_users = models.CertificateUser.objects.all()
+
+    # If a order param is passed, we use it to order
+    if order:
+        certificate_users = certificate_users.order_by(order)
+
+    return certificate_users
 
 
 def search_org_user_system(request):

@@ -364,6 +364,10 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     def get_absolute_url(self):
         return reverse('dafousers:passworduser-list')
 
+    @property
+    def latest_certificate(self):
+        return self.certificates.all().order_by("-valid_to").first()
+
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser
