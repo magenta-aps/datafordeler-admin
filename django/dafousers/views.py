@@ -7,7 +7,7 @@ from django.views.generic import View, TemplateView, UpdateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.urls import reverse
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render
 from dafousers import models, model_constants, forms
 from model_constants import AccessAccount as constants
@@ -72,73 +72,10 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         context = super(PasswordUserList,self).get_context_data(**kwargs)
         context['action'] = ""
         context['user_profiles'] = models.UserProfile.objects.all()
-
-        context['order'] = self.get_order()
-        context['filter'] = self.get_filter()
-
-        if context['filter'] == 'active':
-            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_ACTIVE)
-        elif context['filter'] == 'blocked':
-            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_BLOCKED)
-        elif context['filter'] == 'deactivated':
-            context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_DEACTIVATED)
-        else:
-            context['object_list'] = models.PasswordUser.objects.all()
-
-        if context['order'] == "name":
-            context['object_list'] = context['object_list'].order_by("givenname", "lastname")
-        elif context['order'] == "-name":
-            context['object_list'] = context['object_list'].order_by("-givenname", "-lastname")
-
+        context['filter'] = ''
+        context['order'] = 'name'
+        context['object_list'] = get_passworduser_queryset(context['filter'], context['order'])
         return context
-
-    def get_order(self):
-        return self.request.GET.get('order', 'name')
-
-    def get_filter(self):
-        return self.request.GET.get('filter', '')
-
-    def get_redirect(self, url, params):
-        url += "?" + urllib.urlencode(params)
-        return HttpResponseRedirect(url)
-
-    def post(self, request, *args, **kwargs):
-
-        ids = request.POST.getlist('user_id')
-        users = models.PasswordUser.objects.filter(id__in=ids)
-
-        action = request.POST.get('action')
-        print action
-        if action == '_status_active':
-            users.update(status=constants.STATUS_ACTIVE)
-        elif action == '_status_blocked':
-            users.update(status=constants.STATUS_BLOCKED)
-        elif action == '_status_deactive':
-            users.update(status=constants.STATUS_DEACTIVATED)
-        elif action == '_add_user_profiles':
-            user_profiles_ids = request.POST.getlist('user_profiles')
-            user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
-            print user_profiles
-            for user_profile in user_profiles:
-                for user in users:
-                    user.user_profiles.add(user_profile)
-
-        params = {}
-        filter = self.get_filter()
-        post_filter = request.POST.get('filter')
-        if post_filter != filter:
-            filter = post_filter
-        if filter is not None:
-            params["filter"] = filter
-
-        order = self.get_order()
-        post_order = request.POST.get('order')
-        if post_order != order:
-            order = post_order
-        if order is not None:
-            params["order"] = order
-
-        return self.get_redirect(reverse('dafousers:passworduser-list'), params)
 
 
 class PasswordUserHistory(LoginRequiredMixin, ListView):
@@ -149,7 +86,9 @@ class PasswordUserHistory(LoginRequiredMixin, ListView):
         context = super(PasswordUserHistory, self).get_context_data(**kwargs)
         pk = self.kwargs['pk']
         context['password_user_id'] = pk
-        context['history'] = models.PasswordUserHistory.objects.filter(entity=models.PasswordUser.objects.get(pk=pk))
+        context['history'] = models.PasswordUserHistory.objects.filter(
+            entity=models.PasswordUser.objects.get(pk=pk)
+        ).order_by("-updated")
         return context
 
 
@@ -166,32 +105,71 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
-
         if form.cleaned_data['password'] != "*":
             salt, encrypted_password = form.instance.generate_encrypted_password_and_salt(form.cleaned_data['password'])
             form.instance.password_salt = salt
             form.instance.encrypted_password = encrypted_password
 
         self.object = form.save(commit=False)
-        self.object.save()
         form.instance.user_profiles = form.cleaned_data['user_profiles']
 
         return super(PasswordUserEdit, self).form_valid(form)
 
     def post(self, request, *args, **kwargs):
 
-        result = super(PasswordUserEdit, self).post(request, *args, **kwargs)
-
         form_class = self.get_form_class()
         form = self.get_form(form_class)
-        if form.is_valid():
-            action = request.POST.get('action')
-            if action == '_goto_history':
-                return HttpResponseRedirect(reverse('dafousers:passworduser-history', kwargs={"pk": self.object.id}))
-            elif action == '_save':
+        action = request.POST.get('action')
+        if action == '_save':
+            result = super(PasswordUserEdit, self).post(request, *args, **kwargs)
+            if form.is_valid():
                 return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+            else:
+                return result
+
+
+def update_passworduser(request):
+
+    ids = request.POST.getlist('user_id')
+    users = models.PasswordUser.objects.filter(id__in=ids)
+    action = request.POST.get('action')
+    if '_status' in action:
+        parts = action.split("_")
+        status = parts[2]
+        users.update(status=status)
+    elif action == '_add_user_profiles':
+        user_profiles_ids = request.POST.getlist('user_profiles')
+        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
+        for user_profile in user_profiles:
+            for user in users:
+                user.user_profiles.add(user_profile)
+    return HttpResponse("Success")
+
+
+def update_passworduser_queryset(request):
+    filter = request.GET.get('filter', None)
+    order = request.GET.get('order', None)
+    password_users = get_passworduser_queryset(filter, order)
+    return render(request, 'dafousers/passworduser/table.html', {'object_list': password_users})
+
+
+def get_passworduser_queryset(filter, order):
+    # If a filter param is passed, we use it to filter
+    if filter:
+        password_users = models.PasswordUser.objects.filter(status=filter)
+    else:
+        password_users = models.PasswordUser.objects.all()
+
+    # If a order param is passed, we use it to order
+    if order:
+        if order == "name":
+            password_users = password_users.order_by("givenname", "lastname")
+        elif order == "-name":
+            password_users = password_users.order_by("-givenname", "-lastname")
         else:
-            return result
+            password_users = password_users.order_by(order)
+
+    return password_users
 
 
 class CertificateUserCreate(LoginRequiredMixin, CreateView):
@@ -275,25 +253,3 @@ def search_user_profile(request):
         })
 
     return render(request, 'search-autocomplete.html', {'object_list': result})
-
-
-def update_passworduser_queryset(request):
-    filter = request.GET.get('filter', None)
-    order = request.GET.get('order', None)
-
-    # If a filter param is passed, we use it to filter
-    if filter:
-        password_users = models.PasswordUser.objects.filter(status=filter)
-    else:
-        password_users = models.PasswordUser.objects.all()
-
-    # If a order param is passed, we use it to order
-    if order:
-        if order == "name":
-            password_users = password_users.order_by("givenname", "lastname")
-        elif order == "-name":
-            password_users = password_users.order_by("-givenname", "-lastname")
-        else:
-            password_users = password_users.order_by(order)
-
-    return render(request, 'dafousers/passworduser/table.html', {'object_list': password_users})

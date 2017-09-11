@@ -62,7 +62,6 @@ var DAFO = window.DAFO || {};
     w.submitForm = function(inputId, action) {
         var input = document.getElementById(inputId);
         input.value = action;
-        input.closest('form').submit();
     };
 
 
@@ -116,6 +115,18 @@ var DAFO = window.DAFO || {};
 
     $(document).ready(function() {
 
+        $("#list_form").on("submit", function(event){
+            $.ajax({
+                url:"/ajax/update_passworduser/",
+                type:"POST",
+                data: $('form').serialize(),
+                success: function(){
+                    update_passworduser();
+                }
+            });
+            event.preventDefault();
+        });
+
         $(".search-term").on("change paste keyup focus", function () {
             var search_term = $(this).val();
             var id = this.id;
@@ -132,43 +143,86 @@ var DAFO = window.DAFO || {};
 
         });
 
-        $(".content").on("click", ".ordering", function () {
-            var element = $(this)[0].children[0];
-            var id = element.id;
-            var order = id.split("-")[1];
-            toggle_order_passworduser(order).then(function(isDescending){
-                var addClass = isDescending ? "desc" : "asc";
-                var newElement = document.getElementById(id);
-                newElement.classList.add(addClass);
+        $(".content")
+            .on("click", ".ordering", function () {
+                var element = $(this)[0].children[0];
+                var id = element.id;
+                var order = id.split("-")[1];
+                toggle_order_passworduser(order).then(function (isDescending) {
+                    var addClass = isDescending ? "desc" : "asc";
+                    var newElement = document.getElementById(id);
+                    newElement.classList.add(addClass);
+                });
+            })
+            .on("change", "#filter", function () {
+                update_passworduser().then(function (order) {
+                    var id = "order-" + order.replace("-", "");
+                    var isDescending = order.indexOf("-") !== -1;
+                    var addClass = isDescending ? "desc" : "asc";
+                    var newElement = document.getElementById(id);
+                    newElement.classList.add(addClass);
+                });
+            })
+            .on("click", "#checkbox_all", function () {
+                var checkbox = $(this)[0];
+                var inputs = document.getElementsByName("user_id");
+                for (var i = 0; i < inputs.length; ++i) {
+                    inputs[i].checked = checkbox.checked;
+                }
             });
-        }).on("click", "#checkbox_all", function () {
-            var checkbox = $(this)[0];
-            var inputs = document.getElementsByName("user_id");
-            for (var i = 0; i < inputs.length; ++i) {
-                inputs[i].checked = checkbox.checked;
-            }
-        });
 
-        function toggle_order_passworduser(order_value) {
-            var key = "order";
-            var element = document.getElementById(key);
-            var order = element.value;
-            var isDescending = order === order_value;
-            var query_value = (isDescending ? "-" : "") + order_value;
-            var query = key + "=" + query_value;
+
+        function update_passworduser() {
+
+            var orderKey = "order";
+            var orderElement = document.getElementById(orderKey);
+            var order = orderElement.value;
+
+            var filterKey = "filter";
+            var filterElement = document.getElementById(filterKey);
+            var filter = filterElement.value;
+
+            if(order !== "*")
+            var query = orderKey + "=" + order;
+
+            if(filter !== "*")
+                query += "&" + filterKey + "=" + filter;
+
             return update_passworduser_queryset(query).then(function(response){
-                element.value = query_value;
+                return order;
+            });
+        }
+
+        function toggle_order_passworduser(orderValue) {
+
+            var orderKey = "order";
+            var orderElement = document.getElementById(orderKey);
+            var order = orderElement.value;
+
+            var filterKey = "filter";
+            var filterElement = document.getElementById(filterKey);
+            var filter = filterElement.value;
+
+            var isDescending = order === orderValue;
+            var orderValue = (isDescending ? "-" : "") + orderValue;
+            var query = orderKey + "=" + orderValue;
+
+            if(filter !== "*")
+                query += "&" + filterKey + "=" + filter;
+
+            return update_passworduser_queryset(query).then(function(response){
+                orderElement.value = orderValue;
                 return isDescending;
             });
         }
 
         function update_passworduser_queryset(query) {
-            return update_call("update_passworduser_queryset", query);
+            return update_call("update_passworduser_queryset", "?" + query);
         }
 
         function update_call(call, query) {
             return $.ajax({
-                url: "/ajax/" + call + "/?" + query,
+                url: "/ajax/" + call + "/" + query,
                 success: function(result){
                     var body = $('.' + call + "_body")[0];
                     body.innerHTML = result;

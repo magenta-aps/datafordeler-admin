@@ -7,7 +7,7 @@
 
 {% block content %}
 
-    <form action="" method="post">
+    <form id="list_form" action="" method="post">
         {% csrf_token %}
 
         <div class="row">
@@ -38,9 +38,9 @@
                     </div>
                 </div>
                 <span id="status" class="dropdown-content slider white">
-                    <button class="button" onclick="submitForm('form_submit', '_status_active')">Aktiv</button>
-                    <button class="button" onclick="submitForm('form_submit', '_status_blocked')">Blokeret</button>
-                    <button class="button" onclick="submitForm('form_submit', '_status_deactive')">Deaktiveret</button>
+                    <button class="button" onclick="submitForm('form_submit', '_status_1')">Aktiv</button>
+                    <button class="button" onclick="submitForm('form_submit', '_status_2')">Blokeret</button>
+                    <button class="button" onclick="submitForm('form_submit', '_status_3')">Deaktiveret</button>
                 </span>
             </div>
 
@@ -57,19 +57,19 @@
                 Antal brugere i alt: <b>{{ object_list|length }}</b>
             </div>
 
-            <select class="filter_field" onchange="submitForm('filter', value);">
+            <select class="filter_field" id="filter">
 
                 <option {% if filter == '' %}selected=""{% endif %}
                         value="*">Vis alle brugere</option>
 
-                <option {% if filter == 'active' %}selected=""{% endif %}
-                        value="active">Vis aktive brugere</option>
+                <option {% if filter == '1' %}selected=""{% endif %}
+                        value="1">Vis aktive brugere</option>
 
-                <option {% if filter == 'blocked' %}selected=""{% endif %}
-                        value="blocked">Vis blokerede brugere</option>
+                <option {% if filter == '2' %}selected=""{% endif %}
+                        value="2">Vis blokerede brugere</option>
 
-                <option {% if filter == 'deactivated' %}selected=""{% endif %}
-                        value="deactivated">Vis deaktiverede brugere</option>
+                <option {% if filter == '3' %}selected=""{% endif %}
+                        value="3">Vis deaktiverede brugere</option>
 
             </select>
 
@@ -90,7 +90,7 @@
                     </div>
 
                     <div class="popup-buttons">
-                        <button class="button small-button blue" onclick="submitForm('form_submit', '_add_user_profiles')">
+                        <button class="button small-button blue" onclick="submitForm('form_submit', '_add_user_profiles'); closePopups();">
                             <div class="flex-center">TILDEL</div>
                         </button>
 

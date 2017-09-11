@@ -100,15 +100,14 @@
                         GEM ÆNDRINGER
                     </div>
                 </button>
-
-                <button class="row_field button gray" onclick="submitForm('form_submit', '_goto_history')">
+                <a class="row_field button gray" href="{% url 'dafousers:passworduser-history' form.pk %}">
                     <div class="flex-left">
                         <img src="/static/resources/images/brugerliste/history.png">
                     </div>
                     <div class="flex-center">
                         SE HISTORIK
                     </div>
-                </button>
+                </a>
 
             </div>
         </div>
