@@ -52,13 +52,6 @@ var DAFO = window.DAFO || {};
         toggleShow("lightbox");
     };
 
-    w.toggleAllCheckboxes = function(checkbox) {
-        var inputs = document.getElementsByName("user_id");
-        for (var i = 0; i < inputs.length; ++i) {
-            inputs[i].checked = checkbox.checked;
-        }
-    };
-
     w.show = function(id) {
         var element = document.getElementById(id);
         if (!element.classList.contains('show')) {
@@ -148,6 +141,12 @@ var DAFO = window.DAFO || {};
                 var newElement = document.getElementById(id);
                 newElement.classList.add(addClass);
             });
+        }).on("click", "#checkbox_all", function () {
+            var checkbox = $(this)[0];
+            var inputs = document.getElementsByName("user_id");
+            for (var i = 0; i < inputs.length; ++i) {
+                inputs[i].checked = checkbox.checked;
+            }
         });
 
         function toggle_order_passworduser(order_value) {
