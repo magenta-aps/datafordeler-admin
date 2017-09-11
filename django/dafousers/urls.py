@@ -48,4 +48,7 @@ urlpatterns = [
     url(r'^ajax/update_passworduser_queryset/$',
         dafo_views.update_passworduser_queryset,
         name='update_passworduser_queryset'),
+    url(r'^ajax/update_passworduser/$',
+        dafo_views.update_passworduser,
+        name='update_passworduser'),
 ]
