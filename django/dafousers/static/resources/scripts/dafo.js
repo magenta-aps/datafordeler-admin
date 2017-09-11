@@ -138,6 +138,44 @@ var DAFO = window.DAFO || {};
             }
 
         });
+
+        $(".content").on("click", ".ordering", function () {
+            var element = $(this)[0].children[0];
+            var id = element.id;
+            var order = id.split("-")[1];
+            toggle_order_passworduser(order).then(function(isDescending){
+                var addClass = isDescending ? "desc" : "asc";
+                var newElement = document.getElementById(id);
+                newElement.classList.add(addClass);
+            });
+        });
+
+        function toggle_order_passworduser(order_value) {
+            var key = "order";
+            var element = document.getElementById(key);
+            var order = element.value;
+            var isDescending = order === order_value;
+            var query_value = (isDescending ? "-" : "") + order_value;
+            var query = key + "=" + query_value;
+            return update_passworduser_queryset(query).then(function(response){
+                element.value = query_value;
+                return isDescending;
+            });
+        }
+
+        function update_passworduser_queryset(query) {
+            return update_call("update_passworduser_queryset", query);
+        }
+
+        function update_call(call, query) {
+            return $.ajax({
+                url: "/ajax/" + call + "/?" + query,
+                success: function(result){
+                    var body = $('.' + call + "_body")[0];
+                    body.innerHTML = result;
+                }
+            });
+        }
     });
 
 })(django.jQuery, window, DAFO);

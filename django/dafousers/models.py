@@ -361,6 +361,9 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     def __unicode__(self):
         return unicode(self.name)
 
+    def get_absolute_url(self):
+        return reverse('dafousers:passworduser-list')
+
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser

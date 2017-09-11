@@ -3,10 +3,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, UpdateView
+from django.views.generic import View, TemplateView, UpdateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
 from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -34,7 +33,7 @@ class LoginRequiredMixin(object):
 
 
 class PasswordUserCreate(LoginRequiredMixin, CreateView):
-    template_name = 'dafousers/passworduser-create.html'
+    template_name = 'dafousers/passworduser/add.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
 
@@ -66,7 +65,7 @@ class PasswordUserCreate(LoginRequiredMixin, CreateView):
 
 
 class PasswordUserList(LoginRequiredMixin, ListView):
-    template_name = 'dafousers/passworduser-list.html'
+    template_name = 'dafousers/passworduser/list.html'
     model = models.PasswordUser
 
     def get_context_data(self,**kwargs):
@@ -85,11 +84,16 @@ class PasswordUserList(LoginRequiredMixin, ListView):
             context['object_list'] = models.PasswordUser.objects.filter(status=constants.STATUS_DEACTIVATED)
         else:
             context['object_list'] = models.PasswordUser.objects.all()
-        context['object_list'] = context['object_list'].order_by(context['order'])
+
+        if context['order'] == "name":
+            context['object_list'] = context['object_list'].order_by("givenname", "lastname")
+        elif context['order'] == "-name":
+            context['object_list'] = context['object_list'].order_by("-givenname", "-lastname")
+
         return context
 
     def get_order(self):
-        return self.request.GET.get('order', 'givenname')
+        return self.request.GET.get('order', 'name')
 
     def get_filter(self):
         return self.request.GET.get('filter', '')
@@ -138,7 +142,7 @@ class PasswordUserList(LoginRequiredMixin, ListView):
 
 
 class PasswordUserHistory(LoginRequiredMixin, ListView):
-    template_name = 'dafousers/passworduser-history.html'
+    template_name = 'dafousers/passworduser/history.html'
     model = models.PasswordUserHistory
 
     def get_context_data(self, **kwargs):
@@ -150,7 +154,7 @@ class PasswordUserHistory(LoginRequiredMixin, ListView):
 
 
 class PasswordUserEdit(LoginRequiredMixin, UpdateView):
-    template_name = 'dafousers/passworduser-edit.html'
+    template_name = 'dafousers/passworduser/edit.html'
     model = models.PasswordUser
     form_class = forms.PasswordUserForm
     success_url = 'user/list/'
@@ -163,9 +167,6 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
 
-        userId = models.UserIdentification(user_id=form.instance.email)
-        userId.save()
-        form.instance.identified_user = userId
         if form.cleaned_data['password'] != "*":
             salt, encrypted_password = form.instance.generate_encrypted_password_and_salt(form.cleaned_data['password'])
             form.instance.password_salt = salt
@@ -187,6 +188,41 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
             action = request.POST.get('action')
             if action == '_goto_history':
                 return HttpResponseRedirect(reverse('dafousers:passworduser-history', kwargs={"pk": self.object.id}))
+            elif action == '_save':
+                return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+        else:
+            return result
+
+
+class CertificateUserCreate(LoginRequiredMixin, CreateView):
+    template_name = 'dafousers/certificateuser/add.html'
+    form_class = forms.CertificateUserForm
+    model = models.CertificateUser
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+
+        user_id = models.UserIdentification(user_id=form.instance.contact_email)
+        user_id.save()
+        form.instance.identified_user = user_id
+
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.instance.user_profiles = form.cleaned_data['user_profiles']
+        form.instance.certificates = form.cleaned_data['certificates']
+
+        return super(CertificateUserCreate, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        result = super(CreateView, self).post(request, *args, **kwargs)
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            action = request.POST.get('action')
+            if action == '_addanother':
+                return HttpResponseRedirect(reverse('dafousers:certificateuser-add'))
             elif action == '_save':
                 return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
         else:
@@ -239,3 +275,25 @@ def search_user_profile(request):
         })
 
     return render(request, 'search-autocomplete.html', {'object_list': result})
+
+
+def update_passworduser_queryset(request):
+    filter = request.GET.get('filter', None)
+    order = request.GET.get('order', None)
+
+    # If a filter param is passed, we use it to filter
+    if filter:
+        password_users = models.PasswordUser.objects.filter(status=filter)
+    else:
+        password_users = models.PasswordUser.objects.all()
+
+    # If a order param is passed, we use it to order
+    if order:
+        if order == "name":
+            password_users = password_users.order_by("givenname", "lastname")
+        elif order == "-name":
+            password_users = password_users.order_by("-givenname", "-lastname")
+        else:
+            password_users = password_users.order_by(order)
+
+    return render(request, 'dafousers/passworduser/table.html', {'object_list': password_users})

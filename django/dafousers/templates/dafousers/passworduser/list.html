@@ -104,50 +104,9 @@
 
         </div>
 
-        <table>
-            <tr>
-                <td>
-                    <input class="checkbox" type="checkbox" id="checkbox_all" onclick="toggleAllCheckboxes(this)">
-                </td>
-                <td class="ordering {% if order == 'givenname' %}asc{% elif order == '-givenname' %}desc{% endif %}">
-                    <div onclick="submitForm('order', '{% if order == 'givenname' %}-{% endif %}givenname')"
-                         class="{% if order == 'givenname' %}asc{% elif order == '-givenname' %}desc{% endif %}">
-                        Bruger
-                    </div>
-                </td>
-                <td class="ordering">
-                    <div onclick="submitForm('order', '{% if order == 'email' %}-{% endif %}email')"
-                         class="{% if order == 'email' %}asc{% elif order == '-email' %}desc{% endif %}">
-                        Email
-                    </div>
-                </td>
-                <td class="ordering">
-                    <div onclick="submitForm('order', '{% if order == 'organisation' %}-{% endif %}organisation')"
-                         class="{% if order == 'organisation' %}asc{% elif order == '-organisation' %}desc{% endif %}">
-                        Arbejdssted
-                    </div>
-                   </td>
-                <td class="ordering">
-                    <div onclick="submitForm('order', '{% if order == 'status' %}-{% endif %}status')"
-                         class="{% if order == 'status' %}asc{% elif order == '-status' %}desc{% endif %}">
-                        Status
-                    </div>
-                </td>
-            </tr>
-            {% for user in object_list %}
-                <tr>
-                    <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user.id }}"
-                               value="{{ user.id }}"></td>
-                    <td class="txtdata">
-                        <a href="{% url 'dafousers:passworduser-edit' user.id %}">
-                        {{ user.givenname }} {{ user.lastname }}</a>
-                    </td>
-                    <td class="txtdata">{{ user.email }}</td>
-                    <td class="txtdata">{{ user.organisation }}</td>
-                    <td class="txtdata">{{ user.get_status_display }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+        <div class="update_passworduser_queryset_body">
+            {% include 'dafousers/passworduser/table.html' %}
+        </div>
 
         <input style="display:none;" id="order" name="order" value={{ order }} >
         <input style="display:none;" id="filter" name="filter" value={{ filter }} >
