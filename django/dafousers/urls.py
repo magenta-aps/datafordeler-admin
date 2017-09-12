@@ -48,6 +48,15 @@ urlpatterns = [
         name='update_certificateuser'),
 
     # ORGANISATION
+    url(r'organisation/(?P<pk>[0-9]+)/$',
+        dafo_views.IdentityProviderAccountEdit.as_view(),
+        name='identityprovideraccount-edit'),
+    url(r'organisation/(?P<pk>[0-9]+)/history/$',
+        dafo_views.IdentityProviderAccountHistory.as_view(),
+        name='identityprovideraccount-history'),
+    url(r'organisation/add/$',
+        dafo_views.IdentityProviderAccountCreate.as_view(),
+        name='identityprovideraccount-add'),
     url(r'organisation/list/$',
         dafo_views.IdentityProviderAccountList.as_view(),
         name='identityprovideraccount-list'),

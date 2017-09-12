@@ -430,6 +430,40 @@ def get_certificateuser_queryset(filter, order):
     return certificate_users
 
 
+class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
+    template_name = 'dafousers/identityprovideraccount/add.html'
+    form_class = forms.IdentityProviderAccountForm
+    model = models.IdentityProviderAccount
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+
+        user_id = models.UserIdentification(user_id=form.instance.contact_email)
+        user_id.save()
+        form.instance.identified_user = user_id
+
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.instance.user_profiles = form.cleaned_data['user_profiles']
+
+        return super(IdentityProviderAccountCreate, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        result = super(CreateView, self).post(request, *args, **kwargs)
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            action = request.POST.get('action')
+            if action == '_addanother':
+                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-add'))
+            elif action == '_save':
+                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-list'))
+        else:
+            return result
+
+
 class IdentityProviderAccountList(LoginRequiredMixin, ListView):
     template_name = 'dafousers/identityprovideraccount/list.html'
     model = models.IdentityProviderAccount
@@ -442,6 +476,53 @@ class IdentityProviderAccountList(LoginRequiredMixin, ListView):
         context['order'] = ''
         context['object_list'] = get_identityprovideraccount_queryset(context['filter'], context['order'])
         return context
+
+
+class IdentityProviderAccountHistory(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/identityprovideraccount/history.html'
+    model = models.IdentityProviderAccountHistory
+
+    def get_context_data(self, **kwargs):
+        context = super(IdentityProviderAccountHistory, self).get_context_data(**kwargs)
+        pk = self.kwargs['pk']
+        context['identityprovider_account_id'] = pk
+        context['history'] = models.IdentityProviderAccountHistory.objects.filter(
+            entity=models.IdentityProviderAccount.objects.get(pk=pk)
+        ).order_by("-updated")
+        return context
+
+
+class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
+    template_name = 'dafousers/identityprovideraccount/edit.html'
+    model = models.IdentityProviderAccount
+    form_class = forms.IdentityProviderAccountForm
+    success_url = 'identityprovideraccount/list/'
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(IdentityProviderAccountEdit, self).get_form_kwargs(**kwargs)
+        kwargs['pk'] = self.kwargs.get('pk')
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+        self.object = form.save(commit=False)
+        form.instance.user_profiles = form.cleaned_data['user_profiles']
+
+        return super(IdentityProviderAccountEdit, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        action = request.POST.get('action')
+        if action == '_save':
+            result = super(IdentityProviderAccountEdit, self).post(request, *args, **kwargs)
+            if form.is_valid():
+                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-list'))
+            else:
+                print "Error saving IdentityProviderAccount."
+                print form.errors
+                return result
 
 
 def update_identityprovideraccount(request):
@@ -478,14 +559,6 @@ def get_identityprovideraccount_queryset(filter, order):
 
     # If a order param is passed, we use it to order
     if order:
-        if "next_expiration_subject" in order:
-            identityprovider_accounts = identityprovider_accounts.annotate(
-                next_expiration_subject=Min('certificates__subject')
-            )
-        elif "next_expiration" in order:
-            identityprovider_accounts = identityprovider_accounts.annotate(
-                next_expiration=Min('certificates__valid_to')
-            )
         identityprovider_accounts = identityprovider_accounts.order_by(order)
     return identityprovider_accounts
 

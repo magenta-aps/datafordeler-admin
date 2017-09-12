@@ -473,6 +473,9 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
     def __unicode__(self):
         return unicode(self.name)
 
+    def get_absolute_url(self):
+        return reverse('dafousers:identityprovideraccount-list')
+
     def save(self, *args, **kwargs):
         result = super(IdentityProviderAccount, self).save(*args, **kwargs)
 

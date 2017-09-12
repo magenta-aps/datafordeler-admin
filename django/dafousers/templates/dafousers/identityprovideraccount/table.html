@@ -5,7 +5,7 @@
         </td>
 
         <td class="ordering">
-            <div id="order-Navn">Navn</div>
+            <div id="order-name">Navn</div>
         </td>
         <td class="ordering">
             <div id="order-next_expiration">Næste udløbsdato</div>
@@ -17,7 +17,7 @@
             <div id="order-contact_email">E-mailadresse på kontaktperson</div>
         </td>
         <td class="ordering">
-            <div id="order-next_expiration_subject">Certifikat subjekt</div>
+            <div id="order-idp_type">IdP type</div>
         </td>
         <td class="ordering">
             <div id="order-status">Status</div>
@@ -28,13 +28,13 @@
             <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ organisation.id }}"
                        value="{{ organisation.id }}"></td>
             <td class="txtdata">
-                <a href="{% url 'dafousers:certificateuser-edit' organisation.id %}">
-                {{ organisation.Navn }}</a>
+                <a href="{% url 'dafousers:identityprovideraccount-edit' organisation.id %}">
+                {{ organisation.name }}</a>
             </td>
-            <td class="txtdata">{{ organisation.latest_certificate.valid_to }}</td>
+            <td class="txtdata">{{ organisation.next_expiration }}</td>
             <td class="txtdata">{{ organisation.contact_name }}</td>
             <td class="txtdata">{{ organisation.contact_email }}</td>
-            <td class="txtdata">{{ organisation.latest_certificate.subject }}</td>
+            <td class="txtdata">{{ organisation.get_idp_type_display }}</td>
             <td class="txtdata">{{ organisation.get_status_display }}</td>
         </tr>
     {% endfor %}

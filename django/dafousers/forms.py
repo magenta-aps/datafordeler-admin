@@ -60,6 +60,34 @@ class CertificateUserForm(forms.ModelForm):
             super(CertificateUserForm, self).__init__(*args, **kwargs)
 
 
+class IdentityProviderAccountForm(forms.ModelForm):
+
+    user_profiles = forms.ModelMultipleChoiceField(
+        queryset=models.UserProfile.objects.all(),
+        label="brugerprofiler",
+        required=False,
+        widget=widgets.FilteredSelectMultiple(
+            "user_profiles",
+            False,
+            attrs={'rows': '6'}
+        ),
+    )
+
+    class Meta:
+        model = models.IdentityProviderAccount
+        fields = ['name', 'idp_entity_id', 'idp_type', 'metadata_xml_file', 'metadata_xml', 'organisation',
+                  'contact_name', 'contact_email', 'userprofile_attribute', 'userprofile_attribute_format',
+                  'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value']
+
+    def __init__(self, *args, **kwargs):
+        if 'pk' in kwargs:
+            self.pk = kwargs.pop('pk')
+            super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
+            self.initial['user_profiles'] = models.IdentityProviderAccount.objects.get(id=self.pk).user_profiles.all()
+        else:
+            super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
+
+
 class UserProfileForm(forms.ModelForm):
 
     system_roles = forms.ModelMultipleChoiceField(

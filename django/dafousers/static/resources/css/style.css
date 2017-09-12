@@ -1048,6 +1048,7 @@ input {
 
 .row_field {
     width: 244px;
+    min-height: 16px;
     float: left;
     margin-right: 34px;
     font-size: 13px;
