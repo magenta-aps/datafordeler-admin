@@ -137,7 +137,7 @@ var DAFO = window.DAFO || {};
             });
         }
 
-        $(".search-term").on("change paste keyup focus", function () {
+        $(".search-term").on("paste keyup focus", function () {
             var search_term = $(this).val();
             var id = this.id;
 

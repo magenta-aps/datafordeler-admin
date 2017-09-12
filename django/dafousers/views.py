@@ -705,7 +705,7 @@ def search_org_user_system(request):
     search_term = request.GET.get('search_term', None)
     result = []
     if search_term == "":
-        return render(request, 'org_user_system_auto.html', {'object_list': result})
+        return render(request, 'search-autocomplete.html', {'object_list': result})
 
     users = models.PasswordUser.objects.search(search_term)
     organisations = models.IdentityProviderAccount.objects.search(search_term)
@@ -714,19 +714,19 @@ def search_org_user_system(request):
     for user in users:
         result.append({
             "text": "Bruger: " + user.givenname + " " + user.lastname,
-            "url": reverse('dafousers:passworduser-details', kwargs={"pk": user.id})
+            "url": reverse('dafousers:passworduser-edit', kwargs={"pk": user.id})
         })
 
     for organisation in organisations:
         result.append({
             "text": "Organisation: " + organisation.name,
-            "url": reverse('dafousers:passworduser-details', kwargs={"pk": organisation.id})
+            "url": reverse('dafousers:identityprovideraccount-edit', kwargs={"pk": organisation.id})
         })
 
     for system in systems:
         result.append({
             "text": "System: " + system.name,
-            "url": reverse('dafousers:passworduser-details', kwargs={"pk": system.id})
+            "url": reverse('dafousers:certificateuser-edit', kwargs={"pk": system.id})
         })
 
     return render(request, 'search-autocomplete.html', {'object_list': result})
@@ -743,7 +743,7 @@ def search_user_profile(request):
     for user_profile in user_profiles:
         result.append({
             "text": user_profile.name,
-            "url": reverse('dafousers:passworduser-details', kwargs={"pk": user_profile.id})
+            "url": reverse('dafousers:userprofile-edit', kwargs={"pk": user_profile.id})
         })
 
     return render(request, 'search-autocomplete.html', {'object_list': result})

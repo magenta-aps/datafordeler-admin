@@ -381,7 +381,7 @@ CertificateUserHistory = HistoryForEntity.build_from_entity_class(
 class IdentityProviderAccountQuerySet(models.QuerySet):
     def search(self, term):
         return self.filter(
-            models.Q(Navn__contains=term)
+            models.Q(name__contains=term)
         )
 
 
