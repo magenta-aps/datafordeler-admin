@@ -43,24 +43,21 @@
                 <div class="menu">
                     <div onclick="toggleShow('adgang')" class="dropbtn">Adgang</div>
                     <span id="adgang" class="dropdown-content blue">
-                        <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Opret system</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér organisation</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér bruger</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér system</a>
+                        <a href="{% url 'dafousers:identityprovideraccount-add' %}">Opret organisation</a>
+                        <a href="{% url 'dafousers:passworduser-add' %}">Opret bruger</a>
+                        <a href="{% url 'dafousers:certificateuser-add' %}">Opret system</a>
+                        <a href="{% url 'dafousers:identityprovideraccount-list' %}">Liste over organisationer</a>
+                        <a href="{% url 'dafousers:passworduser-list' %}">Liste over brugere</a>
+                        <a href="{% url 'dafousers:certificateuser-list' %}">Liste over systemer</a>
                     </span>
                 </div>
 
                 <div class="menu">
                     <div onclick="toggleShow('konfiguration')" class="dropbtn">Konfiguration</div>
                     <span id="konfiguration" class="dropdown-content blue">
-                        <a href="{% url 'dafousers:frontpage' %}">Opret organisation</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Opret bruger</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Opret system</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér organisation</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér bruger</a>
-                        <a href="{% url 'dafousers:frontpage' %}">Administrér system</a>
+                        <a href="">Administrér registre</a>
+                        <a href="{% url 'dafousers:userprofile-list' %}">Liste over brugerprofiler</a>
+                        <a href="{% url 'dafousers:userprofile-add' %}">Opret brugerprofil</a>
                     </span>
                 </div>
                 {% endif %}
