@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
 import urllib
@@ -8,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import _get_login_redirect_url
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -20,6 +22,7 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from dafousers import models, model_constants, forms
+from dafousers.auth import update_user_auth_info
 
 
 # Create your views here.
@@ -34,9 +37,65 @@ class FrontpageView(TemplateView):
 class LoginRequiredMixin(object):
     """Include to require login."""
 
+    needs_userprofiles = None
+    needs_userprofiles_any = None
+    needs_system_roles = None
+    needs_system_roles_any = None
+
+    def check_userprofiles(self):
+        # If needs_userprofiles is defined check that the user has all
+        # the needed permissions
+        if self.needs_userprofiles is not None:
+            match_nr = self.authinfo.user_profiles.filter(
+                name__in=self.needs_userprofiles
+            ).count()
+            if match_nr < len(self.needs_userprofiles):
+                raise PermissionDenied(
+                    "User does not have all neccessary userprofiles: %s" % (
+                        self.needs_userprofiles
+                    )
+                )
+        # If needs_userprofiles_any is defined check that the user has any
+        # of the specified_permissions
+        if self.needs_userprofiles_any is not None:
+            if not self.authinfo.user_profiles.filter(
+                name__in=self.needs_userprofiles_any
+            ).exists():
+                raise PermissionDenied(
+                    "User does not have any of the needed userprofiles: %s" % (
+                        self.needs_userprofiles_any
+                    )
+                )
+
+    def check_system_roles(self):
+        if self.needs_system_roles is not None:
+            match_nr = self.authinfo.system_roles.filter(
+                role_name__in=self.needs_system_roles
+            ).count()
+            if match_nr < len(self.needs_system_roles):
+                raise PermissionDenied(
+                    "User does not have all neccessary system roles: %s" % (
+                        self.needs_system_roles
+                    )
+                )
+        if self.needs_system_roles_any is not None:
+            if not self.authinfo.system_roles.filter(
+                role_name__in=self.needs_system_roles_any
+            ).exists():
+                raise PermissionDenied(
+                    "User does not have any of the needed system roles: %s" % (
+                        self.needs_system_roles_any
+                    )
+                )
+
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         """Check for login and dispatch the view."""
+
+        self.authinfo = update_user_auth_info(self.request)
+        self.check_userprofiles()
+        self.check_system_roles()
+
         return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
@@ -70,6 +129,9 @@ class LoginView(TemplateView):
             form = self.authentication_form(request, data=request.POST)
             if form.is_valid():
                 auth_login(request, form.get_user())
+                # Delete any lingering token from a previous login
+                if "token" in request.session:
+                    del request.session["token"]
                 return HttpResponseRedirect(_get_login_redirect_url(
                         request, redirect_to
                 ))
@@ -114,7 +176,7 @@ class LoginView(TemplateView):
                     settings.IDP_SSOPROXY_URL + '?' +
                     urllib.urlencode((
                         ('dafo_ssoproxy_url', request.build_absolute_uri()),
-                        ('dafo_ssoproxy_idp', idp.name),
+                        ('dafo_ssoproxy_idp', idp.idp_entity_id),
                         ('dafo_ssoproxy_returnparam', 'token')
                     ))
                 )
@@ -129,7 +191,14 @@ class LoginView(TemplateView):
             user = authenticate(token=token)
             if user is not None:
                 auth_login(request, user)
-                request.session['user_token'] = token
+                request.session['token'] = token
+                redirect_to = request.POST.get(
+                    self.redirect_field_name,
+                    request.GET.get(self.redirect_field_name, '')
+                )
+                return HttpResponseRedirect(_get_login_redirect_url(
+                        request, redirect_to
+                ))
 
         # Dispatch to Django login to get redirect or context from there
         result = self.dispatch_to_django_auth(request)
@@ -140,10 +209,11 @@ class LoginView(TemplateView):
             return result
 
 
-class PasswordUserCreate(CreateView):
+class PasswordUserCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/passworduser-create.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
+    needs_system_roles_any = ["DAFO Serviceudbyder", "DAFO Administrator"]
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username

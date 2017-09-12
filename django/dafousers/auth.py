@@ -21,10 +21,30 @@ class DafoUsersAuthBackend(object):
     def authenticate(self, username=None, password=None, token=None):
         if token is not None:
             try:
-                TokenVerifier(token).verify()
+                verifier = TokenVerifier(token)
+                verifier.verify()
             except Exception as e:
-                print e
+                print "Failed to verify token: %s" % e
                 raise e
+            try:
+                # Users from external IdPs will all reference a Django
+                # user that matches the UserIdentification that is used for
+                # the NameQualifier on the NameID in the token.
+                if (verifier.namequalifier is not None and
+                        verifier.namequalifier != "<none>"):
+                    username = "[%s]" % verifier.namequalifier
+                else:
+                    username = verifier.get_username()
+                djangouser = User.objects.get(username=username)
+            except User.DoesNotExist:
+                djangouser = User(
+                    username=username,
+                    email=verifier.email,
+                )
+                djangouser.save()
+
+            return djangouser
+
         try:
             pwuser = PasswordUser.objects.get(email=username)
             if not pwuser.check_password(password):
@@ -60,22 +80,73 @@ class DafoUsersAuthBackend(object):
         return True
 
 
-def get_auth_info(request):
-    if hasattr(request, '_dafoauthinfo'):
-        return request._dafoauthinfo
+def decode_and_inflate_token(token):
+    try:
+        deflated_token = b64decode(token)
+        assertion_string = zlib.decompress(
+            deflated_token,
+            # Negative window arugment tells zlib to skip headers, which
+            # is needed to parse correctly formatted tokens.
+            -15
+        )
+        return assertion_string
+    except Exception as e:
+        raise PermissionDenied(
+            "Could not decode and inflate token: %s" % e
+        )
+
+
+def update_user_auth_info(request):
 
     info = None
 
-    # TODO: Fetch info from token data if authenticated with saml2
+    if not hasattr(request, 'user') or not request.user.is_authenticated():
+        return info
 
-    if hasattr(request, 'user') and request.user.is_authenticated():
+    if hasattr(request.user, 'dafoauthinfo'):
+        return request.user.dafoauthinfo
+
+    # If session contains a DAFO token, go with whatever data is in that
+    token = request.session.get("token")
+    if token is not None:
+        assertion_string = decode_and_inflate_token(token)
+        try:
+            assertion = ElementTree.fromstring(assertion_string)
+        except Exception as e:
+            raise PermissionDenied("Could not parse token: %s" % e)
+
+        result = []
+        try:
+            attr_statement = assertion.find(
+                "{urn:oasis:names:tc:SAML:2.0:assertion}"
+                "AttributeStatement"
+            )
+            for attribute in attr_statement.findall(
+                "{urn:oasis:names:tc:SAML:2.0:assertion}"
+                "Attribute"
+            ):
+                attr_name = attribute.get("Name", "")
+                if attr_name == "https://data.gl/claims/userprofile":
+                    attr_value = attribute.find(
+                        "{urn:oasis:names:tc:SAML:2.0:assertion}"
+                        "AttributeValue"
+                    )
+                    result.append(unicode(attr_value.text))
+        except Exception as e:
+            raise PermissionDenied(
+                "Could not get userprofiles from token: %s" % e
+            )
+        info = DafoAuthInfo(UserProfile.objects.filter(name__in=result))
+    else:
+        # Try looking up a passworduser
         try:
             pwuser = PasswordUser.objects.get(email=request.user.email)
             info = DafoAuthInfo(pwuser.user_profiles.all())
         except PasswordUser.DoesNotExist:
             info = None
 
-    request._dafoauthinfo = info
+    request.user.dafoauthinfo = info
+
     return info
 
 
@@ -128,23 +199,14 @@ class DafoAuthInfo(object):
 
 class TokenVerifier(object):
 
-    assertion = None
-    assertion_string = None
-
     def __init__(self, incoming_token):
+        self.email = None
+        self.namequalifier = None
+        self.assertion_string = decode_and_inflate_token(incoming_token)
         try:
-            deflated_token = b64decode(incoming_token)
-            self.assertion_string = zlib.decompress(
-                deflated_token,
-                # Negative window arugment tells zlib to skip headers, which
-                # is needed to parse correctly formatted tokens.
-                -15
-            )
             self.assertion = ElementTree.fromstring(self.assertion_string)
         except Exception as e:
-            raise PermissionDenied(
-                "Could not parse incoming token as XML: %s" % e
-            )
+            raise PermissionDenied("Could not parse token: %s" % e)
 
     def verify(self):
         self.verify_token_age()
@@ -154,6 +216,12 @@ class TokenVerifier(object):
         self.verify_signature_and_trust()
 
         return self.assertion
+
+    def get_username(self):
+        return "[%s]" % "]@[".join([
+            self.email if self.email is not None else "<none>",
+            self.namequalifier if self.namequalifier is not None else "<none>"
+        ])
 
     def parse_datetime(self, text):
         unawere = timezone.datetime.strptime(
@@ -227,6 +295,7 @@ class TokenVerifier(object):
         if nameID is None:
             raise PermissionDenied("No NameID defined in token")
         self.email = nameID.text
+        self.namequalifier = nameID.get("NameQualifier")
         try:
             subjectconfdata = subject.find(
                 "{urn:oasis:names:tc:SAML:2.0:assertion}"

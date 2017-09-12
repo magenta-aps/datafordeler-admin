@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.urls import reverse
 from dafousers import model_constants
+from dafousers.dbfixes import fix_sql_server_schemas
 from xml.etree import ElementTree
 
 import base64
@@ -226,6 +227,7 @@ class AccessAccount(models.Model):
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:
+        # db_table = 'dbo].[dafousers_passworduser'
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
 
@@ -760,3 +762,6 @@ class UpdateTimestamps(models.Model):
             )
         item.updated = timezone.now()
         item.save()
+
+
+fix_sql_server_schemas()
