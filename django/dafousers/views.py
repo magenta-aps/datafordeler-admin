@@ -332,7 +332,7 @@ class CertificateUserList(LoginRequiredMixin, ListView):
         context['action'] = ""
         context['user_profiles'] = models.UserProfile.objects.all()
         context['filter'] = ''
-        context['order'] = ''
+        context['order'] = 'name'
         context['object_list'] = get_certificateuser_queryset(context['filter'], context['order'])
         return context
 
@@ -473,7 +473,7 @@ class IdentityProviderAccountList(LoginRequiredMixin, ListView):
         context['action'] = ""
         context['user_profiles'] = models.UserProfile.objects.all()
         context['filter'] = ''
-        context['order'] = ''
+        context['order'] = 'name'
         context['object_list'] = get_identityprovideraccount_queryset(context['filter'], context['order'])
         return context
 
@@ -604,7 +604,7 @@ class UserProfileList(LoginRequiredMixin, ListView):
         context['system_roles'] = models.SystemRole.objects.all()
         context['area_restrictions'] = models.AreaRestriction.objects.all()
         context['filter'] = ''
-        context['order'] = ''
+        context['order'] = 'name'
         context['object_list'] = get_userprofile_queryset(context['filter'], context['order'])
         return context
 
