@@ -210,10 +210,9 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
 class CertificateUserList(LoginRequiredMixin, ListView):
     template_name = 'dafousers/certificateuser/list.html'
     model = models.CertificateUser
-    form_class = forms.CertificateUserForm
 
-    def get_context_data(self,**kwargs):
-        context = super(CertificateUserList,self).get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(CertificateUserList, self).get_context_data(**kwargs)
         context['action'] = ""
         context['user_profiles'] = models.UserProfile.objects.all()
         context['filter'] = ''
@@ -309,6 +308,58 @@ def get_certificateuser_queryset(filter, order):
             )
         certificate_users = certificate_users.order_by(order)
     return certificate_users
+
+
+class IdentityProviderAccountList(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/identityprovideraccount/list.html'
+    model = models.IdentityProviderAccount
+
+    def get_context_data(self, **kwargs):
+        context = super(IdentityProviderAccountList, self).get_context_data(**kwargs)
+        context['action'] = ""
+        context['user_profiles'] = models.UserProfile.objects.all()
+        context['filter'] = ''
+        context['order'] = ''
+        context['object_list'] = get_identityprovideraccount_queryset(context['filter'], context['order'])
+        return context
+
+
+def update_identityprovideraccount(request):
+
+    ids = request.POST.getlist('user_id')
+    organisations = models.IdentityProviderAccount.objects.filter(id__in=ids)
+    action = request.POST.get('action')
+    if '_status' in action:
+        parts = action.split("_")
+        status = parts[2]
+        organisations.update(status=status)
+    elif action == '_add_user_profiles':
+        user_profiles_ids = request.POST.getlist('user_profiles')
+        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
+        for user_profile in user_profiles:
+            for organisation in organisations:
+                organisation.user_profiles.add(user_profile)
+    return HttpResponse("Success")
+
+
+def update_identityprovideraccount_queryset(request):
+    filter = request.GET.get('filter', None)
+    order = request.GET.get('order', None)
+    identityprovider_accounts = get_identityprovideraccount_queryset(filter, order)
+    return render(request, 'dafousers/identityprovideraccount/table.html', {'object_list': identityprovider_accounts})
+
+
+def get_identityprovideraccount_queryset(filter, order):
+    # If a filter param is passed, we use it to filter
+    if filter:
+        identityprovider_accounts = models.IdentityProviderAccount.objects.filter(status=filter)
+    else:
+        identityprovider_accounts = models.IdentityProviderAccount.objects.all()
+
+    # If a order param is passed, we use it to order
+    if order:
+        identityprovider_accounts = identityprovider_accounts.order_by(order)
+    return identityprovider_accounts
 
 
 def search_org_user_system(request):

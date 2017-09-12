@@ -420,7 +420,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
     )
 
     def __unicode__(self):
-        return unicode(self.name)
+        return unicode(self.Navn)
 
 
 IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(

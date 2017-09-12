@@ -32,6 +32,11 @@ urlpatterns = [
         dafo_views.CertificateUserList.as_view(),
         name='certificateuser-list'),
 
+    # ORGANISATION
+    url(r'organisation/list/$',
+        dafo_views.IdentityProviderAccountList.as_view(),
+        name='identityprovideraccount-list'),
+
     url(r'frontpage/$',
         dafo_views.FrontpageView.as_view(),
         name="frontpage"),
