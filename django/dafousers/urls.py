@@ -19,6 +19,12 @@ urlpatterns = [
         name='passworduser-list'),
 
     # SYSTEM
+    url(r'system/(?P<pk>[0-9]+)/$',
+        dafo_views.CertificateUserEdit.as_view(),
+        name='certificateuser-edit'),
+    url(r'system/(?P<pk>[0-9]+)/history/$',
+        dafo_views.CertificateUserHistory.as_view(),
+        name='certificateuser-history'),
     url(r'system/add/$',
         dafo_views.CertificateUserCreate.as_view(),
         name='certificateuser-add'),

@@ -309,16 +309,14 @@ class EntityWithCertificate(models.Model):
         verbose_name=_(u"E-mailadresse på kontaktperson"),
         blank=False
     )
-    next_expiration = models.DateTimeField(
-        verbose_name=_(u"Næste udløbsdato for certifikat(er)"),
-        blank=True,
-        null=True,
-        default=None
-    )
     certificates = models.ManyToManyField(
         "Certificate",
         verbose_name=_(u"Certifikater")
     )
+
+    @property
+    def latest_certificate(self):
+        return self.certificates.all().order_by("valid_to").first()
 
 
 class CertificateUserQuerySet(models.QuerySet):
@@ -363,10 +361,6 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
 
     def get_absolute_url(self):
         return reverse('dafousers:passworduser-list')
-
-    @property
-    def latest_certificate(self):
-        return self.certificates.all().order_by("-valid_to").first()
 
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
@@ -477,6 +471,9 @@ class Certificate(models.Model):
         null=True,
         blank=True
     )
+
+    class Meta:
+        ordering = ['valid_to']
 
     def save(self, *args, **kwargs):
         # Save once, making sure files are written

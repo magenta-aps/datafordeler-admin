@@ -2,6 +2,7 @@
 
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
+from django.db.models import Min
 from django.utils.decorators import method_decorator
 from django.views.generic import View, TemplateView, UpdateView
 from django.views.generic.edit import CreateView
@@ -187,7 +188,6 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.save()
         form.instance.user_profiles = form.cleaned_data['user_profiles']
-        form.instance.certificates = form.cleaned_data['certificates']
 
         return super(CertificateUserCreate, self).form_valid(form)
 
@@ -209,16 +209,64 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
 
 class CertificateUserList(LoginRequiredMixin, ListView):
     template_name = 'dafousers/certificateuser/list.html'
-    model = models.PasswordUser
+    model = models.CertificateUser
+    form_class = forms.CertificateUserForm
 
     def get_context_data(self,**kwargs):
         context = super(CertificateUserList,self).get_context_data(**kwargs)
         context['action'] = ""
         context['user_profiles'] = models.UserProfile.objects.all()
         context['filter'] = ''
-        context['order'] = 'next_expiration'
+        context['order'] = ''
         context['object_list'] = get_certificateuser_queryset(context['filter'], context['order'])
         return context
+
+
+class CertificateUserHistory(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/certificateuser/history.html'
+    model = models.CertificateUserHistory
+
+    def get_context_data(self, **kwargs):
+        context = super(CertificateUserHistory, self).get_context_data(**kwargs)
+        pk = self.kwargs['pk']
+        context['certificate_user_id'] = pk
+        context['history'] = models.CertificateUserHistory.objects.filter(
+            entity=models.CertificateUser.objects.get(pk=pk)
+        ).order_by("-updated")
+        return context
+
+
+class CertificateUserEdit(LoginRequiredMixin, UpdateView):
+    template_name = 'dafousers/certificateuser/edit.html'
+    model = models.CertificateUser
+    form_class = forms.CertificateUserForm
+    success_url = 'certificateuser/list/'
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(CertificateUserEdit, self).get_form_kwargs(**kwargs)
+        kwargs['pk'] = self.kwargs.get('pk')
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+        self.object = form.save(commit=False)
+        form.instance.user_profiles = form.cleaned_data['user_profiles']
+
+        return super(CertificateUserEdit, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        action = request.POST.get('action')
+        if action == '_save':
+            result = super(CertificateUserEdit, self).post(request, *args, **kwargs)
+            if form.is_valid():
+                return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
+            else:
+                print "Error saving CertificateUser."
+                print form.errors
+                return result
 
 
 def update_certificateuser(request):
@@ -255,8 +303,11 @@ def get_certificateuser_queryset(filter, order):
 
     # If a order param is passed, we use it to order
     if order:
+        if "next_expiration" in order:
+            certificate_users = certificate_users.annotate(
+                next_expiration=Min('certificates__valid_to')
+            )
         certificate_users = certificate_users.order_by(order)
-
     return certificate_users
 
 

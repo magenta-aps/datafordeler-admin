@@ -51,3 +51,10 @@ class CertificateUserForm(forms.ModelForm):
         model = models.CertificateUser
         fields = ['name', 'identification_mode', 'organisation', 'comment', 'contact_name', 'contact_email']
 
+    def __init__(self, *args, **kwargs):
+        if 'pk' in kwargs:
+            self.pk = kwargs.pop('pk')
+            super(CertificateUserForm, self).__init__(*args, **kwargs)
+            self.initial['user_profiles'] = models.CertificateUser.objects.get(id=self.pk).user_profiles.all()
+        else:
+            super(CertificateUserForm, self).__init__(*args, **kwargs)

@@ -26,20 +26,20 @@
             <div id="order-status">Status</div>
         </td>
     </tr>
-    {% for user in object_list %}
+    {% for system in object_list %}
         <tr>
             <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user.id }}"
-                       value="{{ user.id }}"></td>
+                       value="{{ system.id }}"></td>
             <td class="txtdata">
-                <a href="{% url 'dafousers:passworduser-edit' user.id %}">
-                {{ user.name }}</a>
+                <a href="{% url 'dafousers:certificateuser-edit' system.id %}">
+                {{ system.name }}</a>
             </td>
-            <td class="txtdata">{{ user.next_expiration }}</td>
-            <td class="txtdata">{{ user.get_identification_mode_display }}</td>
-            <td class="txtdata">{{ user.contact_name }}</td>
-            <td class="txtdata">{{ user.contact_email }}</td>
-            <td class="txtdata">{{ user.latest_certificate.subject }}</td>
-            <td class="txtdata">{{ user.get_status_display }}</td>
+            <td class="txtdata">{{ system.latest_certificate.valid_to }}</td>
+            <td class="txtdata">{{ system.get_identification_mode_display }}</td>
+            <td class="txtdata">{{ system.contact_name }}</td>
+            <td class="txtdata">{{ system.contact_email }}</td>
+            <td class="txtdata">{{ system.latest_certificate.subject }}</td>
+            <td class="txtdata">{{ system.get_status_display }}</td>
         </tr>
     {% endfor %}
 </table>
