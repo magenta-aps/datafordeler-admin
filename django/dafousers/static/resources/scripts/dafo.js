@@ -117,22 +117,25 @@ var DAFO = window.DAFO || {};
 
     $(document).ready(function() {
 
-        // Set object type
-        $(document).ready(function() {
-            objectType = document.getElementById("object_type").value;
-        });
+        if ($('#object_type').length > 0) {
 
-        $("#list_form").on("submit", function(event){
-            $.ajax({
-                url:"/ajax/update_" + objectType +"/",
-                type:"POST",
-                data: $('form').serialize(),
-                success: function(){
-                    update_object();
-                }
+            // Set object type
+            $(document).ready(function () {
+                objectType = document.getElementById("object_type").value;
             });
-            event.preventDefault();
-        });
+
+            $("#list_form").on("submit", function (event) {
+                $.ajax({
+                    url: "/ajax/update_" + objectType + "/",
+                    type: "POST",
+                    data: $('form').serialize(),
+                    success: function () {
+                        update_object();
+                    }
+                });
+                event.preventDefault();
+            });
+        }
 
         $(".search-term").on("change paste keyup focus", function () {
             var search_term = $(this).val();
