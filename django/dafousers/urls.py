@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.views.decorators.csrf import csrf_exempt
 import dafousers.views as dafo_views
 import django.contrib.auth.views
 
@@ -79,17 +80,20 @@ urlpatterns = [
         dafo_views.update_userprofile,
         name='update_userprofile'),
 
+    # GLOBAL
     url(r'frontpage/$',
-        dafo_views.FrontpageView.as_view(),
+        csrf_exempt(dafo_views.FrontpageView.as_view()),
         name="frontpage"),
     url(r'^$',
         dafo_views.IndexView.as_view(),
         name="index"),
     url(r'^login/',
-        django.contrib.auth.views.login,
-        {'template_name': 'dafousers/login.html', 'redirect_authenticated_user': True},
-        name='login'
-        ),
+        csrf_exempt(dafo_views.LoginView.as_view()),
+        name='login'),
+    url(r'^logout/',
+        django.contrib.auth.views.logout,
+        {'template_name': 'dafousers/logged_out.html'},
+        name='logout'),
 
     # AJAX Calls
     url(r'^ajax/search_org_user_system/$',

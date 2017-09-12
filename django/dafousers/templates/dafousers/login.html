@@ -41,12 +41,26 @@
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input id="submitbutton" name="submitbutton"
+                       class="submitbutton"
                        type="submit" value="Log ind"/>
             </form>
           </div>
           <div id="organisation" class="tab-pane">
             <h3>Organisation login</h3>
-            <p>Some content in menu 1.</p>
+            <p>Vælg den organisation du vil bruge til at logge ind med:</p>
+            <form name="idpform" id="idpform" action="" method="POST">
+                {% csrf_token %}
+                <p>
+                    <select name="idp" id="idpselect">
+                    {% for idp in idps %}
+                        <option value="{{ idp.pk }}">{{ idp.name }}</option>
+                    {% endfor %}
+                    </select>
+                </p>
+                <input id="idpsubmitbutton" name="idpsubmitbutton"
+                       class="submitbutton"
+                       type="submit" value="Log ind"/>
+            </form>
           </div>
           <div id="i_tvivl" class="tab-pane">
             <p>

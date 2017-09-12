@@ -7,4 +7,5 @@ ipython==3.2.3
 Markdown==2.6.8
 #pypiwin32==219
 pyreadline==2.1
+signxml==2.4.0
 sqlparse==0.2.3
