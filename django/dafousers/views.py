@@ -302,7 +302,11 @@ def get_certificateuser_queryset(filter, order):
 
     # If a order param is passed, we use it to order
     if order:
-        if "next_expiration" in order:
+        if "next_expiration_subject" in order:
+            certificate_users = certificate_users.annotate(
+                next_expiration_subject=Min('certificates__subject')
+            )
+        elif "next_expiration" in order:
             certificate_users = certificate_users.annotate(
                 next_expiration=Min('certificates__valid_to')
             )
@@ -358,8 +362,154 @@ def get_identityprovideraccount_queryset(filter, order):
 
     # If a order param is passed, we use it to order
     if order:
+        if "next_expiration_subject" in order:
+            identityprovider_accounts = identityprovider_accounts.annotate(
+                next_expiration_subject=Min('certificates__subject')
+            )
+        elif "next_expiration" in order:
+            identityprovider_accounts = identityprovider_accounts.annotate(
+                next_expiration=Min('certificates__valid_to')
+            )
         identityprovider_accounts = identityprovider_accounts.order_by(order)
     return identityprovider_accounts
+
+
+class UserProfileCreate(LoginRequiredMixin, CreateView):
+    template_name = 'dafousers/userprofile/add.html'
+    form_class = forms.UserProfileForm
+    model = models.UserProfile
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+
+        self.object = form.save(commit=False)
+        self.object.save()
+        form.instance.system_roles = form.cleaned_data['system_roles']
+        form.instance.area_restrictions = form.cleaned_data['area_restrictions']
+
+        return super(UserProfileCreate, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        result = super(CreateView, self).post(request, *args, **kwargs)
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            action = request.POST.get('action')
+            if action == '_addanother':
+                return HttpResponseRedirect(reverse('dafousers:userprofile-add'))
+            elif action == '_save':
+                return HttpResponseRedirect(reverse('dafousers:userprofile-list'))
+        else:
+            return result
+
+
+class UserProfileList(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/userprofile/list.html'
+    model = models.UserProfile
+
+    def get_context_data(self, **kwargs):
+        context = super(UserProfileList, self).get_context_data(**kwargs)
+        context['action'] = ""
+        context['system_roles'] = models.SystemRole.objects.all()
+        context['area_restrictions'] = models.AreaRestriction.objects.all()
+        context['filter'] = ''
+        context['order'] = ''
+        context['object_list'] = get_userprofile_queryset(context['filter'], context['order'])
+        return context
+
+
+class UserProfileHistory(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/userprofile/history.html'
+    model = models.UserProfileHistory
+
+    def get_context_data(self, **kwargs):
+        context = super(UserProfileHistory, self).get_context_data(**kwargs)
+        pk = self.kwargs['pk']
+        context['user_profile_id'] = pk
+        context['history'] = models.UserProfileHistory.objects.filter(
+            entity=models.UserProfile.objects.get(pk=pk)
+        ).order_by("-updated")
+        return context
+
+
+class UserProfileEdit(LoginRequiredMixin, UpdateView):
+    template_name = 'dafousers/userprofile/edit.html'
+    model = models.UserProfile
+    form_class = forms.UserProfileForm
+    success_url = 'userprofile/list/'
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(UserProfileEdit, self).get_form_kwargs(**kwargs)
+        kwargs['pk'] = self.kwargs.get('pk')
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.changed_by = self.request.user.username
+        self.object = form.save(commit=False)
+        form.instance.system_roles = form.cleaned_data['system_roles']
+        form.instance.area_restrictions = form.cleaned_data['area_restrictions']
+
+        return super(UserProfileEdit, self).form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        action = request.POST.get('action')
+        if action == '_save':
+            result = super(UserProfileEdit, self).post(request, *args, **kwargs)
+            if form.is_valid():
+                return HttpResponseRedirect(reverse('dafousers:userprofile-list'))
+            else:
+                print "Error saving UserProfile."
+                print form.errors
+                return result
+
+
+def update_userprofile(request):
+
+    ids = request.POST.getlist('user_id')
+    user_profiles = models.UserProfile.objects.filter(id__in=ids)
+    action = request.POST.get('action')
+    if '_status' in action:
+        parts = action.split("_")
+        status = parts[2]
+        user_profiles.update(status=status)
+    elif action == '_add_system_roles':
+        system_roles_ids = request.POST.getlist('system_roles')
+        system_roles = models.SystemRole.objects.filter(id__in=system_roles_ids)
+        for system_role in system_roles:
+            for user_profile in user_profiles:
+                user_profile.system_roles.add(system_role)
+    elif action == '_add_area_restrictions':
+        area_restrictions_ids = request.POST.getlist('area_restrictions')
+        area_restrictions = models.AreaRestriction.objects.filter(id__in=area_restrictions_ids)
+        for area_restriction in area_restrictions:
+            for user_profile in user_profiles:
+                user_profile.area_restrictions.add(area_restriction)
+    return HttpResponse("Success")
+
+
+def update_userprofile_queryset(request):
+    filter = request.GET.get('filter', None)
+    order = request.GET.get('order', None)
+    user_profiles = get_userprofile_queryset(filter, order)
+    return render(request, 'dafousers/userprofile/table.html', {'object_list': user_profiles})
+
+
+def get_userprofile_queryset(filter, order):
+    # If a filter param is passed, we use it to filter
+    if filter:
+        user_profiles = models.UserProfile.objects.filter(status=filter)
+    else:
+        user_profiles = models.UserProfile.objects.all()
+
+    # If a order param is passed, we use it to order
+    if order:
+        user_profiles = user_profiles.order_by(order)
+    return user_profiles
 
 
 def search_org_user_system(request):

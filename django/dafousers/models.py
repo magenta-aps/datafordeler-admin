@@ -552,7 +552,7 @@ class UserProfileQuerySet(models.QuerySet):
         )
 
 
-class UserProfile(models.Model):
+class UserProfile(EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"brugerprofil")
@@ -581,6 +581,9 @@ class UserProfile(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+
+UserProfileHistory = HistoryForEntity.build_from_entity_class(UserProfile)
 
 
 class SystemRole(models.Model):
