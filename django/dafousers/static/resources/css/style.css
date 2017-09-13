@@ -1347,16 +1347,20 @@ table {
     margin-bottom: 15px;
 }
 
-tbody tr:nth-child(odd) {
+tr:nth-child(odd) {
     background-color: rgba(242, 242, 242, 1);
 }
 
-tbody tr:first-child {
+tr:first-child {
     font-weight: 600;
 }
 
-tbody tr td.checkbox {
+td.checkbox {
   width: 3em;
+}
+
+td {
+  padding-right: 10px;
 }
 
 .ordering div {
