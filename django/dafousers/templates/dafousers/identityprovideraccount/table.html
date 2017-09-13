@@ -25,8 +25,10 @@
     </tr>
     {% for organisation in object_list %}
         <tr>
-            <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ organisation.id }}"
-                       value="{{ organisation.id }}"></td>
+            <td class="checkbox">
+                <input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ organisation.id }}"
+                       value="{{ organisation.id }}">
+            </td>
             <td class="txtdata">
                 <a href="{% url 'dafousers:identityprovideraccount-edit' organisation.id %}">
                 {{ organisation.name }}</a>

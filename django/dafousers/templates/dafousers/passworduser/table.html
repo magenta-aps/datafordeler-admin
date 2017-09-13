@@ -19,8 +19,10 @@
     </tr>
     {% for user in object_list %}
         <tr>
-            <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user.id }}"
-                       value="{{ user.id }}"></td>
+            <td class="checkbox">
+                <input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user.id }}"
+                       value="{{ user.id }}">
+            </td>
             <td class="txtdata">
                 <a href="{% url 'dafousers:passworduser-edit' user.id %}">
                 {{ user.givenname }} {{ user.lastname }}</a>

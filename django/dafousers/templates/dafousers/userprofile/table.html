@@ -10,8 +10,10 @@
     </tr>
     {% for user_profile in object_list %}
         <tr>
-            <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ user_profile.id }}"
-                       value="{{ user_profile.id }}"></td>
+            <td class="checkbox">
+                <input name="user_id" type="checkbox" id="checkbox_{{ user_profile.id }}"
+                       value="{{ user_profile.id }}">
+            </td>
             <td class="txtdata">
                 <a href="{% url 'dafousers:userprofile-edit' user_profile.id %}">
                 {{ user_profile.name }}</a>

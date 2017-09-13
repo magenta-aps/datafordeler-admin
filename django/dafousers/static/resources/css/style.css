@@ -1355,6 +1355,10 @@ tbody tr:first-child {
     font-weight: 600;
 }
 
+tbody tr td.checkbox {
+  width: 3em;
+}
+
 .ordering div {
     cursor: pointer;
     background-image: url(../images/brugerliste/ordering.png);

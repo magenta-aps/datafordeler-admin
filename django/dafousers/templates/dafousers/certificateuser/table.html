@@ -28,8 +28,10 @@
     </tr>
     {% for system in object_list %}
         <tr>
-            <td><input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ system.id }}"
-                       value="{{ system.id }}"></td>
+            <td class="checkbox">
+                <input class="checkbox" name="user_id" type="checkbox" id="checkbox_{{ system.id }}"
+                       value="{{ system.id }}">
+            </td>
             <td class="txtdata">
                 <a href="{% url 'dafousers:certificateuser-edit' system.id %}">
                 {{ system.name }}</a>
