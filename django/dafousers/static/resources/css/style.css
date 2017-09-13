@@ -1016,7 +1016,7 @@ input {
 .content {
     margin: 50px 50px 50px 70px;
     min-height: 45em;
-    display: flex;
+    display: inline-flex;
 }
 
 .column {
@@ -1091,11 +1091,12 @@ input {
 .bottom_bar {
   height:38px;
   background-color:var(--dafo-blue);
+  overflow-y: hidden;
 }
 
 .bottom_bar p {
   color: white;
-  padding: 12px 0 0 50px;
+  padding-left: 50px;
 }
 
 .small-label {

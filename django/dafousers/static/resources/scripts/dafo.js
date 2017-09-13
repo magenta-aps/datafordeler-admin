@@ -186,16 +186,19 @@ var DAFO = window.DAFO || {};
             });
 
         function setOrderClasses(){
-            var order = document.getElementById("order").value;
-            var elements = document.getElementsByClassName("ordering");
-            for (var i = 0; i < elements.length; i++) {
-                var id = elements[i].children[0].id;
-                var elementOrder = id.split("-")[1];
-                if(order.indexOf(elementOrder) !== -1) {
-                    var isDescending = order.indexOf("-") !== -1;
-                    var addClass = isDescending ? "desc" : "asc";
-                    var newElement = document.getElementById(id);
-                    newElement.classList.add(addClass);
+            var orderElement = document.getElementById("order");
+            if(orderElement) {
+                var order = orderElement.value;
+                var elements = document.getElementsByClassName("ordering");
+                for (var i = 0; i < elements.length; i++) {
+                    var id = elements[i].children[0].id;
+                    var elementOrder = id.split("-")[1];
+                    if (order.indexOf(elementOrder) !== -1) {
+                        var isDescending = order.indexOf("-") !== -1;
+                        var addClass = isDescending ? "desc" : "asc";
+                        var newElement = document.getElementById(id);
+                        newElement.classList.add(addClass);
+                    }
                 }
             }
         }
