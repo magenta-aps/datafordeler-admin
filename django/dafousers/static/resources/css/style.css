@@ -1017,7 +1017,7 @@ input {
     margin: 50px 70px;
     width: calc(100% - 140px);
     min-height: 45em;
-    display: inline-flex;
+    display: grid;
 }
 
 .column {
