@@ -6,6 +6,7 @@ Dokumentation for `datafordeler-admin. <https://github.com/magenta-aps/dataforde
 .. toctree::
 
    section
+   requirements
 
 
 Endnu en overskrift
