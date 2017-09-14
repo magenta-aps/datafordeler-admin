@@ -318,6 +318,8 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
             elif action == '_save':
                 return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
         else:
+            print "Error saving CertificateUser."
+            print form.errors
             return result
 
 

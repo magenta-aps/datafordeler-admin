@@ -336,10 +336,9 @@ class EntityWithCertificate(models.Model):
         # load key pair
         k_file = open(settings.CERT_KEY, 'rt').read()
         k = crypto.load_privatekey(crypto.FILETYPE_PEM, k_file)
-
         # create a cert
         cert = crypto.X509()
-        cert.get_subject().CN = "Grønlands Datafordeler"
+        cert.get_subject().CN = self.contact_email
         cert.set_serial_number(1000)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(years_valid*365*24*60*60)

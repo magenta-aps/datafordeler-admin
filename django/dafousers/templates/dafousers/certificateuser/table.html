@@ -20,9 +20,6 @@
             <div id="order-contact_email">E-mailadresse på kontaktperson</div>
         </td>
         <td class="ordering">
-            <div id="order-next_expiration_subject">Certifikat subjekt</div>
-        </td>
-        <td class="ordering">
             <div id="order-status">Status</div>
         </td>
     </tr>
@@ -40,7 +37,6 @@
             <td class="txtdata">{{ system.get_identification_mode_display }}</td>
             <td class="txtdata">{{ system.contact_name }}</td>
             <td class="txtdata">{{ system.contact_email }}</td>
-            <td class="txtdata">{{ system.latest_certificate.subject }}</td>
             <td class="txtdata">{{ system.get_status_display }}</td>
         </tr>
     {% endfor %}
