@@ -1,4 +1,14 @@
 Admin
 =====
 
-And it's good!
+Dokumentation for `datafordeler-admin. <https://github.com/magenta-aps/datafordeler-admin>`_
+
+.. toctree::
+
+   section
+
+
+Endnu en overskrift
+-------------------
+
+Noget tekst.
