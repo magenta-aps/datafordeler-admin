@@ -183,6 +183,9 @@ var DAFO = window.DAFO || {};
                 for (var i = 0; i < inputs.length; ++i) {
                     inputs[i].checked = checkbox.checked;
                 }
+            })
+            .on("click", "#create_new_certificate", function () {
+                toggleShow("new-certificate-box");
             });
 
         function setOrderClasses(){

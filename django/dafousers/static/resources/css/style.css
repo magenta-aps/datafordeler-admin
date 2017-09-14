@@ -1270,13 +1270,37 @@ a.selector-clearall {
     background: url(../images/brugerliste/triangle-left-blue.png) 0 no-repeat;
 }
 
-.selector-add, .selector-remove {
+.selector-chooser li a {
     width: 16px;
     height: 16px;
     display: block;
     text-indent: -3000px;
     overflow: hidden;
     cursor: pointer;
+}
+
+#certificates {
+  display: block;
+}
+
+#certificates .selector {
+  width: 280px;
+}
+
+#certificates .selector-available {
+  display: none;
+}
+
+#certificates .selector-chooser {
+  float: right;
+}
+
+#certificates li:first-child {
+  display: none;
+}
+
+#certificates .selector-remove {
+  background: url(/static/admin/img/icon-deletelink.svg) 0 no-repeat;
 }
 
 .popup {

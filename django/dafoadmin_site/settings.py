@@ -123,8 +123,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
-# MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
+MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+CERT_ROOT = os.path.join(STATIC_ROOT, "cert")
+
+# The name of the certificate key we sign certificates with
+CERT_KEY_NAME = "company.key"
 
 # FCGI defaults
 FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
@@ -172,3 +176,6 @@ AUTHENTICATION_BACKENDS = [
 LOCAL_SETTINGS_FILE = os.path.join(SITE_DIR, "local_settings.py")
 if os.path.exists(LOCAL_SETTINGS_FILE):
     from local_settings import *  # noqa
+
+# The certificate key we sign certificates with
+CERT_KEY = os.path.join(CERT_ROOT, CERT_KEY_NAME)

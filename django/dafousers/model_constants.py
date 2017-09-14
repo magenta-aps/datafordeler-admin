@@ -39,6 +39,16 @@ class CertificateUser(object):
          _(u"Identificerer brugere via 'på-vegne-af'")),
     )
 
+    CERTIFICATE_YEARS_VALID_1 = 1
+    CERTIFICATE_YEARS_VALID_3 = 3
+    CERTIFICATE_YEARS_VALID_5 = 5
+
+    certificate_years_valid_choices = (
+        (CERTIFICATE_YEARS_VALID_1, _(u"1 år")),
+        (CERTIFICATE_YEARS_VALID_3, _(u"3 år")),
+        (CERTIFICATE_YEARS_VALID_5, _(u"5 år")),
+    )
+
 
 class IdentityProviderAccount(object):
 

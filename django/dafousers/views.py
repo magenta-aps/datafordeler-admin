@@ -164,11 +164,9 @@ class PasswordUserCreate(CreateView):
         form.instance.password_salt = salt
         form.instance.encrypted_password = encrypted_password
 
-        self.object = form.save(commit=False)
-        self.object.save()
+        result = super(PasswordUserCreate, self).form_valid(form)
         form.instance.user_profiles = form.cleaned_data['user_profiles']
-
-        return super(PasswordUserCreate, self).form_valid(form)
+        return result
 
     def post(self, request, *args, **kwargs):
 
@@ -301,11 +299,11 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
         user_id.save()
         form.instance.identified_user = user_id
 
-        self.object = form.save(commit=False)
-        self.object.save()
+        result = super(CertificateUserCreate, self).form_valid(form)
         form.instance.user_profiles = form.cleaned_data['user_profiles']
-
-        return super(CertificateUserCreate, self).form_valid(form)
+        certificate_years_valid = form.cleaned_data['certificate_years_valid']
+        form.instance.create_certificate(int(certificate_years_valid))
+        return result
 
     def post(self, request, *args, **kwargs):
 
@@ -356,6 +354,7 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
     model = models.CertificateUser
     form_class = forms.CertificateUserForm
     success_url = 'certificateuser/list/'
+    create_new_certificate = False
 
     def get_form_kwargs(self, **kwargs):
         kwargs = super(CertificateUserEdit, self).get_form_kwargs(**kwargs)
@@ -364,15 +363,19 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
-        self.object = form.save(commit=False)
         form.instance.user_profiles = form.cleaned_data['user_profiles']
-
+        form.instance.certificates = form.cleaned_data['certificates']
+        if self.create_new_certificate:
+            certificate_years_valid = form.cleaned_data['certificate_years_valid']
+            print certificate_years_valid
+            form.instance.create_certificate(int(certificate_years_valid))
         return super(CertificateUserEdit, self).form_valid(form)
 
     def post(self, request, *args, **kwargs):
 
         form_class = self.get_form_class()
         form = self.get_form(form_class)
+        self.create_new_certificate = request.POST.get('create_new_certificate')
         action = request.POST.get('action')
         if action == '_save':
             result = super(CertificateUserEdit, self).post(request, *args, **kwargs)
@@ -442,11 +445,9 @@ class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
         user_id.save()
         form.instance.identified_user = user_id
 
-        self.object = form.save(commit=False)
-        self.object.save()
+        result = super(IdentityProviderAccountCreate, self).form_valid(form)
         form.instance.user_profiles = form.cleaned_data['user_profiles']
-
-        return super(IdentityProviderAccountCreate, self).form_valid(form)
+        return result
 
     def post(self, request, *args, **kwargs):
 
@@ -571,12 +572,10 @@ class UserProfileCreate(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
 
-        self.object = form.save(commit=False)
-        self.object.save()
+        result = super(UserProfileCreate, self).form_valid(form)
         form.instance.system_roles = form.cleaned_data['system_roles']
         form.instance.area_restrictions = form.cleaned_data['area_restrictions']
-
-        return super(UserProfileCreate, self).form_valid(form)
+        return result
 
     def post(self, request, *args, **kwargs):
 

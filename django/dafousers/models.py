@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+from OpenSSL import crypto, SSL
+from socket import gethostname
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -10,6 +12,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import FieldError
 from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile, File
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.urls import reverse
@@ -328,6 +331,33 @@ class EntityWithCertificate(models.Model):
     def latest_certificate(self):
         return self.certificates.all().order_by("valid_to").first()
 
+    def create_cert(self, years_valid):
+
+        # load key pair
+        k_file = open(settings.CERT_KEY, 'rt').read()
+        k = crypto.load_privatekey(crypto.FILETYPE_PEM, k_file)
+
+        # create a cert
+        cert = crypto.X509()
+        cert.get_subject().CN = "Grønlands Datafordeler"
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(years_valid*365*24*60*60)
+        cert.set_issuer(cert.get_subject())
+        cert.set_pubkey(k)
+        cert.sign(k, b"sha256")
+
+        certificate_name = "myapp.crt"
+        path = os.path.join(settings.MEDIA_ROOT, certificate_name)
+        open(path, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        return path
+
+    def create_certificate(self, years_valid):
+        certificate_file_path = self.create_cert(years_valid)
+        certificate_file = open(certificate_file_path, "r")
+        self.certificates.create(certificate_file=File(certificate_file))
+        os.remove(certificate_file_path)
+
 
 class CertificateUserQuerySet(models.QuerySet):
     def search(self, term):
@@ -565,10 +595,10 @@ class Certificate(models.Model):
 
     def save(self, *args, **kwargs):
         # Save once, making sure files are written
+
         result = super(Certificate, self).save(*args, **kwargs)
         if(self.certificate_file and
            os.path.exists(self.certificate_file.path)):
-
             try:
                 # Store certificate in blob instead of file
                 self.certificate_blob = self.certificate_file.read()
@@ -612,9 +642,6 @@ class Certificate(models.Model):
                 self.certificate_file.close()
                 self.certificate_file.delete()
                 self.certificate_file = None
-
-                # Save once more to store data retrieved from the certificate
-                result = super(Certificate, self).save(*args, **kwargs)
             except Exception as e:
                 print "Failed to parse certificate, error is: %s" % e
 
@@ -628,7 +655,7 @@ class Certificate(models.Model):
 
     def __unicode__(self):
         return unicode(
-            self.subject or
+            self.valid_to or
             _(u"Certifikat uden subjekt")
         )
 

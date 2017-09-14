@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
 from django import forms
 from django.contrib.admin import widgets
-from dafousers import models
+from django.utils.translation import ugettext as _
+from dafousers import models, model_constants
 
 
 class PasswordUserForm(forms.ModelForm):
@@ -12,10 +14,9 @@ class PasswordUserForm(forms.ModelForm):
     )
     user_profiles = forms.ModelMultipleChoiceField(
         queryset=models.UserProfile.objects.all(),
-        label="brugerprofiler",
         required=False,
         widget=widgets.FilteredSelectMultiple(
-            "user_profiles",
+            _(u"brugerprofiler"),
             False,
             attrs={'rows': '6'}
         ),
@@ -38,13 +39,26 @@ class CertificateUserForm(forms.ModelForm):
 
     user_profiles = forms.ModelMultipleChoiceField(
         queryset=models.UserProfile.objects.all(),
-        label="brugerprofiler",
         required=False,
         widget=widgets.FilteredSelectMultiple(
-            "user_profiles",
+            _(u"brugerprofiler"),
             False,
             attrs={'rows': '6'}
         ),
+    )
+
+    certificates = forms.ModelMultipleChoiceField(
+        queryset=models.CertificateUser.objects.none(),
+        required=False,
+        widget=widgets.FilteredSelectMultiple(
+            _(u"certifikater"),
+            False,
+            attrs={'rows': '6'}
+        ),
+    )
+
+    certificate_years_valid = forms.ChoiceField(
+        choices=model_constants.CertificateUser.certificate_years_valid_choices
     )
 
     class Meta:
@@ -56,6 +70,8 @@ class CertificateUserForm(forms.ModelForm):
             self.pk = kwargs.pop('pk')
             super(CertificateUserForm, self).__init__(*args, **kwargs)
             self.initial['user_profiles'] = models.CertificateUser.objects.get(id=self.pk).user_profiles.all()
+            self.fields['certificates'].queryset = models.CertificateUser.objects.get(id=self.pk).certificates.all()
+            self.initial['certificates'] = models.CertificateUser.objects.get(id=self.pk).certificates.all()
         else:
             super(CertificateUserForm, self).__init__(*args, **kwargs)
 
@@ -64,10 +80,9 @@ class IdentityProviderAccountForm(forms.ModelForm):
 
     user_profiles = forms.ModelMultipleChoiceField(
         queryset=models.UserProfile.objects.all(),
-        label="brugerprofiler",
         required=False,
         widget=widgets.FilteredSelectMultiple(
-            "user_profiles",
+            _(u"brugerprofiler"),
             False,
             attrs={'rows': '6'}
         ),
@@ -94,7 +109,7 @@ class UserProfileForm(forms.ModelForm):
         queryset=models.SystemRole.objects.all(),
         required=False,
         widget=widgets.FilteredSelectMultiple(
-            "system_roles",
+            _(u"systemroller"),
             False,
             attrs={'rows': '6'}
         ),
@@ -104,7 +119,7 @@ class UserProfileForm(forms.ModelForm):
         queryset=models.AreaRestriction.objects.all(),
         required=False,
         widget=widgets.FilteredSelectMultiple(
-            "area_restrictions",
+            _(u"områdeafgrænsninger"),
             False,
             attrs={'rows': '6'}
         ),
