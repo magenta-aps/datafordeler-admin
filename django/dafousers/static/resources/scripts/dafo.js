@@ -117,14 +117,24 @@ var DAFO = window.DAFO || {};
 
     $(document).ready(function() {
 
+        addEvent(window, 'load', function(e) {
+
+            if ($('#id_certificates_to').length > 0 && $('#id_current_time').length > 0) {
+                var currentTime = document.getElementById("id_current_time");
+                var certificateElements = document.getElementById("id_certificates_to").children;
+                for (var i = 0; i < certificateElements.length; ++i) {
+                    if (certificateElements[i].title < currentTime.value)
+                        certificateElements[i].style.color = "#FF0000";
+                }
+            }
+        });
+
         setOrderClasses();
 
         if ($('#object_type').length > 0) {
 
-            // Set object type
-            $(document).ready(function () {
-                objectType = document.getElementById("object_type").value;
-            });
+            // Initially set object type
+            objectType = document.getElementById("object_type").value;
 
             $("#list_form").on("submit", function (event) {
                 $.ajax({

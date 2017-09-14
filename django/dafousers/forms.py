@@ -3,6 +3,7 @@
 
 from django import forms
 from django.contrib.admin import widgets
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 from dafousers import models, model_constants
 
@@ -58,7 +59,14 @@ class CertificateUserForm(forms.ModelForm):
     )
 
     certificate_years_valid = forms.ChoiceField(
+        required=False,
         choices=model_constants.CertificateUser.certificate_years_valid_choices
+    )
+
+    current_time = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+        initial=timezone.now().strftime('%Y-%m-%d %H:%M:%S+00:00')
     )
 
     class Meta:
