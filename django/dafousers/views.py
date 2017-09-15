@@ -1,31 +1,25 @@
 # from django.shortcuts import render
 
-import urllib
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.db.models import Min
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import _get_login_redirect_url
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View, TemplateView, UpdateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render
 from dafousers import models, model_constants, forms
-from model_constants import AccessAccount as constants
-import urllib, json
+import urllib, json, tempfile
 
 
 # Create your views here.
@@ -146,7 +140,7 @@ class LoginView(TemplateView):
             return result
 
 
-class PasswordUserCreate(CreateView):
+class PasswordUserCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/passworduser/add.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
@@ -179,7 +173,7 @@ class PasswordUserCreate(CreateView):
             return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
 
 
-class PasswordUserList(ListView):
+class PasswordUserList(LoginRequiredMixin, ListView):
     template_name = 'dafousers/passworduser/list.html'
     model = models.PasswordUser
 
@@ -748,3 +742,16 @@ def search_user_profile(request):
         })
 
     return render(request, 'search-autocomplete.html', {'object_list': result})
+
+
+class CertificateDownload(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        cert = models.Certificate.objects.get(pk=kwargs.get('pk'))
+        filename = cert.valid_to
+        tmp_file = tempfile.TemporaryFile()
+        tmp_file.write(cert.certificate_blob)
+        tmp_file.seek(0)
+        resp = HttpResponse(tmp_file, content_type='text/html')
+        resp['Content-Disposition'] = "attachment; filename=cert_%s.crt" % filename
+        return resp

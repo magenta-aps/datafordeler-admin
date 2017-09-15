@@ -1295,8 +1295,8 @@ a.selector-clearall {
   float: right;
 }
 
-#certificates li:first-child {
-  display: none;
+#certificates .selector-add {
+  background: url(../images/brugerliste/download.png) 0 no-repeat;
 }
 
 #certificates .selector-remove {

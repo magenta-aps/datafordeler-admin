@@ -47,6 +47,10 @@ urlpatterns = [
         dafo_views.update_certificateuser,
         name='update_certificateuser'),
 
+    url(r'certificate/(?P<pk>[0-9]+)/download/$',
+        dafo_views.CertificateDownload.as_view(),
+        name='certificate_download'),
+
     # ORGANISATION
     url(r'organisation/(?P<pk>[0-9]+)/$',
         dafo_views.IdentityProviderAccountEdit.as_view(),

@@ -127,6 +127,11 @@ var DAFO = window.DAFO || {};
                         certificateElements[i].style.color = "#FF0000";
                 }
             }
+            if ($('#id_certificates_add_link').length > 0) {
+                var downloadElement = document.getElementById("id_certificates_add_link");
+                downloadElement.id = "id_certificates_download";
+            }
+
         });
 
         setOrderClasses();
@@ -196,6 +201,16 @@ var DAFO = window.DAFO || {};
             })
             .on("click", "#create_new_certificate", function () {
                 toggleShow("new-certificate-box");
+            })
+            .on("click", "#id_certificates_download", function () {
+                var certificates = document.getElementById("id_certificates_to");
+                for (i=0; i<certificates.options.length; i++) {
+                    var certElem = certificates.options[i];
+                    if (certElem.selected) {
+                        console.log(certElem.value);
+                        window.location="certificate/" + certElem.value + "/download";
+                    }
+                }
             });
 
         function setOrderClasses(){
