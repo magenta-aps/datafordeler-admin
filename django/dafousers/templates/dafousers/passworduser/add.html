@@ -5,7 +5,7 @@
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        Password.new_password();
+        newPassword();
     }, false);
 </script>
 
@@ -24,94 +24,69 @@
         <div class="column">
 
             <div class="row">
-
-                <div class="title">
-                    <p>Opret bruger</p>
-                </div>
-
+                <div class="title">Opret bruger</div>
                 <div class="back">
                     <a href="{% url 'dafousers:passworduser-list' %}">Gå til brugeroversigten</a>
                 </div>
+            </div>
 
+            <div class="row row_title">
+                <div class="row_field">Fornavn</div>
+                <div class="row_field">Efternavn</div>
+            </div>
+            <div class="row">
+                <div class="row_field">{{ form.givenname }}</div>
+                <div class="row_field">{{ form.lastname }}</div>
+            </div>
+
+            <div class="row row_title">
+                <div class="row_field">Email</div>
+                <div class="row_field">
+                    <div class="left">Arbejdssted</div>
+                    <div class="right small-label">(Valgfrit)</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row_field">{{ form.email }}</div>
+                <div class="row_field">{{ form.organisation }}</div>
             </div>
 
             <div class="row">
-
                 <div class="row_field">
-                    <p>Fornavn</p>
-                    {{ form.givenname }}
-                </div>
-
-                <div class="row_field">
-                    <p>Efternavn</p>
-                    {{ form.lastname }}
-                </div>
-
-            </div>
-
-            <div class="row">
-
-                <div class="row_field">
-                    <p>Email</p>
-                    {{ form.email }}
-                </div>
-
-                <div class="row_field">
-                    <p class="left">Arbejdssted</p>
-                    <p class="right small-label">(Valgfrit)</p>
-                    {{ form.organisation }}
-                </div>
-
-            </div>
-
-            <div class="row">
-
-                <div class="row_field">
-                    <p>Status</p>
+                    Status
                     {{ form.status }}
                 </div>
-
                 <div class="row_field">
-                    <p>Kodeord</p>
+                    Kodeord
                     {{ form.password }}
                     <p id="password_display">{{ form.password.value }}</p>
                 </div>
+            </div>
 
+            <h3>Brugerprofiler</h3>
+            <div class="row row_title">
+                <div class="row_field">Tilgængelige brugerprofiler</div>
+                <div class="row_field">Tildelte brugerprofiler</div>
+            </div>
+            <div class="row">
+                <div class="double-column filtered-select-multiple">{{ form.user_profiles }}</div>
+                <div class="row_field small-label">Hold "Ctrl" nede for at vælge mere end en</div>
             </div>
 
             <div class="row">
 
-                <div class="row_field">
-                    <p>Tilgængelige brugerprofiler</p>
-                </div>
-
-                <div class="row_field">
-                    <p>Tildelte brugerprofiler</p>
-                </div>
-
-                <div class="double-column filtered-select-multiple">
-                    {{ form.user_profiles }}
-                </div>
-
-                <div class="row_field small-label">
-                    <p>Hold "Ctrl" nede for at vælge mere end en</p>
-                </div>
-            </div>
-
-            <div class="row">
-
-                <button class="row_field blue" onclick="Form.submit('form-submit', '_save')">
+                <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
-                        <img src="/static/dafousers/images/brugerliste/check-white.png">
+                        <img src="/static/resources/images/brugerliste/check-white.png">
                     </div>
                     <div class="flex-center">
                         OPRET NY BRUGER
                     </div>
                 </button>
 
-                <button class="row_field blue" onclick="Form.submit('form-submit', '_addanother')">
+                <button class="row_field button blue" onclick="submitForm('form_submit', '_addanother')">
                     <div class="flex-left">
-                        <img src="/static/dafousers/images/brugerliste/plus-white.png">
+                        <img src="/static/resources/images/brugerliste/plus-white.png">
                     </div>
                     <div class="flex-center">
                         OPRET OG TILFØJ ENDNU EN
@@ -126,13 +101,16 @@
             <div class="info-box" style="margin-top: 27%;">
                 <div class="text-box">
 
-                    <img class="img " src="/static/dafousers/images/brugerliste/exclamation-mark-round.png">
+                    <img class="img " src="/static/resources/images/brugerliste/exclamation-mark-round.png">
 
                     <p>Du kan levere dette kodeord til den oprettede bruger. Kodeordet er gældende når du har oprettet brugeren.</p>
 
                     <p>Vær opmærksom på, at kodeordet ikke længere bliver vist når du har oprettet brugeren.</p>
 
-                    <div class="button small-button blue" onclick="Password.new_password()">
+                    <div class="row_field button gray" onclick="newPassword()">
+                        <div class="flex-left">
+                            <img src="/static/resources/images/brugerliste/password-key.png">
+                        </div>
                         <div class="flex-center">
                             NYT KODEORD
                         </div>
@@ -142,7 +120,7 @@
 
         </div>
 
-    <input style="display:none" id="form-submit" name="action" value="" >
+    <input style="display:none;" id="form_submit" name="action" value="" >
 
     </form>
 {% endblock %}

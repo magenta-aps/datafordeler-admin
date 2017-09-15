@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+from OpenSSL import crypto, SSL
+from socket import gethostname
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -10,6 +12,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import FieldError
 from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile, File
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.urls import reverse
@@ -224,12 +227,21 @@ class AccessAccount(models.Model):
     )
 
 
+class PasswordUserQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(givenname__contains=term) | models.Q(lastname__contains=term)
+        )
+
+
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:
         # db_table = 'dbo].[dafousers_passworduser'
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
+
+    objects = PasswordUserQuerySet.as_manager()
 
     givenname = models.CharField(
         verbose_name=_(u"Fornavn"),
@@ -287,7 +299,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
 
     def get_absolute_url(self):
-        return reverse('dafousers:passworduser-details', kwargs={'pk': self.pk})
+        return reverse('dafousers:passworduser-list')
 
     def check_password(self, password):
         pwdata = hashlib.sha256()
@@ -312,16 +324,47 @@ class EntityWithCertificate(models.Model):
         verbose_name=_(u"E-mailadresse på kontaktperson"),
         blank=False
     )
-    next_expiration = models.DateTimeField(
-        verbose_name=_(u"Næste udløbsdato for certifikat(er)"),
-        blank=True,
-        null=True,
-        default=None
-    )
     certificates = models.ManyToManyField(
         "Certificate",
         verbose_name=_(u"Certifikater")
     )
+
+    @property
+    def latest_certificate(self):
+        return self.certificates.all().order_by("valid_to").first()
+
+    def create_cert(self, years_valid):
+
+        # load key pair
+        k_file = open(settings.CERT_KEY, 'rt').read()
+        k = crypto.load_privatekey(crypto.FILETYPE_PEM, k_file)
+        # create a cert
+        cert = crypto.X509()
+        cert.get_subject().CN = self.contact_email
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(years_valid*365*24*60*60)
+        cert.set_issuer(cert.get_subject())
+        cert.set_pubkey(k)
+        cert.sign(k, b"sha256")
+
+        certificate_name = "myapp.crt"
+        path = os.path.join(settings.MEDIA_ROOT, certificate_name)
+        open(path, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        return path
+
+    def create_certificate(self, years_valid):
+        certificate_file_path = self.create_cert(years_valid)
+        certificate_file = open(certificate_file_path, "r")
+        self.certificates.create(certificate_file=File(certificate_file))
+        os.remove(certificate_file_path)
+
+
+class CertificateUserQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
 
 
 class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
@@ -329,6 +372,8 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     class Meta:
         verbose_name = _(u"system")
         verbose_name_plural = _(u"systemer")
+
+    objects = CertificateUserQuerySet.as_manager()
 
     name = models.CharField(
         verbose_name=_(u"Navn"),
@@ -355,10 +400,20 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     def __unicode__(self):
         return unicode(self.name)
 
+    def get_absolute_url(self):
+        return reverse('dafousers:passworduser-list')
+
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser
 )
+
+
+class IdentityProviderAccountQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
 
 
 class IdentityProviderAccount(AccessAccount, EntityWithHistory):
@@ -367,6 +422,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
         verbose_name = _(u"organisation")
         verbose_name_plural = _(u"organisationer")
 
+    objects = IdentityProviderAccountQuerySet.as_manager()
     CONSTANTS = model_constants.IdentityProviderAccount
 
     name = models.CharField(
@@ -447,6 +503,9 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
 
     def __unicode__(self):
         return unicode(self.name)
+
+    def get_absolute_url(self):
+        return reverse('dafousers:identityprovideraccount-list')
 
     def save(self, *args, **kwargs):
         result = super(IdentityProviderAccount, self).save(*args, **kwargs)
@@ -532,12 +591,15 @@ class Certificate(models.Model):
         blank=True
     )
 
+    class Meta:
+        ordering = ['valid_to']
+
     def save(self, *args, **kwargs):
         # Save once, making sure files are written
+
         result = super(Certificate, self).save(*args, **kwargs)
         if(self.certificate_file and
            os.path.exists(self.certificate_file.path)):
-
             try:
                 # Store certificate in blob instead of file
                 self.certificate_blob = self.certificate_file.read()
@@ -581,9 +643,6 @@ class Certificate(models.Model):
                 self.certificate_file.close()
                 self.certificate_file.delete()
                 self.certificate_file = None
-
-                # Save once more to store data retrieved from the certificate
-                result = super(Certificate, self).save(*args, **kwargs)
             except Exception as e:
                 print "Failed to parse certificate, error is: %s" % e
 
@@ -597,16 +656,25 @@ class Certificate(models.Model):
 
     def __unicode__(self):
         return unicode(
-            self.subject or
+            self.valid_to or
             _(u"Certifikat uden subjekt")
         )
 
 
-class UserProfile(models.Model):
+class UserProfileQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
+
+
+class UserProfile(EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"brugerprofil")
         verbose_name_plural = _(u"brugerprofiler")
+
+    objects = UserProfileQuerySet.as_manager()
 
     name = models.CharField(
         verbose_name=_(u"Navn"),
@@ -629,6 +697,9 @@ class UserProfile(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+
+UserProfileHistory = HistoryForEntity.build_from_entity_class(UserProfile)
 
 
 class SystemRole(models.Model):
