@@ -125,10 +125,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
-CERT_ROOT = os.path.join(STATIC_ROOT, "cert")
+CERT_ROOT = os.path.join(BASE_DIR, "cert")
+CERT_TMP_ROOT = os.path.join(CERT_ROOT, "tmp")
 
 # The name of the certificate key we sign certificates with
-CERT_KEY_NAME = "company.key"
+CERT_KEY_NAME = "default.key"
 
 # FCGI defaults
 FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")

@@ -44,7 +44,9 @@ class LoginRequiredMixin(object):
     needs_userprofiles = None
     needs_userprofiles_any = None
     needs_system_roles = None
-    needs_system_roles_any = None
+    # By default users need to be either an administrator or a service
+    # provider to get manage anything in the system.
+    needs_system_roles_any = ["DAFO Serviceudbyder", "DAFO Administrator"]
 
     def check_userprofiles(self):
         # If needs_userprofiles is defined check that the user has all
@@ -101,6 +103,12 @@ class LoginRequiredMixin(object):
         self.check_system_roles()
 
         return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
+
+    # Automatically add user to any form arguments when behind LoginRequired.
+    def get_form_kwargs(self):
+        kwargs = super(LoginRequiredMixin, self).get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 class LoginView(TemplateView):
@@ -217,7 +225,6 @@ class PasswordUserCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/passworduser/add.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
-    needs_system_roles_any = ["DAFO Serviceudbyder", "DAFO Administrator"]
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
@@ -292,9 +299,6 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
             salt, encrypted_password = form.instance.generate_encrypted_password_and_salt(form.cleaned_data['password'])
             form.instance.password_salt = salt
             form.instance.encrypted_password = encrypted_password
-
-        self.object = form.save(commit=False)
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
 
         return super(PasswordUserEdit, self).form_valid(form)
 
@@ -423,17 +427,12 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
     template_name = 'dafousers/certificateuser/edit.html'
     model = models.CertificateUser
     form_class = forms.CertificateUserForm
-    success_url = 'certificateuser/list/'
+    success_url = '/system/list/'
     create_new_certificate = False
 
-    def get_form_kwargs(self, **kwargs):
-        kwargs = super(CertificateUserEdit, self).get_form_kwargs(**kwargs)
-        kwargs['pk'] = self.kwargs.get('pk')
-        return kwargs
-
     def form_valid(self, form):
+        self.form_is_valid = True
         form.instance.changed_by = self.request.user.username
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
         form.instance.certificates = form.cleaned_data['certificates']
 
         # Do we want to remove certs from the database?
@@ -455,8 +454,9 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
         self.create_new_certificate = request.POST.get('create_new_certificate')
         action = request.POST.get('action')
         if action == '_save':
+            self.form_is_valid = False;
             result = super(CertificateUserEdit, self).post(request, *args, **kwargs)
-            if form.is_valid():
+            if self.form_is_valid:
                 return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
             else:
                 print "Error saving CertificateUser."

@@ -226,6 +226,15 @@ class AccessAccount(models.Model):
         blank=True
     )
 
+    def get_updated_user_profiles(self, user, submitted):
+        editable_user_profiles = user.dafoauthinfo.admin_user_profiles
+
+        other_user_profiles = self.user_profiles.all().exclude(
+            pk__in=editable_user_profiles
+        )
+
+        return other_user_profiles | submitted
+
 
 class PasswordUserQuerySet(models.QuerySet):
     def search(self, term):
@@ -348,16 +357,15 @@ class EntityWithCertificate(models.Model):
         cert.set_pubkey(k)
         cert.sign(k, b"sha256")
 
-        certificate_name = "myapp.crt"
-        path = os.path.join(settings.MEDIA_ROOT, certificate_name)
-        open(path, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
-        return path
+        certificate_name = "newcert-%s.crt" % os.getpid()
+        return ContentFile(
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert),
+            name=certificate_name,
+        )
 
     def create_certificate(self, years_valid):
-        certificate_file_path = self.create_cert(years_valid)
-        certificate_file = open(certificate_file_path, "r")
-        self.certificates.create(certificate_file=File(certificate_file))
-        os.remove(certificate_file_path)
+        certificate_file = self.create_cert(years_valid)
+        obj = self.certificates.create(certificate_file=certificate_file)
 
 
 class CertificateUserQuerySet(models.QuerySet):
@@ -598,8 +606,7 @@ class Certificate(models.Model):
         # Save once, making sure files are written
 
         result = super(Certificate, self).save(*args, **kwargs)
-        if(self.certificate_file and
-           os.path.exists(self.certificate_file.path)):
+        if(self.certificate_file):
             try:
                 # Store certificate in blob instead of file
                 self.certificate_blob = self.certificate_file.read()
@@ -640,8 +647,10 @@ class Certificate(models.Model):
                 self.subject = ", ".join(subject_parts)
 
                 # Remove the file so data is only stored in the blob
-                self.certificate_file.close()
-                self.certificate_file.delete()
+                if os.path.exists(self.certificate_file.path):
+                    self.certificate_file.close()
+                    self.certificate_file.delete()
+
                 self.certificate_file = None
             except Exception as e:
                 print "Failed to parse certificate, error is: %s" % e

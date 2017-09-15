@@ -1,21 +1,22 @@
 from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
+from django.views.i18n import JavaScriptCatalog
 import dafousers.views as dafo_views
 import django.contrib.auth.views
 
 urlpatterns = [
 
     # USER
-    url(r'user/(?P<pk>[0-9]+)/$',
+    url(r'^user/(?P<pk>[0-9]+)/$',
         dafo_views.PasswordUserEdit.as_view(),
         name='passworduser-edit'),
-    url(r'user/(?P<pk>[0-9]+)/history/$',
+    url(r'^user/(?P<pk>[0-9]+)/history/$',
         dafo_views.PasswordUserHistory.as_view(),
         name='passworduser-history'),
-    url(r'user/add/$',
+    url(r'^user/add/$',
         dafo_views.PasswordUserCreate.as_view(),
         name='passworduser-add'),
-    url(r'user/list/$',
+    url(r'^user/list/$',
         dafo_views.PasswordUserList.as_view(),
         name='passworduser-list'),
 
@@ -27,16 +28,16 @@ urlpatterns = [
         name='update_passworduser'),
 
     # SYSTEM
-    url(r'system/(?P<pk>[0-9]+)/$',
+    url(r'^system/(?P<pk>[0-9]+)/$',
         dafo_views.CertificateUserEdit.as_view(),
         name='certificateuser-edit'),
-    url(r'system/(?P<pk>[0-9]+)/history/$',
+    url(r'^system/(?P<pk>[0-9]+)/history/$',
         dafo_views.CertificateUserHistory.as_view(),
         name='certificateuser-history'),
-    url(r'system/add/$',
+    url(r'^system/add/$',
         dafo_views.CertificateUserCreate.as_view(),
         name='certificateuser-add'),
-    url(r'system/list/$',
+    url(r'^system/list/$',
         dafo_views.CertificateUserList.as_view(),
         name='certificateuser-list'),
 
@@ -52,16 +53,16 @@ urlpatterns = [
         name='certificate_download'),
 
     # ORGANISATION
-    url(r'organisation/(?P<pk>[0-9]+)/$',
+    url(r'^organisation/(?P<pk>[0-9]+)/$',
         dafo_views.IdentityProviderAccountEdit.as_view(),
         name='identityprovideraccount-edit'),
-    url(r'organisation/(?P<pk>[0-9]+)/history/$',
+    url(r'^organisation/(?P<pk>[0-9]+)/history/$',
         dafo_views.IdentityProviderAccountHistory.as_view(),
         name='identityprovideraccount-history'),
-    url(r'organisation/add/$',
+    url(r'^organisation/add/$',
         dafo_views.IdentityProviderAccountCreate.as_view(),
         name='identityprovideraccount-add'),
-    url(r'organisation/list/$',
+    url(r'^organisation/list/$',
         dafo_views.IdentityProviderAccountList.as_view(),
         name='identityprovideraccount-list'),
 
@@ -73,16 +74,16 @@ urlpatterns = [
         name='update_identityprovideraccount'),
 
     # USER PROFILE
-    url(r'user-profile/(?P<pk>[0-9]+)/$',
+    url(r'^user-profile/(?P<pk>[0-9]+)/$',
         dafo_views.UserProfileEdit.as_view(),
         name='userprofile-edit'),
-    url(r'user-profile/(?P<pk>[0-9]+)/history/$',
+    url(r'^user-profile/(?P<pk>[0-9]+)/history/$',
         dafo_views.UserProfileHistory.as_view(),
         name='userprofile-history'),
-    url(r'user-profile/add/$',
+    url(r'^user-profile/add/$',
         dafo_views.UserProfileCreate.as_view(),
         name='userprofile-add'),
-    url(r'user-profile/list/$',
+    url(r'^user-profile/list/$',
         dafo_views.UserProfileList.as_view(),
         name='userprofile-list'),
 
@@ -94,7 +95,7 @@ urlpatterns = [
         name='update_userprofile'),
 
     # GLOBAL
-    url(r'frontpage/$',
+    url(r'^frontpage/$',
         csrf_exempt(dafo_views.FrontpageView.as_view()),
         name="frontpage"),
     url(r'^$',
@@ -115,4 +116,7 @@ urlpatterns = [
     url(r'^ajax/search_user_profile/$',
         dafo_views.search_user_profile,
         name='search_user_profile'),
+
+    # jsi18n views
+    url(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='javascript-catalog'),
 ]

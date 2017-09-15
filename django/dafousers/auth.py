@@ -136,7 +136,12 @@ def update_user_auth_info(request):
                         "AttributeValue"
                     )
                     value = unicode(attr_value.text)
-                    result.append(attr_map.get(value, value))
+                    translated = attr_map.get(value)
+                    if translated is not None:
+                        for x in translated:
+                            result.append(x)
+                    else:
+                        result.append(value)
         except Exception as e:
             raise PermissionDenied(
                 "Could not get userprofiles from token: %s" % e

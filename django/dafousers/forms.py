@@ -8,11 +8,8 @@ from django.utils.translation import ugettext as _
 from dafousers import models, model_constants
 
 
-class PasswordUserForm(forms.ModelForm):
-    password = forms.CharField(
-        widget=forms.HiddenInput(),
-        initial="*"
-    )
+class AccessAccountForm(forms.ModelForm):
+
     user_profiles = forms.ModelMultipleChoiceField(
         queryset=models.UserProfile.objects.all(),
         required=False,
@@ -21,32 +18,42 @@ class PasswordUserForm(forms.ModelForm):
             False,
             attrs={'rows': '6'}
         ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(AccessAccountForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial['user_profiles'] = self.Meta.model.objects.get(
+                id=self.instance.pk
+            ).user_profiles.all()
+        else:
+            super(AccessAccountForm, self).__init__(*args, **kwargs)
+
+        self.fields["user_profiles"].queryset = \
+            self.user.dafoauthinfo.admin_user_profiles
+
+    def clean(self):
+        super(AccessAccountForm, self).clean()
+        if self.instance.pk is not None:
+            self.instance.user_profiles = \
+                self.instance.get_updated_user_profiles(
+                    self.user, self.cleaned_data['user_profiles']
+                )
+
+
+class PasswordUserForm(AccessAccountForm):
+    password = forms.CharField(
+        widget=forms.HiddenInput(),
+        initial="*"
     )
 
     class Meta:
         model = models.PasswordUser
         fields = ['givenname', 'lastname', 'email', 'organisation', 'status']
 
-    def __init__(self, *args, **kwargs):
-        if 'pk' in kwargs:
-            self.pk = kwargs.pop('pk')
-            super(PasswordUserForm, self).__init__(*args, **kwargs)
-            self.initial['user_profiles'] = models.PasswordUser.objects.get(id=self.pk).user_profiles.all()
-        else:
-            super(PasswordUserForm, self).__init__(*args, **kwargs)
 
-
-class CertificateUserForm(forms.ModelForm):
-
-    user_profiles = forms.ModelMultipleChoiceField(
-        queryset=models.UserProfile.objects.all(),
-        required=False,
-        widget=widgets.FilteredSelectMultiple(
-            _(u"brugerprofiler"),
-            False,
-            attrs={'rows': '6'}
-        ),
-    )
+class CertificateUserForm(AccessAccountForm):
 
     certificates = forms.ModelMultipleChoiceField(
         queryset=models.CertificateUser.objects.none(),
@@ -71,18 +78,19 @@ class CertificateUserForm(forms.ModelForm):
 
     class Meta:
         model = models.CertificateUser
-        fields = ['name', 'identification_mode', 'organisation', 'comment', 'contact_name', 'contact_email']
+        fields = [
+            'name', 'identification_mode', 'organisation', 'comment',
+            'contact_name', 'contact_email'
+        ]
 
     def __init__(self, *args, **kwargs):
-        if 'pk' in kwargs:
-            self.pk = kwargs.pop('pk')
-            super(CertificateUserForm, self).__init__(*args, **kwargs)
-            self.initial['user_profiles'] = models.CertificateUser.objects.get(id=self.pk).user_profiles.all()
-            certs = models.CertificateUser.objects.get(id=self.pk).certificates.all()
+        super(CertificateUserForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            certs = models.CertificateUser.objects.get(
+                id=self.instance.pk
+            ).certificates.all()
             self.fields['certificates'].queryset = certs
             self.initial['certificates'] = certs
-        else:
-            super(CertificateUserForm, self).__init__(*args, **kwargs)
 
 
 class IdentityProviderAccountForm(forms.ModelForm):
@@ -104,12 +112,16 @@ class IdentityProviderAccountForm(forms.ModelForm):
                   'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value']
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user")
         if 'pk' in kwargs:
             self.pk = kwargs.pop('pk')
             super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
             self.initial['user_profiles'] = models.IdentityProviderAccount.objects.get(id=self.pk).user_profiles.all()
         else:
             super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
+
+        self.fields["user_profiles"].queryset = \
+            user.dafoauthinfo.admin_user_profiles
 
 
 class UserProfileForm(forms.ModelForm):
