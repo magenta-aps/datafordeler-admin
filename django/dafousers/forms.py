@@ -78,8 +78,9 @@ class CertificateUserForm(forms.ModelForm):
             self.pk = kwargs.pop('pk')
             super(CertificateUserForm, self).__init__(*args, **kwargs)
             self.initial['user_profiles'] = models.CertificateUser.objects.get(id=self.pk).user_profiles.all()
-            self.fields['certificates'].queryset = models.CertificateUser.objects.get(id=self.pk).certificates.all()
-            self.initial['certificates'] = models.CertificateUser.objects.get(id=self.pk).certificates.all()
+            certs = models.CertificateUser.objects.get(id=self.pk).certificates.all()
+            self.fields['certificates'].queryset = certs
+            self.initial['certificates'] = certs
         else:
             super(CertificateUserForm, self).__init__(*args, **kwargs)
 

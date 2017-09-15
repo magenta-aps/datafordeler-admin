@@ -361,6 +361,13 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
         form.instance.changed_by = self.request.user.username
         form.instance.user_profiles = form.cleaned_data['user_profiles']
         form.instance.certificates = form.cleaned_data['certificates']
+
+        # Do we want to remove certs from the database?
+        for cert in form.instance.certificates.all():
+            removed_cert = form.cleaned_data['certificates'].filter(pk=cert.pk)
+            if not removed_cert:
+                form.instance.certificates.remove(cert.pk)
+
         if self.create_new_certificate:
             certificate_years_valid = form.cleaned_data['certificate_years_valid']
             print certificate_years_valid
