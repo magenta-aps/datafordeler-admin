@@ -1201,6 +1201,7 @@ input {
 }
 
 .selector select[multiple] {
+  background-color: inherit;
     width: 240px;
     height: 102px;
     font-size: 13px;
