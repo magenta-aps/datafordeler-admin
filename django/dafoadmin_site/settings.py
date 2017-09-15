@@ -164,6 +164,8 @@ YscBZhYjEtWzc5sdWGdvI8gJygYhFSZJu+z+T9Rw6Se4LBfJAP4iuaYrDOmB/tRsH4AlvwE5J3SR
 6fNAqwfHitdV7fWUoNTzFauRngfSVX7VHxlkmZlPV3rtHLRefNUBTRlincP129nJoFNynK+swr0V
 6bEVjlwiNbMb7qSTYu/3oC9OIqUbgCT7t6M="""
 
+USERPROFILE_DEBUG_TRANSLATION_MAP = {}
+
 AUTHENTICATION_BACKENDS = [
     'dafousers.auth.DafoUsersAuthBackend',
     'django.contrib.auth.backends.ModelBackend',

@@ -663,6 +663,17 @@ class SystemRole(models.Model):
         blank=True
     )
 
+    @property
+    def related_area_restrictions(self):
+        if self.role_type != self.constants.TYPE_SERVICE:
+            if self.parent is not None:
+                return self.parent.related_area_restrictions
+            else:
+                return AreaRestriction.objects.none()
+        return AreaRestriction.objects.filter(
+            area_restriction_type__service_name__iexact=self.role_name
+        )
+
     def __unicode__(self):
         return unicode(
             '%s (%s)' % (self.role_name, self.get_role_type_display())

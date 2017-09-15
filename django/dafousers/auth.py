@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from base64 import b64decode
+from dafousers.model_constants import SystemRole as sr_contants
+from dafousers.models import AreaRestriction
 from dafousers.models import PasswordUser
-from dafousers.models import UserProfile
 from dafousers.models import SystemRole
+from dafousers.models import UserProfile
+from django.db.models import Func, F
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.signals import user_logged_in
@@ -116,6 +119,7 @@ def update_user_auth_info(request):
             raise PermissionDenied("Could not parse token: %s" % e)
 
         result = []
+        attr_map = settings.USERPROFILE_DEBUG_TRANSLATION_MAP
         try:
             attr_statement = assertion.find(
                 "{urn:oasis:names:tc:SAML:2.0:assertion}"
@@ -131,7 +135,8 @@ def update_user_auth_info(request):
                         "{urn:oasis:names:tc:SAML:2.0:assertion}"
                         "AttributeValue"
                     )
-                    result.append(unicode(attr_value.text))
+                    value = unicode(attr_value.text)
+                    result.append(attr_map.get(value, value))
         except Exception as e:
             raise PermissionDenied(
                 "Could not get userprofiles from token: %s" % e
@@ -183,7 +188,9 @@ class DafoAuthInfo(object):
         if self.has_user_profile("DAFO Administrator"):
             return UserProfile.objects.all()
         elif self.has_user_profile("DAFO Serviceudbyder"):
-            return self.user_profiles_qs
+            return self.user_profiles_qs.exclude(
+                name="DAFO Serviceudbyder"
+            )
         else:
             return UserProfile.objects.none()
 
@@ -192,9 +199,34 @@ class DafoAuthInfo(object):
         if self.has_user_profile("DAFO Administrator"):
             return SystemRole.objects.all()
         elif self.has_user_profile("DAFO Serviceudbyder"):
-            return self.system_roles_qs
+            return SystemRole.objects.filter(
+                userprofile__in=self.admin_user_profiles
+            )
         else:
             return SystemRole.objects.none()
+
+    @property
+    def admin_area_restrictions(self):
+        if self.has_user_profile("DAFO Administrator"):
+            return SystemRole.objects.all()
+        elif self.has_user_profile("DAFO Serviceudbyder"):
+            # A serviceprovider's area restrictions are limited to restrictions
+            # for services he has access to.
+            return AreaRestriction.objects.annotate(
+                service_name_lower=Func(
+                    F('area_restriction_type__service_name'),
+                    function='LOWER'
+                )
+            ).filter(
+                service_name_lower__in=[
+                    x.target_name.lower() for x in
+                    self.admin_system_roles.filter(
+                        role_type=sr_contants.TYPE_SERVICE
+                    )
+                ]
+            )
+        else:
+            return AreaRestriction.objects.none()
 
 
 class TokenVerifier(object):
