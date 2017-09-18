@@ -17,6 +17,13 @@ SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SITE_DIR)
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 
+
+# Documentation paths
+DOC_STATIC_URL = '/doc/static/'
+DOC_DIR = os.path.join(PROJECT_DIR, "doc")
+DOC_STATIC_DIR = os.path.join(DOC_DIR, 'static')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -39,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_windows_tools',
+    'django_markup',
     'dafousers',
 ]
 
@@ -127,6 +135,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 CERT_ROOT = os.path.join(BASE_DIR, "cert")
 CERT_TMP_ROOT = os.path.join(CERT_ROOT, "tmp")
+
+# Defaults for restructuredtext rendering in templates
+
+MARKUP_SETTINGS = {
+   'restructuredtext': {
+      'settings_overrides': {
+         'raw_enabled': True,
+         'file_insertion_enabled': True,
+      }
+   }
+}
 
 # The name of the certificate key we sign certificates with
 CERT_KEY_NAME = "default.key"

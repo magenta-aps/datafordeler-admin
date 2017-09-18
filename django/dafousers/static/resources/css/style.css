@@ -2004,3 +2004,16 @@ ul.timelist, .timelist li {
     color: var(--dafo-blue);
     text-decoration: none;
 }
+
+/* RST documentation */
+
+#rst-documentation {
+    position: relative;
+    width: 72em;
+    margin-left: -36em;
+    left: 50%;
+}
+
+#rst-documentation .title {
+    float: none;
+}

@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.conf.urls import url
+from django.conf.urls.static import static
 from django.views.decorators.csrf import csrf_exempt
 from django.views.i18n import JavaScriptCatalog
 import dafousers.views as dafo_views
@@ -119,4 +121,9 @@ urlpatterns = [
 
     # jsi18n views
     url(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='javascript-catalog'),
-]
+
+    # Restructured text documentation
+    url(r'^doc/(?P<docfile>.*)[.]rst',
+        dafo_views.RstDocView.as_view(),
+        name="doc"),
+] + static(settings.DOC_STATIC_URL, document_root=settings.DOC_STATIC_DIR)

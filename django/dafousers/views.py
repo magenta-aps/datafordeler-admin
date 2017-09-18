@@ -12,6 +12,7 @@ from django.contrib.auth.views import _get_login_redirect_url
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.db.models import Min
+from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render
@@ -27,6 +28,7 @@ from django.views.generic.list import ListView
 import json
 import tempfile
 import urllib
+import os
 
 
 # Create your views here.
@@ -219,6 +221,28 @@ class LoginView(TemplateView):
             return super(LoginView, self).get(request, *args, **kwargs)
         else:
             return result
+
+
+class RstDocView(TemplateView):
+    template_name = 'dafousers/restructured_text_doc.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(RstDocView, self).get_context_data(**kwargs)
+        doc_file = self.kwargs.get("docfile") + ".rst"
+        if doc_file is None:
+            raise Http404("Rst doc file %s not found" % doc_file)
+        doc_file_path = os.path.join(
+            settings.DOC_DIR,
+            *doc_file.split("/")
+        )
+        if not (
+            os.path.exists(doc_file_path) and os.path.isfile(doc_file_path)
+        ):
+            raise Http404("%s is not an RST file" % doc_file_path)
+        with open(doc_file_path) as f:
+            kwargs['rst_content'] = f.read()
+
+        return kwargs
 
 
 class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
