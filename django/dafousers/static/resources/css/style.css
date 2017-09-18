@@ -2008,12 +2008,14 @@ ul.timelist, .timelist li {
 /* RST documentation */
 
 #rst-documentation {
-    position: relative;
-    width: 72em;
-    margin-left: -36em;
-    left: 50%;
+    max-width: 60em;
+    margin-left: 10em;
 }
 
 #rst-documentation .title {
     float: none;
+}
+
+#rst-documentation img {
+    max-width: 100%;
 }
