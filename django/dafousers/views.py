@@ -221,6 +221,43 @@ class LoginView(TemplateView):
             return result
 
 
+class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
+    model = None
+
+    def post(self, request, *args, **kwargs):
+        authinfo = self.request.user.dafoauthinfo
+        ids = request.POST.getlist('user_id')
+        users = self.model.objects.filter(id__in=ids)
+        action = request.POST.get('action')
+
+        if '_status' in action:
+            parts = action.split("_")
+            status = parts[2]
+            users.update(status=status)
+        elif action == '_add_user_profiles':
+            user_profiles_ids = request.POST.getlist('user_profiles')
+            user_profiles = authinfo.admin_user_profiles.filter(
+                id__in=user_profiles_ids
+            )
+            for user_profile in user_profiles:
+                for user in users:
+                    user.user_profiles.add(user_profile)
+
+        return HttpResponse("Success")
+
+
+class AccessAccountListTable(LoginRequiredMixin, ListView):
+    template_name = None
+    get_queryset_method = None
+
+    def get_queryset(self):
+        method = type(self).__dict__["get_queryset_method"]
+        return method(
+            self.request.GET.get('filter', None),
+            self.request.GET.get('order', None)
+        )
+
+
 class PasswordUserCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/passworduser/add.html'
     form_class = forms.PasswordUserForm
@@ -315,31 +352,6 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
                 return result
 
 
-def update_passworduser(request):
-
-    ids = request.POST.getlist('user_id')
-    users = models.PasswordUser.objects.filter(id__in=ids)
-    action = request.POST.get('action')
-    if '_status' in action:
-        parts = action.split("_")
-        status = parts[2]
-        users.update(status=status)
-    elif action == '_add_user_profiles':
-        user_profiles_ids = request.POST.getlist('user_profiles')
-        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
-        for user_profile in user_profiles:
-            for user in users:
-                user.user_profiles.add(user_profile)
-    return HttpResponse("Success")
-
-
-def update_passworduser_queryset(request):
-    filter = request.GET.get('filter', None)
-    order = request.GET.get('order', None)
-    password_users = get_passworduser_queryset(filter, order)
-    return render(request, 'dafousers/passworduser/table.html', {'object_list': password_users})
-
-
 def get_passworduser_queryset(filter, order):
     # If a filter param is passed, we use it to filter
     if filter:
@@ -357,6 +369,15 @@ def get_passworduser_queryset(filter, order):
             password_users = password_users.order_by(order)
 
     return password_users
+
+
+class PasswordUserAjaxUpdate(AccessAccountUserAjaxUpdate):
+    model = models.PasswordUser
+
+
+class PasswordUserListTable(AccessAccountListTable):
+    get_queryset_method = get_passworduser_queryset
+    template_name = 'dafousers/passworduser/table.html'
 
 
 class CertificateUserCreate(LoginRequiredMixin, CreateView):
@@ -454,7 +475,7 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
         self.create_new_certificate = request.POST.get('create_new_certificate')
         action = request.POST.get('action')
         if action == '_save':
-            self.form_is_valid = False;
+            self.form_is_valid = False
             result = super(CertificateUserEdit, self).post(request, *args, **kwargs)
             if self.form_is_valid:
                 return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
@@ -462,31 +483,6 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
                 print "Error saving CertificateUser."
                 print form.errors
                 return result
-
-
-def update_certificateuser(request):
-
-    ids = request.POST.getlist('user_id')
-    systems = models.CertificateUser.objects.filter(id__in=ids)
-    action = request.POST.get('action')
-    if '_status' in action:
-        parts = action.split("_")
-        status = parts[2]
-        systems.update(status=status)
-    elif action == '_add_user_profiles':
-        user_profiles_ids = request.POST.getlist('user_profiles')
-        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
-        for user_profile in user_profiles:
-            for system in systems:
-                system.user_profiles.add(user_profile)
-    return HttpResponse("Success")
-
-
-def update_certificateuser_queryset(request):
-    filter = request.GET.get('filter', None)
-    order = request.GET.get('order', None)
-    password_users = get_certificateuser_queryset(filter, order)
-    return render(request, 'dafousers/certificateuser/table.html', {'object_list': password_users})
 
 
 def get_certificateuser_queryset(filter, order):
@@ -508,6 +504,15 @@ def get_certificateuser_queryset(filter, order):
             )
         certificate_users = certificate_users.order_by(order)
     return certificate_users
+
+
+class CertificateUserAjaxUpdate(AccessAccountUserAjaxUpdate):
+    model = models.CertificateUser
+
+
+class CertificateUserListTable(AccessAccountListTable):
+    template_name = 'dafousers/certificateuser/table.html'
+    get_queryset_method = get_certificateuser_queryset
 
 
 class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
@@ -574,17 +579,11 @@ class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
     template_name = 'dafousers/identityprovideraccount/edit.html'
     model = models.IdentityProviderAccount
     form_class = forms.IdentityProviderAccountForm
-    success_url = 'identityprovideraccount/list/'
-
-    def get_form_kwargs(self, **kwargs):
-        kwargs = super(IdentityProviderAccountEdit, self).get_form_kwargs(**kwargs)
-        kwargs['pk'] = self.kwargs.get('pk')
-        return kwargs
+    success_url = '/organisation/list/'
 
     def form_valid(self, form):
+        self.form_is_valid = True
         form.instance.changed_by = self.request.user.username
-        self.object = form.save(commit=False)
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
 
         return super(IdentityProviderAccountEdit, self).form_valid(form)
 
@@ -594,38 +593,18 @@ class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
         form = self.get_form(form_class)
         action = request.POST.get('action')
         if action == '_save':
-            result = super(IdentityProviderAccountEdit, self).post(request, *args, **kwargs)
-            if form.is_valid():
-                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-list'))
+            self.form_is_valid = False
+            result = super(IdentityProviderAccountEdit, self).post(
+                request, *args, **kwargs
+            )
+            if self.form_is_valid:
+                return HttpResponseRedirect(
+                    reverse('dafousers:identityprovideraccount-list')
+                )
             else:
                 print "Error saving IdentityProviderAccount."
                 print form.errors
                 return result
-
-
-def update_identityprovideraccount(request):
-
-    ids = request.POST.getlist('user_id')
-    organisations = models.IdentityProviderAccount.objects.filter(id__in=ids)
-    action = request.POST.get('action')
-    if '_status' in action:
-        parts = action.split("_")
-        status = parts[2]
-        organisations.update(status=status)
-    elif action == '_add_user_profiles':
-        user_profiles_ids = request.POST.getlist('user_profiles')
-        user_profiles = models.UserProfile.objects.filter(id__in=user_profiles_ids)
-        for user_profile in user_profiles:
-            for organisation in organisations:
-                organisation.user_profiles.add(user_profile)
-    return HttpResponse("Success")
-
-
-def update_identityprovideraccount_queryset(request):
-    filter = request.GET.get('filter', None)
-    order = request.GET.get('order', None)
-    identityprovider_accounts = get_identityprovideraccount_queryset(filter, order)
-    return render(request, 'dafousers/identityprovideraccount/table.html', {'object_list': identityprovider_accounts})
 
 
 def get_identityprovideraccount_queryset(filter, order):
@@ -641,6 +620,15 @@ def get_identityprovideraccount_queryset(filter, order):
     return identityprovider_accounts
 
 
+class IdentityProviderAccountAjaxUpdate(AccessAccountUserAjaxUpdate):
+    model = models.IdentityProviderAccount
+
+
+class IdentityProviderAccountListTable(AccessAccountListTable):
+    get_queryset_method = get_identityprovideraccount_queryset
+    template_name = 'dafousers/identityprovideraccount/table.html'
+
+
 class UserProfileCreate(LoginRequiredMixin, CreateView):
     template_name = 'dafousers/userprofile/add.html'
     form_class = forms.UserProfileForm
@@ -652,22 +640,17 @@ class UserProfileCreate(LoginRequiredMixin, CreateView):
         result = super(UserProfileCreate, self).form_valid(form)
         form.instance.system_roles = form.cleaned_data['system_roles']
         form.instance.area_restrictions = form.cleaned_data['area_restrictions']
+        form.instance.accessaccount_set.add(
+            self.request.user.dafoauthinfo.access_account_user
+        )
         return result
 
-    def post(self, request, *args, **kwargs):
-
-        result = super(CreateView, self).post(request, *args, **kwargs)
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            action = request.POST.get('action')
-            if action == '_addanother':
-                return HttpResponseRedirect(reverse('dafousers:userprofile-add'))
-            elif action == '_save':
-                return HttpResponseRedirect(reverse('dafousers:userprofile-list'))
-        else:
-            return result
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        if action == '_addanother':
+            return reverse('dafousers:userprofile-add')
+        elif action == '_save':
+            return reverse('dafousers:userprofile-list')
 
 
 class UserProfileList(LoginRequiredMixin, ListView):
@@ -675,13 +658,15 @@ class UserProfileList(LoginRequiredMixin, ListView):
     model = models.UserProfile
 
     def get_context_data(self, **kwargs):
+        authinfo = self.request.user.dafoauthinfo
         context = super(UserProfileList, self).get_context_data(**kwargs)
         context['action'] = ""
-        context['system_roles'] = models.SystemRole.objects.all()
-        context['area_restrictions'] = models.AreaRestriction.objects.all()
-        context['filter'] = ''
+        context['system_roles'] = authinfo.admin_system_roles
+        context['area_restrictions'] = authinfo.admin_area_restrictions
         context['order'] = 'name'
-        context['object_list'] = get_userprofile_queryset(context['filter'], context['order'])
+        context['object_list'] = get_userprofile_queryset(
+            authinfo.admin_user_profiles, context['order']
+        )
         return context
 
 
@@ -703,78 +688,64 @@ class UserProfileEdit(LoginRequiredMixin, UpdateView):
     template_name = 'dafousers/userprofile/edit.html'
     model = models.UserProfile
     form_class = forms.UserProfileForm
-    success_url = 'userprofile/list/'
-
-    def get_form_kwargs(self, **kwargs):
-        kwargs = super(UserProfileEdit, self).get_form_kwargs(**kwargs)
-        kwargs['pk'] = self.kwargs.get('pk')
-        return kwargs
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
-        self.object = form.save(commit=False)
-        form.instance.system_roles = form.cleaned_data['system_roles']
-        form.instance.area_restrictions = form.cleaned_data['area_restrictions']
-
         return super(UserProfileEdit, self).form_valid(form)
 
+    def get_success_url(self):
+        return reverse('dafousers:userprofile-list')
+
+
+class UserProfileAjaxUpdate(LoginRequiredMixin, View):
+
     def post(self, request, *args, **kwargs):
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
+        ids = request.POST.getlist('user_id')
+        authinfo = request.user.dafoauthinfo
+        user_profiles = authinfo.admin_user_profiles.filter(
+            id__in=ids
+        )
         action = request.POST.get('action')
-        if action == '_save':
-            result = super(UserProfileEdit, self).post(request, *args, **kwargs)
-            if form.is_valid():
-                return HttpResponseRedirect(reverse('dafousers:userprofile-list'))
-            else:
-                print "Error saving UserProfile."
-                print form.errors
-                return result
+        if '_status' in action:
+            parts = action.split("_")
+            status = parts[2]
+            user_profiles.update(status=status)
+        elif action == '_add_system_roles':
+            system_roles_ids = request.POST.getlist('system_roles')
+            system_roles = authinfo.admin_system_roles.filter(
+                id__in=system_roles_ids
+            )
+            for system_role in system_roles:
+                for user_profile in user_profiles:
+                    user_profile.system_roles.add(system_role)
+        elif action == '_add_area_restrictions':
+            area_restrictions_ids = request.POST.getlist('area_restrictions')
+            area_restrictions = authinfo.admin_area_restrictions.filter(
+                id__in=area_restrictions_ids
+            )
+            for area_restriction in area_restrictions:
+                for user_profile in user_profiles:
+                    user_profile.area_restrictions.add(area_restriction)
+        return HttpResponse("Success")
 
 
-def update_userprofile(request):
+class UserProfileListTable(LoginRequiredMixin, ListView):
+    template_name = 'dafousers/userprofile/table.html'
 
-    ids = request.POST.getlist('user_id')
-    user_profiles = models.UserProfile.objects.filter(id__in=ids)
-    action = request.POST.get('action')
-    if '_status' in action:
-        parts = action.split("_")
-        status = parts[2]
-        user_profiles.update(status=status)
-    elif action == '_add_system_roles':
-        system_roles_ids = request.POST.getlist('system_roles')
-        system_roles = models.SystemRole.objects.filter(id__in=system_roles_ids)
-        for system_role in system_roles:
-            for user_profile in user_profiles:
-                user_profile.system_roles.add(system_role)
-    elif action == '_add_area_restrictions':
-        area_restrictions_ids = request.POST.getlist('area_restrictions')
-        area_restrictions = models.AreaRestriction.objects.filter(id__in=area_restrictions_ids)
-        for area_restriction in area_restrictions:
-            for user_profile in user_profiles:
-                user_profile.area_restrictions.add(area_restriction)
-    return HttpResponse("Success")
+    def get_queryset(self):
+        return get_userprofile_queryset(
+            self.request.user.dafoauthinfo.admin_user_profiles,
+            self.request.GET.get('order', None)
+        )
 
 
-def update_userprofile_queryset(request):
-    filter = request.GET.get('filter', None)
-    order = request.GET.get('order', None)
-    user_profiles = get_userprofile_queryset(filter, order)
-    return render(request, 'dafousers/userprofile/table.html', {'object_list': user_profiles})
-
-
-def get_userprofile_queryset(filter, order):
+def get_userprofile_queryset(qs, order):
     # If a filter param is passed, we use it to filter
-    if filter:
-        user_profiles = models.UserProfile.objects.filter(status=filter)
-    else:
-        user_profiles = models.UserProfile.objects.all()
 
     # If a order param is passed, we use it to order
     if order:
-        user_profiles = user_profiles.order_by(order)
-    return user_profiles
+        qs = qs.order_by(order)
+    return qs
 
 
 def search_org_user_system(request):
@@ -834,5 +805,7 @@ class CertificateDownload(LoginRequiredMixin, View):
         tmp_file.write(cert.certificate_blob)
         tmp_file.seek(0)
         resp = HttpResponse(tmp_file, content_type='text/html')
-        resp['Content-Disposition'] = "attachment; filename=cert_%s.crt" % filename
+        resp['Content-Disposition'] = (
+            "attachment; filename=cert_%s.crt" % filename
+        )
         return resp

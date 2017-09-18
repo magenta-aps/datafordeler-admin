@@ -233,7 +233,7 @@ class AccessAccount(models.Model):
             pk__in=editable_user_profiles
         )
 
-        return other_user_profiles | submitted
+        return other_user_profiles.distinct() | submitted.distinct()
 
 
 class PasswordUserQuerySet(models.QuerySet):
@@ -476,12 +476,6 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
         blank=True,
         default=""
     )
-    next_expiration = models.DateTimeField(
-        verbose_name=_(u"Næste udløbsdato for metadata og/eller certifikat"),
-        blank=True,
-        null=True,
-        default=None
-    )
 
     userprofile_attribute = models.CharField(
         verbose_name=_(u"SAML-attribut der indeholder brugerprofiler"),
@@ -689,10 +683,6 @@ class UserProfile(EntityWithHistory):
         verbose_name=_(u"Navn"),
         max_length=2048
     )
-    created_by = models.CharField(
-        verbose_name=_(u"Oprettet af"),
-        max_length=2048
-    )
     system_roles = models.ManyToManyField(
         'SystemRole',
         verbose_name=_("Tilknyttede systemroller"),
@@ -703,6 +693,24 @@ class UserProfile(EntityWithHistory):
         verbose_name=_("Tilknyttede områdebegrænsninger"),
         blank=True
     )
+
+    def get_updated_system_roles(self, user, submitted):
+        editable_system_roles = user.dafoauthinfo.admin_system_roles
+
+        other_system_roles = self.system_roles.all().exclude(
+            pk__in=editable_system_roles
+        )
+
+        return other_system_roles.distinct() | submitted.distinct()
+
+    def get_updated_area_restrictions(self, user, submitted):
+        editable_area_restrictions = user.dafoauthinfo.admin_area_restrictions
+
+        other_area_restrictions = self.area_restrictions.all().exclude(
+            pk__in=editable_area_restrictions
+        )
+
+        return other_area_restrictions.distinct() | submitted.distinct()
 
     def __unicode__(self):
         return unicode(self.name)
@@ -754,9 +762,23 @@ class SystemRole(models.Model):
             area_restriction_type__service_name__iexact=self.role_name
         )
 
+    @property
+    def service_name(self):
+        if self.role_type == self.constants.TYPE_SERVICE:
+            return self.target_name
+        else:
+            if self.parent is not None:
+                return self.parent.service_name
+            else:
+                return "<unknown>"
+
     def __unicode__(self):
         return unicode(
-            '%s (%s)' % (self.role_name, self.get_role_type_display())
+            '%s (%s, %s)' % (
+                self.role_name,
+                self.get_role_type_display(),
+                self.service_name.upper()
+            )
         )
 
 
@@ -790,8 +812,18 @@ class AreaRestriction(models.Model):
         null=False,
     )
 
+    @property
+    def service_name(self):
+        if self.area_restriction_type is not None:
+            return self.area_restriction_type.service_name
+        else:
+            return "<unknown>"
+
     def __unicode__(self):
-        return unicode(self.name)
+        return unicode("%s (%s)") % (
+            self.name,
+            self.service_name.upper()
+        )
 
 
 class AreaRestrictionType(models.Model):

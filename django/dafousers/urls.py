@@ -21,10 +21,10 @@ urlpatterns = [
         name='passworduser-list'),
 
     url(r'^ajax/update_passworduser_queryset/$',
-        dafo_views.update_passworduser_queryset,
+        dafo_views.PasswordUserListTable.as_view(),
         name='update_passworduser_queryset'),
     url(r'^ajax/update_passworduser/$',
-        dafo_views.update_passworduser,
+        dafo_views.PasswordUserAjaxUpdate.as_view(),
         name='update_passworduser'),
 
     # SYSTEM
@@ -42,10 +42,10 @@ urlpatterns = [
         name='certificateuser-list'),
 
     url(r'^ajax/update_certificateuser_queryset/$',
-        dafo_views.update_certificateuser_queryset,
+        dafo_views.CertificateUserListTable.as_view(),
         name='update_certificateuser_queryset'),
     url(r'^ajax/update_certificateuser/$',
-        dafo_views.update_certificateuser,
+        dafo_views.CertificateUserAjaxUpdate.as_view(),
         name='update_certificateuser'),
 
     url(r'certificate/(?P<pk>[0-9]+)/download/$',
@@ -67,10 +67,10 @@ urlpatterns = [
         name='identityprovideraccount-list'),
 
     url(r'^ajax/update_identityprovideraccount_queryset/$',
-        dafo_views.update_identityprovideraccount_queryset,
+        dafo_views.IdentityProviderAccountListTable.as_view(),
         name='update_identityprovideraccount_queryset'),
     url(r'^ajax/update_identityprovideraccount/$',
-        dafo_views.update_identityprovideraccount,
+        dafo_views.IdentityProviderAccountAjaxUpdate.as_view(),
         name='update_identityprovideraccount'),
 
     # USER PROFILE
@@ -88,10 +88,10 @@ urlpatterns = [
         name='userprofile-list'),
 
     url(r'^ajax/update_userprofile_queryset/$',
-        dafo_views.update_userprofile_queryset,
+        dafo_views.UserProfileListTable.as_view(),
         name='update_userprofile_queryset'),
     url(r'^ajax/update_userprofile/$',
-        dafo_views.update_userprofile,
+        dafo_views.UserProfileAjaxUpdate.as_view(),
         name='update_userprofile'),
 
     # GLOBAL

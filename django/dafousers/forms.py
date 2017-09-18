@@ -93,35 +93,13 @@ class CertificateUserForm(AccessAccountForm):
             self.initial['certificates'] = certs
 
 
-class IdentityProviderAccountForm(forms.ModelForm):
-
-    user_profiles = forms.ModelMultipleChoiceField(
-        queryset=models.UserProfile.objects.all(),
-        required=False,
-        widget=widgets.FilteredSelectMultiple(
-            _(u"brugerprofiler"),
-            False,
-            attrs={'rows': '6'}
-        ),
-    )
+class IdentityProviderAccountForm(AccessAccountForm):
 
     class Meta:
         model = models.IdentityProviderAccount
         fields = ['name', 'idp_entity_id', 'idp_type', 'metadata_xml_file', 'metadata_xml', 'organisation',
                   'contact_name', 'contact_email', 'userprofile_attribute', 'userprofile_attribute_format',
                   'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value']
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        if 'pk' in kwargs:
-            self.pk = kwargs.pop('pk')
-            super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
-            self.initial['user_profiles'] = models.IdentityProviderAccount.objects.get(id=self.pk).user_profiles.all()
-        else:
-            super(IdentityProviderAccountForm, self).__init__(*args, **kwargs)
-
-        self.fields["user_profiles"].queryset = \
-            user.dafoauthinfo.admin_user_profiles
 
 
 class UserProfileForm(forms.ModelForm):
@@ -151,10 +129,32 @@ class UserProfileForm(forms.ModelForm):
         fields = ['name']
 
     def __init__(self, *args, **kwargs):
-        if 'pk' in kwargs:
-            self.pk = kwargs.pop('pk')
-            super(UserProfileForm, self).__init__(*args, **kwargs)
-            self.initial['system_roles'] = models.UserProfile.objects.get(id=self.pk).system_roles.all()
-            self.initial['area_restrictions'] = models.UserProfile.objects.get(id=self.pk).area_restrictions.all()
-        else:
-            super(UserProfileForm, self).__init__(*args, **kwargs)
+        self.user = kwargs.pop("user")
+
+        super(UserProfileForm, self).__init__(*args, **kwargs)
+
+        if self.instance.pk:
+            self.initial['system_roles'] = models.UserProfile.objects.get(
+                id=self.instance.pk
+            ).system_roles.all()
+            self.initial['area_restrictions'] = models.UserProfile.objects.get(
+                id=self.instance.pk
+            ).area_restrictions.all()
+
+        self.fields["system_roles"].queryset = \
+            self.user.dafoauthinfo.admin_system_roles
+
+        self.fields["area_restrictions"].queryset = \
+            self.user.dafoauthinfo.admin_area_restrictions
+
+    def clean(self):
+        super(UserProfileForm, self).clean()
+        if self.instance.pk is not None:
+            self.instance.system_roles = \
+                self.instance.get_updated_system_roles(
+                    self.user, self.cleaned_data['system_roles']
+                )
+            self.instance.area_restrictions = \
+                self.instance.get_updated_area_restrictions(
+                    self.user, self.cleaned_data['area_restrictions']
+                )

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from base64 import b64decode
 from dafousers.model_constants import SystemRole as sr_contants
 from dafousers.models import AreaRestriction
+from dafousers.models import IdentityProviderAccount
 from dafousers.models import PasswordUser
 from dafousers.models import SystemRole
 from dafousers.models import UserProfile
@@ -38,7 +39,10 @@ class DafoUsersAuthBackend(object):
                     username = "[%s]" % verifier.namequalifier
                 else:
                     username = verifier.get_username()
-                djangouser = User.objects.get(username=username)
+                djangouser = User.objects.get(
+                    username=username,
+                    email=verifier.email
+                )
             except User.DoesNotExist:
                 djangouser = User(
                     username=username,
@@ -118,40 +122,77 @@ def update_user_auth_info(request):
         except Exception as e:
             raise PermissionDenied("Could not parse token: %s" % e)
 
-        result = []
-        attr_map = settings.USERPROFILE_DEBUG_TRANSLATION_MAP
-        try:
-            attr_statement = assertion.find(
-                "{urn:oasis:names:tc:SAML:2.0:assertion}"
-                "AttributeStatement"
-            )
-            for attribute in attr_statement.findall(
-                "{urn:oasis:names:tc:SAML:2.0:assertion}"
-                "Attribute"
-            ):
-                attr_name = attribute.get("Name", "")
-                if attr_name == "https://data.gl/claims/userprofile":
-                    attr_value = attribute.find(
+        subject = assertion.find(
+            "{urn:oasis:names:tc:SAML:2.0:assertion}"
+            "Subject"
+        )
+        nameID = subject.find(
+            "{urn:oasis:names:tc:SAML:2.0:assertion}"
+            "NameID"
+        )
+        namequalifier = nameID.get("NameQualifier")
+        if namequalifier == "<none>":
+            # Token is provided by the primary IdP, look up a PasswordUser
+            # by matching nameID of token to email
+            user = PasswordUser.objects.filter(
+                email=nameID.text
+            ).first()
+            info = DafoAuthInfo(user)
+        else:
+            # Otherwise, lookup the IdentityProviderAccount by matching
+            # the namequalifier against user_id of UserIdentification
+            user = IdentityProviderAccount.objects.filter(
+                identified_user__user_id=namequalifier
+            ).first()
+            primary_type = IdentityProviderAccount.CONSTANTS.IDP_TYPE_PRIMARY
+            if user.idp_type == primary_type:
+                # Use all associated user profiles for this user
+                info = DafoAuthInfo(user)
+            else:
+                # Use only user profiles stored in token
+                result = []
+                attr_map = settings.USERPROFILE_DEBUG_TRANSLATION_MAP
+                try:
+                    attr_statement = assertion.find(
                         "{urn:oasis:names:tc:SAML:2.0:assertion}"
-                        "AttributeValue"
+                        "AttributeStatement"
                     )
-                    value = unicode(attr_value.text)
-                    translated = attr_map.get(value)
-                    if translated is not None:
-                        for x in translated:
-                            result.append(x)
-                    else:
-                        result.append(value)
-        except Exception as e:
+                    for attribute in attr_statement.findall(
+                        "{urn:oasis:names:tc:SAML:2.0:assertion}"
+                        "Attribute"
+                    ):
+                        attr_name = attribute.get("Name", "")
+                        if attr_name == "https://data.gl/claims/userprofile":
+                            attr_value = attribute.find(
+                                "{urn:oasis:names:tc:SAML:2.0:assertion}"
+                                "AttributeValue"
+                            )
+                            value = unicode(attr_value.text)
+                            translated = attr_map.get(value)
+                            if translated is not None:
+                                for x in translated:
+                                    result.append(x)
+                            else:
+                                result.append(value)
+                except Exception as e:
+                    raise PermissionDenied(
+                        "Could not get userprofiles from token: %s" % e
+                    )
+                info = DafoAuthInfo(user, UserProfile.objects.filter(
+                    name__in=result
+                ))
+
+        if info is None:
             raise PermissionDenied(
-                "Could not get userprofiles from token: %s" % e
+                "No user or organisation found matching %s or %s" % (
+                    nameID.text, namequalifier
+                )
             )
-        info = DafoAuthInfo(UserProfile.objects.filter(name__in=result))
     else:
         # Try looking up a passworduser
         try:
             pwuser = PasswordUser.objects.get(email=request.user.email)
-            info = DafoAuthInfo(pwuser.user_profiles.all())
+            info = DafoAuthInfo(pwuser)
         except PasswordUser.DoesNotExist:
             info = None
 
@@ -164,7 +205,10 @@ class DafoAuthInfo(object):
     user_profiles_qs = None
     system_roles_qs = None
 
-    def __init__(self, profiles_queryset=UserProfile.objects.none()):
+    def __init__(self, user, profiles_queryset=None):
+        self.access_account_user = user
+        if profiles_queryset is None:
+            profiles_queryset = user.user_profiles.all()
         self.user_profiles_qs = profiles_queryset
         self.system_roles_qs = SystemRole.objects.filter(
             userprofile__in=self.user_profiles
@@ -194,7 +238,10 @@ class DafoAuthInfo(object):
             return UserProfile.objects.all()
         elif self.has_user_profile("DAFO Serviceudbyder"):
             return self.user_profiles_qs.exclude(
-                name="DAFO Serviceudbyder"
+                name__in=[
+                    "DAFO Administrator",
+                    "DAFO Serviceudbyder",
+                ]
             )
         else:
             return UserProfile.objects.none()
@@ -206,7 +253,7 @@ class DafoAuthInfo(object):
         elif self.has_user_profile("DAFO Serviceudbyder"):
             return SystemRole.objects.filter(
                 userprofile__in=self.admin_user_profiles
-            )
+            ).distinct()
         else:
             return SystemRole.objects.none()
 
@@ -229,7 +276,7 @@ class DafoAuthInfo(object):
                         role_type=sr_contants.TYPE_SERVICE
                     )
                 ]
-            )
+            ).distinct()
         else:
             return AreaRestriction.objects.none()
 
