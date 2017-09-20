@@ -1,14 +1,11 @@
-Admin
-=====
+.. _dafo-admin:
+DAFO Admin
+==========
 
 Dokumentation for `datafordeler-admin. <https://github.com/magenta-aps/datafordeler-admin>`_
 
 .. toctree::
+   :caption: Indhold
+   :maxdepth: 2
 
-   section
-
-
-Endnu en overskrift
--------------------
-
-Noget tekst.
+    login
