@@ -1,4 +1,0 @@
-Sektion
-=======
-
-Mere tekst.
