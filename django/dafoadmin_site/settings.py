@@ -17,6 +17,13 @@ SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SITE_DIR)
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 
+
+# Documentation paths
+DOC_STATIC_URL = '/doc/static/'
+DOC_DIR = os.path.join(PROJECT_DIR, "doc")
+DOC_STATIC_DIR = os.path.join(DOC_DIR, 'static')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -39,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_windows_tools',
+    'django_markup',
     'dafousers',
 ]
 
@@ -125,11 +133,71 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+CERT_ROOT = os.path.join(BASE_DIR, "cert")
+CERT_TMP_ROOT = os.path.join(CERT_ROOT, "tmp")
+
+# Defaults for restructuredtext rendering in templates
+
+MARKUP_SETTINGS = {
+   'restructuredtext': {
+      'settings_overrides': {
+         'raw_enabled': True,
+         'file_insertion_enabled': True,
+      }
+   }
+}
+
+# The name of the certificate key we sign certificates with
+CERT_KEY_NAME = "default.key"
 
 # FCGI defaults
 FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/frontpage/'
+
+# The URL we use for logging in via the IdP
+IDP_SSOPROXY_URL = "https://localhost:7443/sso_proxy"
+
+# How many seconds time skew to allow when checking SAML tokens
+MAX_SAML_TIME_SKEW = 3
+
+# How many seconds to allow a token to live before we reject it
+MAX_SAML_TOKEN_LIFETIME = 60 * 10
+
+# SAML audience URI, must be the same as is added to tokens by the STS
+SAML_AUDIENCE_URI = "https://data.gl/"
+
+# The issuer NameID used by the DAFA STS that issues the tokens
+SAML_STS_ISSUER = "Dafo-STS"
+
+# The public x509 cert the STS uses to sign tokens
+SAML_STS_PUBLIC_CERT = """\
+MIIC+zCCAeOgAwIBAgIJAKMfFL7HCxFZMA0GCSqGSIb3DQEBCwUAMBQxEjAQBgNVBAMMCWxvY2Fs
+aG9zdDAeFw0xNzA0MjUwOTQzNTdaFw0yNzA0MjMwOTQzNTdaMBQxEjAQBgNVBAMMCWxvY2FsaG9z
+dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOQ2ayxfLX0bWEhElW83nWslKBjLYY8x
+0v1+rv9htGsroWclvu9srD7R5qA979bH0xX3fI0SZLAgym7YOLbEGMWjWZH5W34tKUBw2hBuEadJ
+AOwU4HGaDFws/fTullYzDDiQU3NSlnIrwhSmWJYjgU39NkGu0qoBkp7x7raid0hwqOk40O5VRS2s
+7q6XX+IbzTh5Fyod0JtSr8iabuLGt2xWdbNY8jlo7BkMiweygn3/1sPdzUQmY3ryoTnL5j4W0KoJ
+Iqqu4UHRR7EW9R2ytySrbtBh55VcoILCbByP+4B+o896uTR+z/eZgFLDIeW3LaypGLskw731OJ/7
+01dMlNkCAwEAAaNQME4wHQYDVR0OBBYEFOWkzPajQZFDeRRFkNnRY9y00lRaMB8GA1UdIwQYMBaA
+FOWkzPajQZFDeRRFkNnRY9y00lRaMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAKcm
+YscBZhYjEtWzc5sdWGdvI8gJygYhFSZJu+z+T9Rw6Se4LBfJAP4iuaYrDOmB/tRsH4AlvwE5J3SR
++k/2pZ4RNLLopHzg+HlDPnkwXJqk0+ryhODriua7sEkSg6BCEohEJZvj4OHuaExYgzz7RSG34L9n
+5L6tf7lvyMEXKGtvhtyMaM4lHCP5zzscv1I5q5Pa7lsxQ1V8xVMaZzyEDxf1XFXlj+a3FARX/khv
+6fNAqwfHitdV7fWUoNTzFauRngfSVX7VHxlkmZlPV3rtHLRefNUBTRlincP129nJoFNynK+swr0V
+6bEVjlwiNbMb7qSTYu/3oC9OIqUbgCT7t6M="""
+
+USERPROFILE_DEBUG_TRANSLATION_MAP = {}
+
+AUTHENTICATION_BACKENDS = [
+    'dafousers.auth.DafoUsersAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 LOCAL_SETTINGS_FILE = os.path.join(SITE_DIR, "local_settings.py")
 if os.path.exists(LOCAL_SETTINGS_FILE):
     from local_settings import *  # noqa
+
+# The certificate key we sign certificates with
+CERT_KEY = os.path.join(CERT_ROOT, CERT_KEY_NAME)

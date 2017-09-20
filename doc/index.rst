@@ -1,14 +1,14 @@
-Admin
-=====
+.. _dafo-admin:
+
+DAFO Admin
+==========
 
 Dokumentation for `datafordeler-admin. <https://github.com/magenta-aps/datafordeler-admin>`_
 
 .. toctree::
+   :caption: Indhold
+   :maxdepth: 2
 
-   section
+   login
 
-
-Endnu en overskrift
--------------------
-
-Noget tekst.
+DAFO Admin er administrationssystemet for den grønlandske datafordeler.

@@ -6,6 +6,7 @@ import dafousers.models
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
+import uuid
 
 
 class Migration(migrations.Migration):
@@ -37,7 +38,7 @@ class Migration(migrations.Migration):
                 ('email', models.EmailField(max_length=254, verbose_name='E-mail')),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('encrypted_password', models.CharField(blank=True, default='', max_length=4000, verbose_name='Krypteret password')),
-                ('person_identification', models.UUIDField(blank=True, default='', null=True, verbose_name='Grunddata personidentifikation UUID')),
+                ('person_identification', models.CharField(blank=True, default=uuid.uuid4, max_length=40, null=True, verbose_name='Grunddata personidentifikation UUID')),
             ],
             options={
                 'abstract': False,
@@ -80,7 +81,7 @@ class Migration(migrations.Migration):
                 ('email', models.EmailField(max_length=254, verbose_name='E-mail')),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('encrypted_password', models.CharField(blank=True, default='', max_length=4000, verbose_name='Krypteret password')),
-                ('person_identification', models.UUIDField(blank=True, default='', null=True, verbose_name='Grunddata personidentifikation UUID')),
+                ('person_identification', models.CharField(blank=True, default=uuid.uuid4, max_length=40, null=True, verbose_name='Grunddata personidentifikation UUID')),
             ],
             options={
                 'abstract': False,
