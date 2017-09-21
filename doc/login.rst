@@ -1,6 +1,5 @@
-##################
 Login i DAFO Admin
-##################
+==================
 
 For at få adgang til funktionaliteten i DAFO Admin er det nødvendigt at logge
 ind i systemet. Dette kan ske på to måder:
@@ -18,7 +17,7 @@ konfigureret med en af disse roller.
 
 
 Login via Brugernavn og Adgangskode
-===================================
+-----------------------------------
 
 For at logge ind via brugernavn og adgangskode klikkes på "Log ind" ikonet i
 øverste højre hjørne.
@@ -32,7 +31,7 @@ felterne og der klikkes på "LOG IND".
 
 
 Login via Organisation
-======================
+----------------------
 
 For at logge ind via organisation klikkes på "Log ind" ikonet i øverst højre
 hjørne. Hvis fanebladet "Organisation login" ikke er aktivt klikkes på dette.
@@ -45,7 +44,7 @@ organisation. Ved successfuldt login og udstedelse af token fra STS'en
 returneres brugeren til DAFO Admin og logges ind.
 
 Logout
-======
+------
 
 For at logge ud af DAFO Admin klikkes på "Log ud" knappen i øverste højre
 hjørne. Vær opmærksom på at dette kun logger ud af DAFO Admin og ikke ud fra
