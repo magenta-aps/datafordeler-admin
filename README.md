@@ -1,3 +1,4 @@
 # datafordeler-admin
 
-Administrativt interface for datafordeler-projektet. Kører i egen webservice og administrerer bl.a. datakilder.
+Documentation can be [found here.](doc/index.rst)
+
