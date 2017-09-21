@@ -824,12 +824,13 @@ class CertificateDownload(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         cert = models.Certificate.objects.get(pk=kwargs.get('pk'))
-        filename = cert.valid_to
+        cert_date = cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S")
         tmp_file = tempfile.TemporaryFile()
         tmp_file.write(cert.certificate_blob)
         tmp_file.seek(0)
-        resp = HttpResponse(tmp_file, content_type='text/html')
+        resp = HttpResponse(tmp_file, content_type='application/x-pkcs12')
         resp['Content-Disposition'] = (
-            "attachment; filename=cert_%s.crt" % filename
+            "attachment; filename=cert_%s.p12" % cert_date
         )
+        print "attachment; filename=cert_%s.p12" % cert_date
         return resp
