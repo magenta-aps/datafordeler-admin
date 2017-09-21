@@ -239,7 +239,9 @@ class AccessAccount(models.Model):
 class PasswordUserQuerySet(models.QuerySet):
     def search(self, term):
         return self.filter(
-            models.Q(givenname__contains=term) | models.Q(lastname__contains=term)
+            models.Q(givenname__contains=term) |
+            models.Q(lastname__contains=term) |
+            models.Q(email__contains=term)
         )
 
 
