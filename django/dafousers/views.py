@@ -304,15 +304,12 @@ class PasswordUserCreate(LoginRequiredMixin, CreateView):
         form.instance.user_profiles = form.cleaned_data['user_profiles']
         return result
 
-    def post(self, request, *args, **kwargs):
-
-        super(CreateView, self).post(request, *args, **kwargs)
-
-        action = request.POST.get('action')
-        if action == '_addanother':
-            return HttpResponseRedirect(reverse('dafousers:passworduser-add'))
-        elif action == '_save':
-            return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        if action == '_save':
+            return reverse('dafousers:passworduser-list')
+        elif action == '_addanother':
+            return reverse('dafousers:passworduser-add')
 
 
 class PasswordUserList(LoginRequiredMixin, ListView):
@@ -349,11 +346,6 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
     form_class = forms.PasswordUserForm
     success_url = 'user/list/'
 
-    def get_form_kwargs(self, **kwargs):
-        kwargs = super(PasswordUserEdit, self).get_form_kwargs(**kwargs)
-        kwargs['pk'] = self.kwargs.get('pk')
-        return kwargs
-
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
         if form.cleaned_data['password'] != "*":
@@ -363,17 +355,10 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
 
         return super(PasswordUserEdit, self).form_valid(form)
 
-    def post(self, request, *args, **kwargs):
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        action = request.POST.get('action')
+    def get_success_url(self):
+        action = self.request.POST.get('action')
         if action == '_save':
-            result = super(PasswordUserEdit, self).post(request, *args, **kwargs)
-            if form.is_valid():
-                return HttpResponseRedirect(reverse('dafousers:passworduser-list'))
-            else:
-                return result
+            return reverse('dafousers:passworduser-list')
 
 
 def get_passworduser_queryset(filter, order):
@@ -422,22 +407,12 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
         form.instance.create_certificate(int(certificate_years_valid))
         return result
 
-    def post(self, request, *args, **kwargs):
-
-        result = super(CreateView, self).post(request, *args, **kwargs)
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            action = request.POST.get('action')
-            if action == '_addanother':
-                return HttpResponseRedirect(reverse('dafousers:certificateuser-add'))
-            elif action == '_save':
-                return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
-        else:
-            print "Error saving CertificateUser."
-            print form.errors
-            return result
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        if action == '_save':
+            return reverse('dafousers:certificateuser-list')
+        elif action == '_addanother':
+            return reverse('dafousers:certificateuser-add')
 
 
 class CertificateUserList(LoginRequiredMixin, ListView):
@@ -476,7 +451,6 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
     create_new_certificate = False
 
     def form_valid(self, form):
-        self.form_is_valid = True
         form.instance.changed_by = self.request.user.username
         form.instance.certificates = form.cleaned_data['certificates']
 
@@ -486,27 +460,16 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
             if not removed_cert:
                 form.instance.certificates.remove(cert.pk)
 
-        if self.create_new_certificate:
+        if self.request.POST.get('create_new_certificate'):
             certificate_years_valid = form.cleaned_data['certificate_years_valid']
             print certificate_years_valid
             form.instance.create_certificate(int(certificate_years_valid))
         return super(CertificateUserEdit, self).form_valid(form)
 
-    def post(self, request, *args, **kwargs):
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        self.create_new_certificate = request.POST.get('create_new_certificate')
-        action = request.POST.get('action')
+    def get_success_url(self):
+        action = self.request.POST.get('action')
         if action == '_save':
-            self.form_is_valid = False
-            result = super(CertificateUserEdit, self).post(request, *args, **kwargs)
-            if self.form_is_valid:
-                return HttpResponseRedirect(reverse('dafousers:certificateuser-list'))
-            else:
-                print "Error saving CertificateUser."
-                print form.errors
-                return result
+            return reverse('dafousers:certificateuser-list')
 
 
 def get_certificateuser_queryset(filter, order):
@@ -555,20 +518,12 @@ class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
         form.instance.user_profiles = form.cleaned_data['user_profiles']
         return result
 
-    def post(self, request, *args, **kwargs):
-
-        result = super(CreateView, self).post(request, *args, **kwargs)
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            action = request.POST.get('action')
-            if action == '_addanother':
-                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-add'))
-            elif action == '_save':
-                return HttpResponseRedirect(reverse('dafousers:identityprovideraccount-list'))
-        else:
-            return result
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        if action == '_save':
+            return reverse('dafousers:identityprovideraccount-list')
+        elif action == '_addanother':
+            return reverse('dafousers:identityprovideraccount-add')
 
 
 class IdentityProviderAccountList(LoginRequiredMixin, ListView):
@@ -606,29 +561,13 @@ class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
     success_url = '/organisation/list/'
 
     def form_valid(self, form):
-        self.form_is_valid = True
         form.instance.changed_by = self.request.user.username
-
         return super(IdentityProviderAccountEdit, self).form_valid(form)
 
-    def post(self, request, *args, **kwargs):
-
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        action = request.POST.get('action')
+    def get_success_url(self):
+        action = self.request.POST.get('action')
         if action == '_save':
-            self.form_is_valid = False
-            result = super(IdentityProviderAccountEdit, self).post(
-                request, *args, **kwargs
-            )
-            if self.form_is_valid:
-                return HttpResponseRedirect(
-                    reverse('dafousers:identityprovideraccount-list')
-                )
-            else:
-                print "Error saving IdentityProviderAccount."
-                print form.errors
-                return result
+            return reverse('dafousers:identityprovideraccount-list')
 
 
 def get_identityprovideraccount_queryset(filter, order):
@@ -671,10 +610,10 @@ class UserProfileCreate(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         action = self.request.POST.get('action')
-        if action == '_addanother':
-            return reverse('dafousers:userprofile-add')
-        elif action == '_save':
+        if action == '_save':
             return reverse('dafousers:userprofile-list')
+        elif action == '_addanother':
+            return reverse('dafousers:userprofile-add')
 
 
 class UserProfileList(LoginRequiredMixin, ListView):
