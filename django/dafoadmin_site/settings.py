@@ -147,6 +147,9 @@ MARKUP_SETTINGS = {
    }
 }
 
+# Enable or disable Django admin
+ENABLE_DJANGO_ADMIN = False
+
 # The name of the certificate key we sign certificates with
 ROOT_CERT_NAME = "default.jks"
 ROOT_CERT_PASS = 'password'
