@@ -347,10 +347,16 @@ class EntityWithCertificate(models.Model):
     def create_cert(self, years_valid):
 
         # load jks file
-        keystore = jks.KeyStore.load(settings.ROOT_CERT, 'password')
+        keystore = jks.KeyStore.load(
+            settings.ROOT_CERT, settings.ROOT_CERT_PASS
+        )
         pk_entry = keystore.private_keys[settings.ROOT_CERT_ALIAS]
-        private_key = crypto.load_privatekey(crypto.FILETYPE_ASN1, pk_entry.pkey)
-        public_cert = crypto.load_certificate(crypto.FILETYPE_ASN1, pk_entry.cert_chain[0][1])
+        private_key = crypto.load_privatekey(
+            crypto.FILETYPE_ASN1, pk_entry.pkey
+        )
+        public_cert = crypto.load_certificate(
+            crypto.FILETYPE_ASN1, pk_entry.cert_chain[0][1]
+        )
 
         # create cert req
         public_key = crypto.PKey()
