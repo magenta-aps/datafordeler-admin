@@ -35,6 +35,15 @@ import os
 class IndexView(TemplateView):
     template_name = 'start.html'
 
+    def dispatch(self, *args, **kwargs):
+        auth_info = update_user_auth_info(self.request)
+        if auth_info and auth_info.system_roles.filter(
+            role_name__in=["DAFO Serviceudbyder", "DAFO Administrator"]
+        ).exists():
+            return HttpResponseRedirect(reverse("dafousers:frontpage"))
+
+        return super(IndexView, self).dispatch(*args, **kwargs)
+
 
 class FrontpageView(TemplateView):
     template_name = 'frontpage.html'
