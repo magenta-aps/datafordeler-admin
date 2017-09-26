@@ -148,7 +148,7 @@ MARKUP_SETTINGS = {
 }
 
 # The name of the certificate key we sign certificates with
-CERT_KEY_NAME = "default.key"
+ROOT_CERT_NAME = "default.jks"
 
 # FCGI defaults
 FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
@@ -200,4 +200,6 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
     from local_settings import *  # noqa
 
 # The certificate key we sign certificates with
-CERT_KEY = os.path.join(CERT_ROOT, CERT_KEY_NAME)
+ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
+ROOT_CERT_PASS = 'password'
+ROOT_CERT_ALIAS = 'selfsigned'

@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from OpenSSL import crypto, SSL
-from socket import gethostname
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -23,6 +22,7 @@ from xml.etree import ElementTree
 import base64
 import copy
 import hashlib
+import jks
 import os
 import uuid
 
@@ -239,7 +239,9 @@ class AccessAccount(models.Model):
 class PasswordUserQuerySet(models.QuerySet):
     def search(self, term):
         return self.filter(
-            models.Q(givenname__contains=term) | models.Q(lastname__contains=term)
+            models.Q(givenname__contains=term) |
+            models.Q(lastname__contains=term) |
+            models.Q(email__contains=term)
         )
 
 
@@ -344,22 +346,38 @@ class EntityWithCertificate(models.Model):
 
     def create_cert(self, years_valid):
 
-        # load key pair
-        k_file = open(settings.CERT_KEY, 'rt').read()
-        k = crypto.load_privatekey(crypto.FILETYPE_PEM, k_file)
+        # load jks file
+        keystore = jks.KeyStore.load(settings.ROOT_CERT, 'password')
+        pk_entry = keystore.private_keys[settings.ROOT_CERT_ALIAS]
+        private_key = crypto.load_privatekey(crypto.FILETYPE_ASN1, pk_entry.pkey)
+        public_cert = crypto.load_certificate(crypto.FILETYPE_ASN1, pk_entry.cert_chain[0][1])
+
+        # create cert req
+        public_key = crypto.PKey()
+        public_key.generate_key(crypto.TYPE_RSA, 2048)
+
+        cert_req = crypto.X509Req()
+        cert_req.get_subject().CN = self.contact_email
+        cert_req.set_pubkey(public_key)
+        cert_req.sign(private_key, b"sha256")
+
         # create a cert
         cert = crypto.X509()
-        cert.get_subject().CN = self.contact_email
         cert.set_serial_number(1000)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(years_valid*365*24*60*60)
-        cert.set_issuer(cert.get_subject())
-        cert.set_pubkey(k)
-        cert.sign(k, b"sha256")
+        cert.set_issuer(public_cert.get_subject())
+        cert.set_subject(cert_req.get_subject())
+        cert.set_pubkey(cert_req.get_pubkey())
+        cert.sign(private_key, b"sha256")
+
+        p12 = crypto.PKCS12()
+        p12.set_privatekey(cert_req.get_pubkey())
+        p12.set_certificate(cert)
 
         certificate_name = "newcert-%s.crt" % os.getpid()
         return ContentFile(
-            crypto.dump_certificate(crypto.FILETYPE_PEM, cert),
+            p12.export(),
             name=certificate_name,
         )
 
@@ -600,14 +618,13 @@ class Certificate(models.Model):
         # Save once, making sure files are written
 
         result = super(Certificate, self).save(*args, **kwargs)
-        if(self.certificate_file):
+        if self.certificate_file:
             try:
                 # Store certificate in blob instead of file
                 self.certificate_blob = self.certificate_file.read()
-                x509_cert = x509.load_pem_x509_certificate(
-                    self.certificate_blob,
-                    default_backend()
-                )
+                p12 = crypto.load_pkcs12(self.certificate_blob)
+                p12cert = p12.get_certificate()
+                x509_cert = p12cert.to_cryptography()
 
                 # Calculate and format sha256 fingerprint
                 # (hex encoded bytes separated by ":")
@@ -659,7 +676,7 @@ class Certificate(models.Model):
 
     def __unicode__(self):
         return unicode(
-            self.valid_to or
+            self.valid_to.strftime("%Y-%m-%d %H:%M:%S") or
             _(u"Certifikat uden subjekt")
         )
 
