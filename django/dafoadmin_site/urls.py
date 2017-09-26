@@ -19,6 +19,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.conf.urls import url, include
 from django.views.generic import RedirectView
 import dafousers.views
+import dafoconfig.views
 
 root_redirect = RedirectView.as_view(
     url=reverse_lazy('admin:index'),
@@ -30,4 +31,5 @@ urlpatterns = [
     # url(r'^$', root_redirect, name="index"),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
+    url(r'^', include('dafoconfig.urls', namespace='dafoconfig'))
 ]

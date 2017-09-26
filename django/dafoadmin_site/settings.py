@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_windows_tools',
     'django_markup',
     'dafousers',
+    'dafoconfig'
 ]
 
 MIDDLEWARE = [
@@ -88,8 +89,18 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'configuration': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'datafordeler',
+        'USER': 'test',
+        'PASSWORD': 'test',
+        'HOST': '127.0.0.1',
     }
 }
+
+DATABASE_ROUTERS = ['dafoadmin_site.routers.ModelDatabaseRouter']
+
 
 
 # Password validation
