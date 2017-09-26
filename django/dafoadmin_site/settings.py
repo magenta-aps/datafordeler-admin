@@ -201,3 +201,6 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 
 # The certificate key we sign certificates with
 CERT_KEY = os.path.join(CERT_ROOT, CERT_KEY_NAME)
+
+
+SELENIUM_DISPLAY = ":0"
