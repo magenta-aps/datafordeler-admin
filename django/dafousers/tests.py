@@ -91,17 +91,12 @@ class CodeStyleTests(test.SimpleTestCase):
 
 SAFARI_PREVIEW_DRIVER = ('/Applications/Safari Technology Preview.app'
                          '/Contents/MacOS/safaridriver')
-CHROME_UBUNTU_DRIVER = '/usr/lib/chromium-browser/chromedriver'
+CHROME_UBUNTU_DRIVER = '/usr/local/bin/chromedriver'
 
 class BrowserTest(test.LiveServerTestCase):
 
     @classmethod
     def setUpClass(cls):
-
-        if not os.environ.get('DISPLAY'):
-            from pyvirtualdisplay import Display
-            cls.display = Display(visible=0, size=(800, 600))
-            cls.display.start()
 
         default_driver = (
             'Safari'
@@ -109,37 +104,25 @@ class BrowserTest(test.LiveServerTestCase):
             else 'Chrome'
         )
         driver_name = os.environ.get('BROWSER', default_driver)
-        print("driver_name: %s" % driver_name)
 
         driver = getattr(selenium.webdriver, driver_name, None)
-        print("driver: %s" % unicode(driver))
 
         if not driver:
             raise unittest.SkipTest('$BROWSER unset or invalid')
 
         args = {}
 
-        # if driver_name == 'Safari' and os.path.isfile(SAFARI_PREVIEW_DRIVER):
-        #     args.update(executable_path=SAFARI_PREVIEW_DRIVER)
-        #
-        # if driver_name == 'Chrome' and platform.dist()[0] == 'Ubuntu':
-        #     args.update(executable_path=CHROME_UBUNTU_DRIVER)
-        #
-        # print("args: %s" % args)
-        #
-        # try:
-        #     cls.browser = driver(**args)
-        # except Exception as exc:
-        #     print(exc)
-        #     raise unittest.SkipTest(exc.args[0])
+        if driver_name == 'Safari' and os.path.isfile(SAFARI_PREVIEW_DRIVER):
+            args.update(executable_path=SAFARI_PREVIEW_DRIVER)
 
-        webdriver.Chrome(
-            executable_path=CHROME_UBUNTU_DRIVER,
-            service_args=["--verbose"],
-            service_log_path="./chromedriver.log"
-        )
+        if driver_name == 'Chrome' and platform.dist()[0] == 'Ubuntu':
+            args.update(executable_path=CHROME_UBUNTU_DRIVER)
 
-
+        try:
+            cls.browser = driver(**args)
+        except Exception as exc:
+            print(exc)
+            raise unittest.SkipTest(exc.args[0])
 
         super(BrowserTest, cls).setUpClass()
 
@@ -148,9 +131,6 @@ class BrowserTest(test.LiveServerTestCase):
         super(BrowserTest, cls).tearDownClass()
 
         cls.browser.quit()
-        # If a Xvfb display is running, clean it up
-        if hasattr(cls, 'display') and cls.display:
-            cls.display.stop()
 
 
     def await_staleness(self, element):
@@ -194,7 +174,7 @@ class BrowserTest(test.LiveServerTestCase):
             "input[type=submit]",
         )
         submit.click()
-        self.await_staleness(submit)
+        # self.await_staleness(submit)
 
 
     def login(self, user, password='password', expected=True):
@@ -202,7 +182,7 @@ class BrowserTest(test.LiveServerTestCase):
         self.browser.delete_all_cookies()
         self.browser.get(self.live_server_url + '/admin/logout/')
         self.browser.delete_all_cookies()
-        self.browser.get(self.live_server_url)
+        self.browser.get(self.live_server_url + '/login')
 
         self.assertNotEqual(self.live_server_url, self.browser.current_url,
                             'logout failed!')
@@ -216,11 +196,11 @@ class BrowserTest(test.LiveServerTestCase):
 
         self.fill_in_form(username=user, password=password)
         if expected:
-            self.assertEquals(self.live_server_url + '/admin/',
+            self.assertEquals(self.live_server_url + '/frontpage/',
                               self.browser.current_url,
                               'login failed')
         else:
-            self.assertNotEquals(self.live_server_url + '/admin/',
+            self.assertNotEquals(self.live_server_url + '/login/',
                                  self.browser.current_url,
                                  'login successful')
 
