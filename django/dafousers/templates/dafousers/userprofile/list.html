@@ -16,7 +16,9 @@
 
         <div class="table-filter">
 
-            <a class="button filter_field blue" href="{% url 'dafousers:userprofile-add' %}">
+            <a id="goto_add"
+               class="button filter_field blue"
+               href="{% url 'dafousers:userprofile-add' %}">
                 <div class="flex-left">
                     <img src="/static/resources/images/brugerliste/check-white.png">
                 </div>
@@ -25,7 +27,9 @@
                 </div>
             </a>
 
-            <div class="button filter_field gray" onclick="showPopup('system-roles-popup')">
+            <div id="add_system_roles"
+                 class="button filter_field gray"
+                 onclick="showPopup('system-roles-popup')">
                 <div class="flex-left">
                     <img src="/static/resources/images/brugerliste/check-black.png">
                 </div>
@@ -34,7 +38,9 @@
                 </div>
             </div>
 
-            <div class="button filter_field gray" onclick="showPopup('area-restrictions-popup')">
+            <div id="add_area_restrictions"
+                 class="button filter_field gray"
+                 onclick="showPopup('area-restrictions-popup')">
                 <div class="flex-left">
                     <img src="/static/resources/images/brugerliste/check-black.png">
                 </div>
@@ -55,7 +61,7 @@
                     <p class="label">Vælg systemroller</p>
 
                     <div>
-                        <select name="system_roles" multiple="" rows="6">
+                        <select id="system_roles" name="system_roles" multiple="" rows="6">
                             {% for system_role in system_roles %}
                                 <option value="{{ system_role.id }}">{{ system_role }}</option>
                             {% endfor %}
@@ -64,11 +70,15 @@
                     </div>
 
                     <div class="popup-buttons">
-                        <button class="button small-button blue" onclick="submitForm('form_submit', '_add_system_roles'); closePopups();">
+                        <button id="submit_system_roles_popup"
+                                class="button small-button blue"
+                                onclick="submitForm('form_submit', '_add_system_roles'); closePopups();">
                             <div class="flex-center">TILDEL</div>
                         </button>
 
-                        <div class="button small-button gray" onclick="closePopups()">
+                        <div id="cancel_system_roles_popup"
+                             class="button small-button gray"
+                             onclick="closePopups()">
                             <div class="flex-center">FORTRYD</div>
                         </div>
                     </div>
@@ -84,7 +94,7 @@
                     <p class="label">Vælg områdebegrænsninger</p>
 
                     <div>
-                        <select name="area_restrictions" multiple="" rows="6">
+                        <select id="area_restrictions" name="area_restrictions" multiple="" rows="6">
                             {% for area_restriction in area_restrictions %}
                                 <option value="{{ area_restriction.id }}">{{ area_restriction }}</option>
                             {% endfor %}
@@ -93,11 +103,15 @@
                     </div>
 
                     <div class="popup-buttons">
-                        <button class="button small-button blue" onclick="submitForm('form_submit', '_add_area_restrictions'); closePopups();">
+                        <button id="submit_area_restrictions_popup"
+                                class="button small-button blue"
+                                onclick="submitForm('form_submit', '_add_area_restrictions'); closePopups();">
                             <div class="flex-center">TILDEL</div>
                         </button>
 
-                        <div class="button small-button gray" onclick="closePopups()">
+                        <div id="cancel_area_restrictions_popup"
+                             class="button small-button gray"
+                             onclick="closePopups()">
                             <div class="flex-center">FORTRYD</div>
                         </div>
                     </div>
