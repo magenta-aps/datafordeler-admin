@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, unicode_literals, print_function
 
 import contextlib
-import datetime
+import time
 import functools
 import io
 import os
@@ -14,6 +15,7 @@ import platform
 # import openpyxl
 import pycodestyle
 # import pytz
+from django.db.models.fields.files import FieldFile
 from pyvirtualdisplay import Display
 
 from django import apps, db, test
@@ -22,6 +24,9 @@ from django.core import exceptions
 from django.utils import translation
 from django.test import tag
 from selenium import webdriver
+from abc import ABCMeta, abstractmethod
+
+from .models import IdentityProviderAccount
 
 try:
     import selenium.webdriver
@@ -51,7 +56,7 @@ class CodeStyleTests(test.SimpleTestCase):
             for fn in fns:
                 if fn[0] != '.' and fn.endswith('.py'):
                     yield os.path.join(dirpath, fn)
-    #
+
     # @tag('pep8')
     # def test_pep8(self):
     #     pep8style = pycodestyle.StyleGuide()
@@ -92,6 +97,9 @@ class CodeStyleTests(test.SimpleTestCase):
 SAFARI_PREVIEW_DRIVER = ('/Applications/Safari Technology Preview.app'
                          '/Contents/MacOS/safaridriver')
 CHROME_UBUNTU_DRIVER = '/usr/local/bin/chromedriver'
+
+USERNAME = "jakob@data.nanoq.gl"
+PASSWORD = "jacob"
 
 class BrowserTest(test.LiveServerTestCase):
 
@@ -141,12 +149,16 @@ class BrowserTest(test.LiveServerTestCase):
         )
         self.browser.find_element_by_id("content")
 
-    def fill_in_form(self, **kwargs):
+    def fill_in_form(self, submit_id=None, **kwargs):
         for field, value in kwargs.items():
             e = self.browser.find_element_by_id("id_" + field)
 
-            if (e.tag_name == 'input' and
-                        e.get_attribute('type') in ('text', 'password', 'number')):
+            if ((
+                e.tag_name == 'input' and
+                e.get_attribute('type') in ('text', 'password', 'number', 'email', 'file')
+            ) or (
+                e.tag_name == 'textarea'
+            )):
                 e.clear()
                 e.send_keys(
                     value,
@@ -170,47 +182,134 @@ class BrowserTest(test.LiveServerTestCase):
                 self.fail('unhandled input element (' + e.tag_name + '): ' +
                           e.get_attribute('outerHTML'))
 
-        submit = self.browser.find_element_by_css_selector(
-            "input[type=submit]",
-        )
+        if submit_id is not None:
+            submit = self.browser.find_element_by_id(submit_id)
+        else:
+            submit = self.browser.find_element_by_css_selector(
+                "input[type=submit]",
+            )
         submit.click()
         # self.await_staleness(submit)
 
-
-    def login(self, user, password='password', expected=True):
-        # logout
+    def logout(self):
         self.browser.delete_all_cookies()
-        self.browser.get(self.live_server_url + '/admin/logout/')
+        self.browser.get(self.live_server_url + '/logout')
         self.browser.delete_all_cookies()
         self.browser.get(self.live_server_url + '/login')
 
-        self.assertNotEqual(self.live_server_url, self.browser.current_url,
-                            'logout failed!')
+        self.assertNotEqual(
+            self.live_server_url, self.browser.current_url, 'logout failed!'
+        )
 
         # sanitity check the credentials
         self.client.logout()
+
+    def login(self, user=USERNAME, password=PASSWORD, expected=True):
+        print("BrowserTest.login(%s,%s,%s)" % (user, password, expected))
+        # logout
+        self.logout()
+
         login_status = self.client.login(username=user, password=password)
+
+        print("user: %s" % user)
+        print("password: %s" % password)
+        print("login_status: %s" % login_status)
+        print("expected: %s" % expected)
 
         self.assertEqual(login_status, expected,
                          'Unexpected login status (credentials)!')
 
         self.fill_in_form(username=user, password=password)
         if expected:
-            self.assertEquals(self.live_server_url + '/frontpage/',
-                              self.browser.current_url,
-                              'login failed')
+            self.assertPage('/frontpage/', 'login failed')
         else:
-            self.assertNotEquals(self.live_server_url + '/login/',
-                                 self.browser.current_url,
-                                 'login successful')
+            self.assertPage('/login/', 'login successful')
 
     def element_text(self, elem_id):
         return self.browser.find_element_by_id(elem_id).text.strip().lower()
 
+    def assertPage(self, expected_page, fail_message):
+        print("expected: %s" % self.live_server_url + expected_page)
+        print("got: %s" % self.browser.current_url)
+        self.assertEquals(
+            self.live_server_url + expected_page,
+            self.browser.current_url,
+            fail_message
+        )
+
+
+# @tag('selenium')
+# @unittest.skipIf(not selenium, 'selenium not installed')
+# class LoginTest(BrowserTest):
+#
+#     def test_login(self):
+#         time.sleep(1)
+#         self.login()
+#         self.login(user="bogus", password="fail", expected=False)
+
+
+class CrudTestMixin(object):
+
+    def compare_result(self, created_object):
+        for (key, expected) in self.form_params.items():
+            actual = getattr(created_object, key)
+            field = self.model._meta.get_field(key)
+            if isinstance(actual, FieldFile):
+                continue
+            if field.choices is not None and len(field.choices) > 0:
+                for (id, label) in field.choices:
+                    if id == actual:
+                        actual = label
+                        break
+            self.assertEquals(expected, actual)
+
+    def test_create(self):
+        print("%s.test_create" % self.__class__.__name__)
+        self.login()
+        self.browser.get(self.live_server_url + '/frontpage/')
+        self.browser.find_element_by_id(
+            self.create_button_id
+        ).click()
+        self.assertPage(self.create_page, "didn't end up on the correct page")
+        self.fill_in_form('submit_save', **self.form_params)
+        self.assertPage(self.list_page, "didn't end up on the correct page")
+
+        created_object = self.model.objects.filter(name=self.form_params['name']).first()
+        self.assertIsNotNone(created_object)
+        self.compare_result(created_object)
+
+        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
+        self.assertEquals(2, len(rows), 'must contain header and one row')
+        actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
+        self.assertListEqual(self.expected_titles, actual_titles, "List headers don't match what's expected")
+        actual_values = [element.text for element in rows[1].find_elements_by_class_name('txtdata')]
+        self.assertListEqual(self.expected_values, actual_values, "List data doesn't match what's expected")
+
+
+
 
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
-class LoginTest(BrowserTest):
+class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
 
-    def test_login(self):
-        self.login("jakob@data.nanoq.gl", "jacob")
+    model = IdentityProviderAccount
+    base_name = 'identityprovideraccount'
+    create_button_id = 'create_identityprovider_account'
+    create_page = '/organisation/add/'
+    list_page = '/organisation/list/'
+    expected_titles = [u'Navn', u'Navn på kontaktperson', u'E-mailadresse på kontaktperson', u'IdP type', u'IdP Entity ID', u'Status']
+    expected_values = [u'Magenta ApS', u'Peter Rasmussen', u'pera@magenta.dk', u'Primær IdP (ingen validering af brugerprofiler)', u'https://accounts.google.com/o/saml2?idpid=foobar', u'Aktiv']
+
+    form_params = {
+        'name': 'Magenta ApS',
+        'contact_name': 'Peter Rasmussen',
+        'contact_email': 'pera@magenta.dk',
+        'idp_type': u'Primær IdP (ingen validering af brugerprofiler)',
+        'metadata_xml_file': os.getcwd() +
+                             "/static_files/testresources/test_metadata.xml",
+        'userprofile_attribute': 'urn:user_profiles',
+        'userprofile_attribute_format': 'Kommasepareret liste',
+        'userprofile_adjustment_filter_type': 'Ingen tilpasninger',
+        'organisation': u'Magenta leverer Grønlands datafordeler'
+    }
+
