@@ -300,13 +300,14 @@ class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
     expected_titles = [u'Navn', u'Navn på kontaktperson', u'E-mailadresse på kontaktperson', u'IdP type', u'IdP Entity ID', u'Status']
     expected_values = [u'Magenta ApS', u'Peter Rasmussen', u'pera@magenta.dk', u'Primær IdP (ingen validering af brugerprofiler)', u'https://accounts.google.com/o/saml2?idpid=foobar', u'Aktiv']
 
+    resource_path = os.path.abspath(os.getcwd() + "/../testresources")
+
     form_params = {
         'name': 'Magenta ApS',
         'contact_name': 'Peter Rasmussen',
         'contact_email': 'pera@magenta.dk',
         'idp_type': u'Primær IdP (ingen validering af brugerprofiler)',
-        'metadata_xml_file': os.getcwd() +
-                             "/static_files/testresources/test_metadata.xml",
+        'metadata_xml_file': resource_path + "/test_metadata.xml",
         'userprofile_attribute': 'urn:user_profiles',
         'userprofile_attribute_format': 'Kommasepareret liste',
         'userprofile_adjustment_filter_type': 'Ingen tilpasninger',
