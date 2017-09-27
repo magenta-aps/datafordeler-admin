@@ -8,5 +8,7 @@ sqlite3_x64.dll
 *.pyc
 
 # Folder-specific ignores
+/keystores
 /python-env
 
+/VCForPython27.msi

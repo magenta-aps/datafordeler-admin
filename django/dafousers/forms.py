@@ -73,7 +73,7 @@ class CertificateUserForm(AccessAccountForm):
     current_time = forms.CharField(
         required=False,
         widget=forms.HiddenInput(),
-        initial=timezone.now().strftime('%Y-%m-%d %H:%M:%S+00:00')
+        initial=timezone.now().strftime("%Y-%m-%d %H:%M:%S")
     )
 
     class Meta:
