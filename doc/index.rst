@@ -11,5 +11,6 @@ Dokumentation for `datafordeler-admin. <https://github.com/magenta-aps/dataforde
 
    login
    administration
+   access-rights
 
 DAFO Admin er administrationssystemet for den grønlandske datafordeler.
