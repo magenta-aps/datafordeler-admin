@@ -231,14 +231,14 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         )
 
 
-# @tag('selenium')
-# @unittest.skipIf(not selenium, 'selenium not installed')
-# class LoginTest(BrowserTest):
-#
-#     def test_login(self):
-#         time.sleep(1)
-#         self.login(force=True)
-#         self.login(user="bogus", password="fail", expected=False, force=True)
+@tag('selenium')
+@unittest.skipIf(not selenium, 'selenium not installed')
+class LoginTest(BrowserTest):
+
+    def test_login(self):
+        time.sleep(1)
+        self.login(force=True)
+        self.login(user="bogus", password="fail", expected=False, force=True)
 
 
 class CrudTestMixin(object):
@@ -271,27 +271,27 @@ class CrudTestMixin(object):
                 continue
             self.assertEquals(expected, actual)
 
-    # def test_create(self):
-    #     print("%s.test_create" % self.__class__.__name__)
-    #     self.login()
-    #     self.browser.get(self.live_server_url + self.frontpage)
-    #     self.browser.find_element_by_id(
-    #         self.create_button_id
-    #     ).click()
-    #     self.assertPage(self.create_page)
-    #     self.fill_in_form('submit_save', **self.create_form_params)
-    #     self.assertPage(self.list_page)
-    #
-    #     created_object = self.model.objects.filter(name=self.create_form_params['name']).first()
-    #     self.assertIsNotNone(created_object)
-    #     self.compare_result(created_object, self.create_form_params)
-    #
-    #     rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
-    #     self.assertEquals(2, len(rows), 'must contain header and one row')
-    #     actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
-    #     self.assertListEqual(self.expected_titles, actual_titles, "List headers don't match what's expected")
-    #     actual_values = [element.text for element in rows[1].find_elements_by_class_name('txtdata')]
-    #     self.assertListEqual(self.expected_values, actual_values, "List data doesn't match what's expected")
+    def test_create(self):
+        print("%s.test_create" % self.__class__.__name__)
+        self.login()
+        self.browser.get(self.live_server_url + self.frontpage)
+        self.browser.find_element_by_id(
+            self.create_button_id
+        ).click()
+        self.assertPage(self.create_page)
+        self.fill_in_form('submit_save', **self.create_form_params)
+        self.assertPage(self.list_page)
+
+        created_object = self.model.objects.filter(name=self.create_form_params['name']).first()
+        self.assertIsNotNone(created_object)
+        self.compare_result(created_object, self.create_form_params)
+
+        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
+        self.assertEquals(2, len(rows), 'must contain header and one row')
+        actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
+        self.assertListEqual(self.expected_titles, actual_titles, "List headers don't match what's expected")
+        actual_values = [element.text for element in rows[1].find_elements_by_class_name('txtdata')]
+        self.assertListEqual(self.expected_values, actual_values, "List data doesn't match what's expected")
 
     def test_edit(self):
         print("%s.test_edit" % self.__class__.__name__)
