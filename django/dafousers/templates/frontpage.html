@@ -14,21 +14,24 @@
             </div>
             <div class="block-content">
                 <div class="block-row">
-                    <a href="{% url 'dafousers:identityprovideraccount-add' %}" class="block-link blue">
+                    <a id="identity_provider_account_add"
+                       href="{% url 'dafousers:identityprovideraccount-add' %}" class="block-link blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-add-organisation"></div>
                         </div>
                         <div class="block-link-title">OPRET ORGANISATION</div>
                     </a>
 
-                    <a href="{% url 'dafousers:passworduser-add' %}" class="block-link light-blue">
+                    <a id="password_user_add"
+                       href="{% url 'dafousers:passworduser-add' %}" class="block-link light-blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-add-user"></div>
                         </div>
                         <div class="block-link-title">OPRET BRUGER</div>
                     </a>
 
-                    <a href="{% url 'dafousers:certificateuser-add' %}" class="block-link beige">
+                    <a id="certificate_user_add"
+                       href="{% url 'dafousers:certificateuser-add' %}" class="block-link beige">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-add-system"></div>
                         </div>
@@ -43,26 +46,30 @@
                                placeholder="Skriv navn på organisation, bruger (evt. email) eller system">
                         <div class="search-button"></div>
                     </div>
-                    <div class="search_org_user_system_body dropdown-content scroll white">
+                    <div id="search_org_user_system_results"
+                         class="search_org_user_system_body dropdown-content scroll white">
                         {% include 'search-autocomplete.html' %}
                     </div>
                     <p>Eller vælg fra en af nedenstående lister</p>
                 </div>
 
                 <div class="block-row">
-                    <a href="{% url 'dafousers:identityprovideraccount-list' %}" class="block-link beige">
+                    <a id="identity_provider_account_list"
+                       href="{% url 'dafousers:identityprovideraccount-list' %}" class="block-link beige">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-list-organisation"></div>
                         </div>
                         <div class="block-link-title">LISTE OVER ORGANISATIONER</div>
                     </a>
-                    <a href="{% url 'dafousers:passworduser-list' %}" class="block-link blue">
+                    <a id="password_user_list"
+                       href="{% url 'dafousers:passworduser-list' %}" class="block-link blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-list-user"></div>
                         </div>
                         <div class="block-link-title">LISTE OVER BRUGERE</div>
                     </a>
-                    <a href="{% url 'dafousers:certificateuser-list' %}" class="block-link light-blue">
+                    <a id="certificate_user_list"
+                       href="{% url 'dafousers:certificateuser-list' %}" class="block-link light-blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-list-system"></div>
                         </div>
@@ -79,7 +86,8 @@
             </div>
             <div class="block-content">
                 <div class="block-row">
-                    <a href="" class="block-link blue">
+                    <a id="administer_registers"
+                       href="" class="block-link blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-administer-registers"></div>
                         </div>
@@ -95,20 +103,23 @@
                                placeholder="Skriv navn på brugerprofil">
                         <div class="search-button"></div>
                     </div>
-                    <div class="search_user_profile_body dropdown-content scroll white">
+                    <div id="search_user_profile_results"
+                         class="search_user_profile_body dropdown-content scroll white">
                         {% include 'search-autocomplete.html' %}
                     </div>
                     <p>Eller vælg fra en af nedenstående lister</p>
                 </div>
 
                 <div class="block-row">
-                    <a href="{% url 'dafousers:userprofile-list' %}" class="block-link light-blue">
+                    <a id="user_profile_list"
+                       href="{% url 'dafousers:userprofile-list' %}" class="block-link light-blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-list-user-profile"></div>
                         </div>
                         <div class="block-link-title">LISTE OVER BRUGERPROFILER</div>
                     </a>
-                    <a href="{% url 'dafousers:userprofile-add' %}" class="block-link beige">
+                    <a id="user_profile_add"
+                       href="{% url 'dafousers:userprofile-add' %}" class="block-link beige">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-add-user-profile"></div>
                         </div>

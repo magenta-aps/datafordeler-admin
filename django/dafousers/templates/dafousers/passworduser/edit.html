@@ -70,7 +70,9 @@
 
             <div class="row">
 
-                <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
+                <button id="submit_save"
+                        class="row_field button blue"
+                        onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
                         <img src="/static/resources/images/brugerliste/check-white.png">
                     </div>
@@ -78,7 +80,9 @@
                         GEM ÆNDRINGER
                     </div>
                 </button>
-                <a class="row_field button gray" href="{% url 'dafousers:passworduser-history' form.pk %}">
+                <a id="goto_history"
+                   class="row_field button gray"
+                   href="{% url 'dafousers:passworduser-history' form.instance.pk %}">
                     <div class="flex-left">
                         <img src="/static/resources/images/brugerliste/history.png">
                     </div>
