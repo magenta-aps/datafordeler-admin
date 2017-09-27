@@ -3,28 +3,13 @@
 from __future__ import absolute_import, unicode_literals, print_function
 
 import contextlib
-import time
-import functools
-import io
 import os
-import unittest
-import uuid
 import platform
-
-# import freezegun
-# import openpyxl
-import pycodestyle
-# import pytz
+import unittest
+from django import test
+from django.core.management import call_command
 from django.db.models.fields.files import FieldFile
-from pyvirtualdisplay import Display
-
-from django import apps, db, test
-from django.conf import settings
-from django.core import exceptions
-from django.utils import translation
 from django.test import tag
-from selenium import webdriver
-from abc import ABCMeta, abstractmethod
 
 from .models import IdentityProviderAccount
 
@@ -106,6 +91,8 @@ class BrowserTest(test.LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
 
+        call_command('collectstatic', verbosity=0, interactive=False)
+
         default_driver = (
             'Safari'
             if platform.system() == 'Darwin'
@@ -168,7 +155,7 @@ class BrowserTest(test.LiveServerTestCase):
 
                 for option in options:
                     if option.text.strip() == value:
-                        option.click()
+                        self.click(option)
                         break
                 else:
                     self.fail('{} not one of {}'.format(
@@ -177,7 +164,7 @@ class BrowserTest(test.LiveServerTestCase):
             elif (e.tag_name == 'input' and
                           e.get_attribute('type') in ('checkbox', 'radio')):
                 if value != e.is_selected():
-                    e.click()
+                    self.click(e)
             else:
                 self.fail('unhandled input element (' + e.tag_name + '): ' +
                           e.get_attribute('outerHTML'))
@@ -188,8 +175,14 @@ class BrowserTest(test.LiveServerTestCase):
             submit = self.browser.find_element_by_css_selector(
                 "input[type=submit]",
             )
-        submit.click()
-        # self.await_staleness(submit)
+        self.click(submit)
+
+    def click(self, element):
+        self.browser.execute_script("arguments[0].scrollIntoView();", element)
+        element.click()
+
+
+# self.await_staleness(submit)
 
     def logout(self):
         self.browser.delete_all_cookies()
@@ -221,20 +214,18 @@ class BrowserTest(test.LiveServerTestCase):
 
         self.fill_in_form(username=user, password=password)
         if expected:
-            self.assertPage('/frontpage/', 'login failed')
+            self.assertPage('/frontpage/')
         else:
-            self.assertPage('/login/', 'login successful')
+            self.assertPage('/login/')
 
     def element_text(self, elem_id):
         return self.browser.find_element_by_id(elem_id).text.strip().lower()
 
-    def assertPage(self, expected_page, fail_message):
-        print("expected: %s" % self.live_server_url + expected_page)
-        print("got: %s" % self.browser.current_url)
+    def assertPage(self, expected_page):
         self.assertEquals(
             self.live_server_url + expected_page,
             self.browser.current_url,
-            fail_message
+            "expected: %s, got %s" % (self.live_server_url + expected_page, self.browser.current_url)
         )
 
 
@@ -270,9 +261,9 @@ class CrudTestMixin(object):
         self.browser.find_element_by_id(
             self.create_button_id
         ).click()
-        self.assertPage(self.create_page, "didn't end up on the correct page")
+        self.assertPage(self.create_page)
         self.fill_in_form('submit_save', **self.form_params)
-        self.assertPage(self.list_page, "didn't end up on the correct page")
+        self.assertPage(self.list_page)
 
         created_object = self.model.objects.filter(name=self.form_params['name']).first()
         self.assertIsNotNone(created_object)
