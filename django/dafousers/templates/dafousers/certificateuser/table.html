@@ -33,7 +33,7 @@
                 <a href="{% url 'dafousers:certificateuser-edit' system.id %}">
                 {{ system.name }}</a>
             </td>
-            <td class="txtdata">{{ system.latest_certificate.valid_to }}</td>
+            <td class="txtdata">{{ system.latest_certificate }}</td>
             <td class="txtdata">{{ system.get_identification_mode_display }}</td>
             <td class="txtdata">{{ system.contact_name }}</td>
             <td class="txtdata">{{ system.contact_email }}</td>
