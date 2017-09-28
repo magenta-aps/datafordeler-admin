@@ -163,7 +163,7 @@ var DAFO = window.DAFO || {};
             var search_body = $('.' + id + '_body');
 
             search_body.html('').load(
-                "/ajax/" + id + "/?search_term=" + search_term
+                "/ajax/" + id + "/?search_term=" + encodeURIComponent(search_term)
             );
             if(search_body !== "") {
                 closeDropDowns();

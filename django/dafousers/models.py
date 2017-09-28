@@ -238,11 +238,14 @@ class AccessAccount(models.Model):
 
 class PasswordUserQuerySet(models.QuerySet):
     def search(self, term):
-        return self.filter(
-            models.Q(givenname__contains=term) |
-            models.Q(lastname__contains=term) |
-            models.Q(email__contains=term)
-        )
+        qs = self
+        for word in term.split(" "):
+            qs = qs.filter(
+                models.Q(givenname__contains=word) |
+                models.Q(lastname__contains=word) |
+                models.Q(email__contains=word)
+            )
+        return qs
 
 
 class PasswordUser(AccessAccount, EntityWithHistory):
