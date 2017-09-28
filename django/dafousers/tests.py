@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, unicode_literals, print_function
-
-import contextlib
-import os
-import platform
-import unittest
+from dafousers import models
 from django import test
+from django.conf import settings
 from django.core.management import call_command
 from django.db.models.fields.files import FieldFile
 from django.db.models.fields.related import ManyToManyField
@@ -14,9 +11,10 @@ from django.test import tag
 import shutil
 import time
 
-from django.conf import settings
-
-from .models import IdentityProviderAccount, PasswordUser
+import contextlib
+import os
+import platform
+import unittest
 
 try:
     import selenium.webdriver
@@ -410,7 +408,7 @@ class CrudTestMixin(object):
 @unittest.skipIf(not selenium, 'selenium not installed')
 class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
 
-    model = IdentityProviderAccount
+    model = models.IdentityProviderAccount
     base_name = 'identityprovideraccount'
     create_button_id = 'create_identityprovider_account'
     page = '/organisation/'
@@ -465,7 +463,7 @@ class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
 @unittest.skipIf(not selenium, 'selenium not installed')
 class PasswordUserTest(CrudTestMixin, BrowserTest):
 
-    model = PasswordUser
+    model = models.PasswordUser
     base_name = 'passworduser'
     create_button_id = 'create_password_user'
     page = '/user/'
