@@ -4,16 +4,18 @@ from __future__ import absolute_import, unicode_literals, print_function
 from dafousers import models
 from django import test
 from django.conf import settings
+from django.core.exceptions import FieldDoesNotExist
 from django.core.management import call_command
 from django.db.models.fields.files import FieldFile
 from django.db.models.fields.related import ManyToManyField
 from django.test import tag
-import shutil
-import time
 
 import contextlib
+import datetime
 import os
 import platform
+import shutil
+import time
 import unittest
 
 try:
@@ -215,37 +217,45 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
 
             login_status = self.client.login(username=user, password=password)
 
-            print("user: %s" % user)
-            print("password: %s" % password)
-            print("login_status: %s" % login_status)
-            print("expected: %s" % expected)
-
             self.assertEqual(login_status, expected,
                              'Unexpected login status (credentials)!')
 
             self.fill_in_form(username=user, password=password)
             if expected:
-                self.assertPage('/frontpage/')
+                self.assert_page('/frontpage/')
             else:
-                self.assertPage('/login/')
+                self.assert_page('/login/')
             self.logged_in = True
 
     def element_text(self, elem_id):
         return self.browser.find_element_by_id(elem_id).text.strip().lower()
 
-    def assertPage(self, expected_page):
+    def assert_page(self, expected_page):
         self.assertEquals(
             self.live_server_url + expected_page,
             self.browser.current_url,
             "expected: %s, got %s" % (self.live_server_url + expected_page, self.browser.current_url)
         )
 
-    def assertLists(self, expected_list, actual_list, list_name):
-        self.assertListEqual(
-            expected_list,
-            actual_list,
-            "%s %s doesn't match what's expected %s." % (list_name, expected_list, actual_list)
-        )
+    def assert_lists(self, expected_list, actual_list, list_name):
+        for expected, actual in zip(expected_list, actual_list):
+            if type(expected) == datetime.datetime:
+                expected = expected.strftime("%Y-%m-%d")
+                try:
+                    assert expected in actual
+                except AssertionError as e:
+                    raise(
+                        AssertionError(
+                            "%s %s doesn't contain what is expected %s." % (list_name, actual, expected)
+                        )
+                    )
+
+            else:
+                self.assertEqual(
+                    expected,
+                    actual,
+                    "%s %s doesn't match what is expected %s." % (list_name, actual, expected)
+                )
 
 
 @tag('selenium')
@@ -281,12 +291,16 @@ class CrudTestMixin(object):
     def convert_form_params(self, params):
         out = {}
         for (key, value) in params.items():
-            field = self.model._meta.get_field(key)
-            if field.related_model is not None:
-                value = self.m2m_label_to_id(field.related_model, value)
-            if field.choices is not None and len(field.choices) > 0:
-                value = self.choice_label_to_id(field.choices, value)
-            out[key] = value
+            try:
+                field = self.model._meta.get_field(key)
+                if field.related_model is not None:
+                    value = self.m2m_label_to_id(field.related_model, value)
+                if field.choices is not None and len(field.choices) > 0:
+                    value = self.choice_label_to_id(field.choices, value)
+                out[key] = value
+            except FieldDoesNotExist:
+                if key != u'certificate_years_valid':
+                    print("The field %s does not exist." % key)
         return out
 
     def compare_result(self, created_object, params):
@@ -313,9 +327,9 @@ class CrudTestMixin(object):
         self.browser.find_element_by_id(
             self.create_button_id
         ).click()
-        self.assertPage(self.page + self.create_page)
+        self.assert_page(self.page + self.create_page)
         self.fill_in_form('submit_save', **self.create_form_params)
-        self.assertPage(self.page + self.list_page)
+        self.assert_page(self.page + self.list_page)
 
         created_object = self.model.objects.search(self.object_name).first()
         self.assertIsNotNone(created_object)
@@ -328,10 +342,10 @@ class CrudTestMixin(object):
                           (self.expected_number_of_objects, len(rows) - 1)
         )
         actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
-        self.assertLists(self.expected_titles, actual_titles, "List headers")
+        self.assert_lists(self.expected_titles, actual_titles, "List headers")
         object_row = self.get_row_with_name(rows, self.object_name)
         actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
-        self.assertLists(self.expected_values, actual_values, "List data")
+        self.assert_lists(self.expected_values, actual_values, "List data")
 
     def test_edit(self):
         print("%s.test_edit" % self.__class__.__name__)
@@ -345,6 +359,7 @@ class CrudTestMixin(object):
             if value in self.files:
                 create_params[key] = settings.MEDIA_ROOT + os.sep + value[value.rindex(os.sep):]
 
+        # First save the object and then m2m fields
         singleton_params = {
             key: value for key, value in create_params.items()
             if not isinstance(self.model._meta.get_field(key), ManyToManyField)
@@ -358,6 +373,9 @@ class CrudTestMixin(object):
         created_object.save()
         for key, value in m2m_params.items():
             created_object.user_profiles.add(value)
+            # If there is a certificate years valid field then create a certificate
+            if 'certificate_years_valid' in self.create_form_params.keys():
+                created_object.create_certificate(self.certificate_years)
 
         # Test that the item exists in the item list
         self.browser.get(self.live_server_url + self.page + self.list_page)
@@ -369,10 +387,10 @@ class CrudTestMixin(object):
         )
         object_row = self.get_row_with_name(rows, self.object_name)
         actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
-        self.assertLists(self.expected_values, actual_values, "List data")
+        self.assert_lists(self.expected_values, actual_values, "List data")
         link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
         link.click()
-        self.assertPage((self.page + self.edit_page) % created_object.pk)
+        self.assert_page((self.page + self.edit_page) % created_object.pk)
 
         # Test that the item can be searched
         self.browser.get(self.live_server_url + self.frontpage)
@@ -382,20 +400,20 @@ class CrudTestMixin(object):
         time.sleep(5)
         # self.browser.implicitly_wait(5)
 
-        resultList = self.browser.find_elements_by_css_selector('#search_org_user_system_results>a')
-        resultLink = None
+        result_list = self.browser.find_elements_by_css_selector('#search_org_user_system_results>a')
+        result_link = None
         sought_text = "%s: %s" % (self.model._meta.verbose_name.title(), self.object_name)
-        for link in resultList:
+        for link in result_list:
             if link.text == sought_text:
-                resultLink = link
+                result_link = link
                 break
-        self.assertIsNotNone(resultLink)
-        resultLink.click()
-        self.assertPage((self.page + self.edit_page) % created_object.pk)
+        self.assertIsNotNone(result_link)
+        result_link.click()
+        self.assert_page((self.page + self.edit_page) % created_object.pk)
 
         # Edit the form
         self.fill_in_form('submit_save', **self.edit_form_params)
-        self.assertPage(self.page + self.list_page)
+        self.assert_page(self.page + self.list_page)
 
         updated_params = dict(self.create_form_params.items() + self.edit_form_params.items())
 
@@ -468,7 +486,6 @@ class PasswordUserTest(CrudTestMixin, BrowserTest):
     create_button_id = 'create_password_user'
     page = '/user/'
 
-    resource_path = os.path.abspath(os.getcwd() + "/../testresources")
     files = []
 
     create_form_params = {
@@ -502,3 +519,58 @@ class PasswordUserTest(CrudTestMixin, BrowserTest):
     ]
 
     expected_number_of_objects = 3
+
+
+@tag('selenium')
+@unittest.skipIf(not selenium, 'selenium not installed')
+class CertificateUserTest(CrudTestMixin, BrowserTest):
+
+    model = models.CertificateUser
+    base_name = 'certificateuser'
+    create_button_id = 'create_certificate_user'
+    page = '/system/'
+
+    files = []
+
+    create_form_params = {
+        'name': u'Magenta ApS',
+        'identification_mode': u'Identificerer brugere via \'på-vegne-af\'',
+        'contact_name': u'Peter Rasmussen',
+        'contact_email': u'pera@magenta.dk',
+        'certificate_years_valid': u'3 år',
+        'organisation': u'Magenta leverer Grønlands Datafordeler',
+        'comment': u'I følge aftale.',
+        'status': u'Aktiv',
+        'user_profiles': u'DAFO Serviceudbyder'
+    }
+
+    edit_form_params = {
+    }
+
+    edit_form_action = 'delete_invalid_certificates'
+
+    object_name = create_form_params['name']
+
+    expected_titles = [
+        u'Navn',
+        u'Næste udløbsdato',
+        u'Identifikationsmetode',
+        u'Navn på kontaktperson',
+        u'E-mailadresse på kontaktperson',
+        u'Status'
+    ]
+
+    d = datetime.datetime.now()
+    certificate_years = 3
+    d = d + datetime.timedelta(days=(certificate_years*365))
+
+    expected_values = [
+        object_name,
+        d,
+        create_form_params['identification_mode'],
+        create_form_params['contact_name'],
+        create_form_params['contact_email'],
+        create_form_params['status']
+    ]
+
+    expected_number_of_objects = 1
