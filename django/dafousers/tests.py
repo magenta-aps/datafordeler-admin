@@ -133,33 +133,33 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         super(BrowserTest, cls).tearDownClass()
         cls.browser.quit()
 
-
-    def await_staleness(self, element):
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        WebDriverWait(self.browser, 1).until(
-            EC.staleness_of(element),
-        )
-        self.browser.find_element_by_id("content")
-
     def fill_in_form(self, submit_id=None, **kwargs):
         for field, value in kwargs.items():
-            e = self.browser.find_element_by_id("id_" + field)
 
-            if ((
-                e.tag_name == 'input' and
-                e.get_attribute('type') in ('text', 'password', 'number', 'email', 'file')
-            ) or (
-                e.tag_name == 'textarea'
-            )):
-                e.clear()
-                e.send_keys(
-                    value,
-                )
-            elif e.tag_name == 'select':
-                if e.get_attribute('data-is-stacked') == '0':
-                    print("test")
-                else:
+            if field in ['user_profiles', 'system_roles', 'area_restrictions']:
+                id = "id_" + field
+                select = self.browser.find_element_by_id(id + '_from')
+                options = select.find_elements_by_tag_name('option')
+                for option in options:
+                    if option.text.strip() in value:
+                        self.click(option)
+                add_button = self.browser.find_element_by_id(id + '_add_link')
+                self.click(add_button)
+
+            else:
+                e = self.browser.find_element_by_id("id_" + field)
+
+                if ((
+                    e.tag_name == 'input' and
+                    e.get_attribute('type') in ('text', 'password', 'number', 'email', 'file')
+                ) or (
+                    e.tag_name == 'textarea'
+                )):
+                    e.clear()
+                    e.send_keys(
+                        value,
+                    )
+                elif e.tag_name == 'select':
                     options = e.find_elements_by_tag_name('option')
 
                     for option in options:
@@ -170,13 +170,13 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
                         self.fail('{} not one of {}'.format(
                             value, [o.text for o in options]),
                         )
-            elif (e.tag_name == 'input' and
-                          e.get_attribute('type') in ('checkbox', 'radio')):
-                if value != e.is_selected():
-                    self.click(e)
-            else:
-                self.fail('unhandled input element (' + e.tag_name + '): ' +
-                          e.get_attribute('outerHTML'))
+                elif (e.tag_name == 'input' and
+                              e.get_attribute('type') in ('checkbox', 'radio')):
+                    if value != e.is_selected():
+                        self.click(e)
+                else:
+                    self.fail('unhandled input element (' + e.tag_name + '): ' +
+                              e.get_attribute('outerHTML'))
 
         if submit_id is not None:
             submit = self.browser.find_element_by_id(submit_id)
