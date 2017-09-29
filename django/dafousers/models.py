@@ -195,7 +195,6 @@ class UserIdentification(models.Model):
     class Meta:
         verbose_name = _(u"brugeridentifikation")
         verbose_name_plural = _(u"brugeridentifikationer")
-        database = 'dafousers'
 
     hide_in_dafoadmin = True
 
@@ -209,9 +208,6 @@ class UserIdentification(models.Model):
 
 
 class AccessAccount(models.Model):
-
-    class Meta:
-        database = 'dafousers'
 
     constants = model_constants.AccessAccount
 
@@ -255,7 +251,6 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         # db_table = 'dbo].[dafousers_passworduser'
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
-        database = 'dafousers'
 
     objects = PasswordUserQuerySet.as_manager()
 
@@ -329,7 +324,6 @@ class EntityWithCertificate(models.Model):
 
     class Meta:
         abstract = True
-        database = 'dafousers'
 
     contact_name = models.CharField(
         verbose_name=_(u"Navn på kontaktperson"),
@@ -388,7 +382,6 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     class Meta:
         verbose_name = _(u"system")
         verbose_name_plural = _(u"systemer")
-        database = 'dafousers'
 
     objects = CertificateUserQuerySet.as_manager()
 
@@ -438,7 +431,6 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
     class Meta:
         verbose_name = _(u"organisation")
         verbose_name_plural = _(u"organisationer")
-        database = 'dafousers'
 
     objects = IdentityProviderAccountQuerySet.as_manager()
     CONSTANTS = model_constants.IdentityProviderAccount
@@ -564,7 +556,6 @@ class Certificate(models.Model):
     class Meta:
         verbose_name = _(u"certifikat")
         verbose_name_plural = _(u"certifikater")
-        database = 'dafousers'
 
     subject = models.CharField(
         verbose_name=_("Certifikat subjekt"),
@@ -687,7 +678,6 @@ class UserProfile(EntityWithHistory):
     class Meta:
         verbose_name = _(u"brugerprofil")
         verbose_name_plural = _(u"brugerprofiler")
-        database = 'dafousers'
 
     objects = UserProfileQuerySet.as_manager()
 
@@ -736,7 +726,6 @@ class SystemRole(models.Model):
     class Meta:
         verbose_name = _(u"systemrolle")
         verbose_name_plural = _(u"systemroller")
-        database = 'dafousers'
 
     hide_in_dafoadmin = True
 
@@ -800,7 +789,6 @@ class AreaRestriction(models.Model):
     class Meta:
         verbose_name = _(u"områdeafgrænsning")
         verbose_name_plural = _(u"områdeafgrænsninger")
-        database = 'dafousers'
 
     hide_in_dafoadmin = True
 
@@ -845,7 +833,6 @@ class AreaRestrictionType(models.Model):
     class Meta:
         verbose_name = _(u"områdeafgrænsningstype")
         verbose_name_plural = _(u"områdeafgrænsningstyper")
-        database = 'dafousers'
 
     hide_in_dafoadmin = True
 
@@ -872,7 +859,6 @@ class UpdateTimestamps(models.Model):
     class Meta:
         verbose_name = _(u"Tidsstempel for opdatering")
         verbose_name_plural = _(u"Tidsstempler for opdatering")
-        database = 'dafousers'
 
     hide_in_dafoadmin = True
 
