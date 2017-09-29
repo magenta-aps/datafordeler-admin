@@ -12,11 +12,13 @@ from django.test import tag
 
 import contextlib
 import datetime
+import logging
 import os
 import platform
 import shutil
 import time
 import unittest
+import uuid
 
 try:
     import selenium.webdriver
@@ -24,6 +26,7 @@ except ImportError:
     selenium = None
 
 
+logging.basicConfig(filename = "../logs/test.log", level = logging.DEBUG)
 DUMMY_DOMAIN = 'http://localhost'
 
 
@@ -137,12 +140,15 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         for field, value in kwargs.items():
 
             if field in ['user_profiles', 'system_roles', 'area_restrictions']:
+                related_model = self.model._meta.get_field(field).related_model
                 id = "id_" + field
                 select = self.browser.find_element_by_id(id + '_from')
                 options = select.find_elements_by_tag_name('option')
                 for option in options:
-                    if option.text.strip() in value:
-                        self.click(option)
+                    labels = self.m2m_names_to_labels(related_model, value)
+                    for label in labels:
+                        if option.text.strip() in label:
+                            self.click(option)
                 add_button = self.browser.find_element_by_id(id + '_add_link')
                 self.click(add_button)
 
@@ -150,10 +156,10 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
                 e = self.browser.find_element_by_id("id_" + field)
 
                 if ((
-                    e.tag_name == 'input' and
-                    e.get_attribute('type') in ('text', 'password', 'number', 'email', 'file')
-                ) or (
-                    e.tag_name == 'textarea'
+                                    e.tag_name == 'input' and
+                                    e.get_attribute('type') in ('text', 'password', 'number', 'email', 'file')
+                    ) or (
+                            e.tag_name == 'textarea'
                 )):
                     e.clear()
                     e.send_keys(
@@ -190,8 +196,8 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         self.browser.execute_script("arguments[0].scrollIntoView();", element)
         element.click()
 
-
-# self.await_staleness(submit)
+    def setup(self):
+        pass
 
     logged_in = False
 
@@ -230,6 +236,12 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
     def element_text(self, elem_id):
         return self.browser.find_element_by_id(elem_id).text.strip().lower()
 
+    def m2m_names_to_labels(self, related_model, names):
+        result = []
+        for name in names:
+            result.append(related_model.objects.get(name=name).__unicode__())
+        return result
+
     def assert_page(self, expected_page):
         self.assertEquals(
             self.live_server_url + expected_page,
@@ -263,7 +275,6 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
 class LoginTest(BrowserTest):
 
     def test_login(self):
-        time.sleep(1)
         self.login(force=True)
         self.login(user="bogus", password="fail", expected=False, force=True)
 
@@ -275,8 +286,13 @@ class CrudTestMixin(object):
     list_page = 'list/'
     edit_page = '%d/'
 
-    def m2m_label_to_id(self, related_model, value):
-        return related_model.objects.get(name=value).pk
+    files = []
+
+    def m2m_label_to_id(self, related_model, names):
+        result = []
+        for name in names:
+            result.append(related_model.objects.get(name=name).pk)
+        return result
 
     def choice_label_to_id(self, choices, label):
         for (id, choice_label) in choices:
@@ -323,11 +339,16 @@ class CrudTestMixin(object):
     def test_create(self):
         print("%s.test_create" % self.__class__.__name__)
         self.login()
+
+        self.setup()
+
         self.browser.get(self.live_server_url + self.frontpage)
-        self.browser.find_element_by_id(
+        create_button = self.browser.find_element_by_id(
             self.create_button_id
-        ).click()
+        )
+        self.click(create_button)
         self.assert_page(self.page + self.create_page)
+
         self.fill_in_form('submit_save', **self.create_form_params)
         self.assert_page(self.page + self.list_page)
 
@@ -338,8 +359,8 @@ class CrudTestMixin(object):
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
         self.assertEquals(
             self.expected_number_of_objects, len(rows) - 1,
-                          'must contain %s rows, however %s found' %
-                          (self.expected_number_of_objects, len(rows) - 1)
+                                             'must contain %s rows, however %s found' %
+                                             (self.expected_number_of_objects, len(rows) - 1)
         )
         actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
         self.assert_lists(self.expected_titles, actual_titles, "List headers")
@@ -350,6 +371,9 @@ class CrudTestMixin(object):
     def test_edit(self):
         print("%s.test_edit" % self.__class__.__name__)
         self.login()
+
+        self.setup()
+
         for file in self.files:
             shutil.copy(file, settings.MEDIA_ROOT)
         create_params = {'changed_by': USERNAME}
@@ -372,7 +396,18 @@ class CrudTestMixin(object):
         created_object = self.model(**singleton_params)
         created_object.save()
         for key, value in m2m_params.items():
-            created_object.user_profiles.add(value)
+            m2m_field = None
+            if key == 'user_profiles':
+                m2m_field = created_object.user_profiles
+                m2m_values = models.UserProfile.objects.filter(pk__in=value)
+            elif key == 'system_roles':
+                m2m_field = created_object.system_roles
+                m2m_values = models.SystemRole.objects.filter(pk__in=value)
+            elif key == 'area_restrictions':
+                m2m_field = created_object.area_restrictions
+                m2m_values = models.AreaRestriction.objects.filter(pk__in=value)
+            m2m_field.add(*m2m_values)
+
             # If there is a certificate years valid field then create a certificate
             if 'certificate_years_valid' in self.create_form_params.keys():
                 created_object.create_certificate(self.certificate_years)
@@ -392,15 +427,19 @@ class CrudTestMixin(object):
         link.click()
         self.assert_page((self.page + self.edit_page) % created_object.pk)
 
+        if self.model == models.UserProfile:
+            search_field_id = 'search_user_profile'
+        else:
+            search_field_id = 'search_org_user_system'
+
         # Test that the item can be searched
         self.browser.get(self.live_server_url + self.frontpage)
-        search_field = self.browser.find_element_by_id('search_org_user_system')
+        search_field = self.browser.find_element_by_id(search_field_id)
         search_field.clear()
         search_field.send_keys(self.object_name[0:6])
-        time.sleep(5)
-        # self.browser.implicitly_wait(5)
+        time.sleep(1)
 
-        result_list = self.browser.find_elements_by_css_selector('#search_org_user_system_results>a')
+        result_list = self.browser.find_elements_by_css_selector('#%s_results>a' % search_field_id)
         result_link = None
         sought_text = "%s: %s" % (self.model._meta.verbose_name.title(), self.object_name)
         for link in result_list:
@@ -447,7 +486,7 @@ class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
         'userprofile_adjustment_filter_type': 'Ingen tilpasninger',
         'organisation': u'Magenta leverer Grønlands datafordeler',
         'status': u'Aktiv',
-        'user_profiles': u'DAFO Serviceudbyder'
+        'user_profiles': [u'DAFO Serviceudbyder']
     }
 
     edit_form_params = {
@@ -486,15 +525,13 @@ class PasswordUserTest(CrudTestMixin, BrowserTest):
     create_button_id = 'create_password_user'
     page = '/user/'
 
-    files = []
-
     create_form_params = {
         'givenname': u'Peter',
         'lastname': u'Rasmussen',
         'email': u'pera@magenta.dk',
         'organisation': u'Magenta ApS',
         'status': u'Aktiv',
-        'user_profiles': u'DAFO Serviceudbyder'
+        'user_profiles': [u'DAFO Serviceudbyder']
     }
 
     edit_form_params = {
@@ -530,8 +567,6 @@ class CertificateUserTest(CrudTestMixin, BrowserTest):
     create_button_id = 'create_certificate_user'
     page = '/system/'
 
-    files = []
-
     create_form_params = {
         'name': u'Magenta ApS',
         'identification_mode': u'Identificerer brugere via \'på-vegne-af\'',
@@ -541,7 +576,7 @@ class CertificateUserTest(CrudTestMixin, BrowserTest):
         'organisation': u'Magenta leverer Grønlands Datafordeler',
         'comment': u'I følge aftale.',
         'status': u'Aktiv',
-        'user_profiles': u'DAFO Serviceudbyder'
+        'user_profiles': [u'DAFO Serviceudbyder']
     }
 
     edit_form_params = {
@@ -574,3 +609,52 @@ class CertificateUserTest(CrudTestMixin, BrowserTest):
     ]
 
     expected_number_of_objects = 1
+
+
+@tag('selenium')
+@unittest.skipIf(not selenium, 'selenium not installed')
+class UserProfileTest(CrudTestMixin, BrowserTest):
+
+    model = models.UserProfile
+    base_name = 'userprofile'
+    create_button_id = 'create_user_profile'
+    page = '/user-profile/'
+
+    files = []
+
+    create_form_params = {
+        'name': u'Magenta CPRBroker',
+        'area_restrictions': [u'Vest']
+    }
+
+    edit_form_params = {
+        'area_restrictions': [u'Vest', u'Syd']
+    }
+
+    object_name = create_form_params['name']
+
+    expected_titles = [
+        u'Navn',
+    ]
+
+    expected_values = [
+        object_name
+    ]
+
+    expected_number_of_objects = 3
+
+    def setup(self):
+        municipality_type = models.AreaRestrictionType(name=u'Kommune')
+        municipality_type.save()
+        municipality_west = models.AreaRestriction(
+            name=u'Vest',
+            area_restriction_type=municipality_type,
+            sumiffiik=str(uuid.uuid4())
+        )
+        municipality_south = models.AreaRestriction(
+            name=u'Syd',
+            area_restriction_type=municipality_type,
+            sumiffiik=str(uuid.uuid4())
+        )
+        municipality_west.save()
+        municipality_south.save()

@@ -755,13 +755,13 @@ def search_user_profile(request):
     search_term = request.GET.get('search_term', None)
     result = []
     if search_term == "":
-        return render(request, 'org_user_system_auto.html', {'object_list': result})
+        return render(request, 'search-autocomplete.html', {'object_list': result})
 
     user_profiles = models.UserProfile.objects.search(search_term)
 
     for user_profile in user_profiles:
         result.append({
-            "text": user_profile.name,
+            "text": "Brugerprofil: " + user_profile.name,
             "url": reverse('dafousers:userprofile-edit', kwargs={"pk": user_profile.id})
         })
 
