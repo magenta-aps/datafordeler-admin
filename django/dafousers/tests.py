@@ -517,37 +517,44 @@ class CrudTestMixin(object):
                 'submit_%s_popup' % permission_type
             )
 
-    def test_bulk_add_permissions(self):
-        print("%s.test_bulk_add_permissions" % self.__class__.__name__)
-        self.login()
-        self.setup()
+    def change_status(self, status_name):
+        change_status = self.browser.find_element_by_id('change_status')
+        self.click(change_status)
+        status_list = self.browser.find_element_by_id('status')
+        buttons = status_list.find_elements_by_tag_name('button')
+        for button in buttons:
+                if button.text.strip() == status_name:
+                    self.click(button)
 
-        iterations = 10
+    def create_test_objects(self, iterations):
 
+        create_objects = []
         create_objects_params = []
         for i in range(iterations):
-            object = copy.copy(self.create_form_params)
+            object_params = copy.copy(self.create_form_params)
             name_key = None
-            if 'name' in object:
+            if 'name' in object_params:
                 name_key = 'name'
-            elif 'lastname' in object:
+            elif 'lastname' in object_params:
                 name_key = 'lastname'
             if name_key is not None:
-                object[name_key] += " %s" % i
+                object_params[name_key] += " %s" % i
 
             email_key = None
-            if 'email' in object:
+            if 'email' in object_params:
                 email_key = 'email'
-            elif 'contact_email' in object:
+            elif 'contact_email' in object_params:
                 email_key = 'contact_email'
             if email_key is not None:
-                object[email_key] += " %s" % i
+                object_params[email_key] += " %s" % i
 
-            self.create_test_object(object)
-            create_objects_params.append(object)
+            object = self.create_test_object(object_params)
+            create_objects.append(object)
+            create_objects_params.append(object_params)
 
-        objects_to_update = [2, 3, 4, 7, 8]
+        return create_objects, create_objects_params
 
+    def assert_new_object_in_list(self, iterations):
         # Test that the item exists in the item list
         self.browser.get(self.live_server_url + self.page + self.list_page)
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
@@ -556,16 +563,36 @@ class CrudTestMixin(object):
             len(rows) - 1,
             'must contain %s rows, however %s found' % (self.number_of_original_objects, len(rows) - 1)
         )
+        return rows
 
-        for i in objects_to_update:
+    def select_table_items(self, params_to_update, rows):
+        for params in params_to_update:
             object_row = self.get_row_with_name(
                 rows,
-                self.get_object_name(create_objects_params[i])
+                self.get_object_name(params)
             )
             checkbox = object_row.find_element_by_css_selector(
                 'input[type=checkbox]',
             )
             self.click(checkbox)
+
+    def create_objects_and_select_them(self):
+        iterations = 10
+        create_objects, create_objects_params = self.create_test_objects(iterations)
+        rows = self.assert_new_object_in_list(iterations)
+
+        pks_to_update = [2, 3, 5, 7]
+        params_to_update = [create_objects_params[index] for index in pks_to_update]
+        self.select_table_items(params_to_update, rows)
+        return params_to_update
+
+    def test_bulk_add_permissions(self):
+        print("%s.test_bulk_add_permissions" % self.__class__.__name__)
+        self.login()
+        self.setup()
+
+        # Create test objects and select them so that they are ready for bulk action
+        params_to_update = self.create_objects_and_select_them()
 
         if self.model == models.UserProfile:
             self.select_permissions_and_submit('system_roles')
@@ -575,11 +602,32 @@ class CrudTestMixin(object):
 
         time.sleep(1)
 
-        for i in objects_to_update:
+        for params in params_to_update:
             self.assert_update_success(
-                create_objects_params[i],
+                params,
                 self.get_bulk_add_permissions_params_updated()
             )
+
+    def test_bulk_status_change(self):
+        if hasattr(self.model, 'status'):
+
+            print("%s.test_bulk_status_change" % self.__class__.__name__)
+            self.login()
+            self.setup()
+
+            # Create test objects and select them so that they are ready for bulk action
+            params_to_update = self.create_objects_and_select_them()
+
+            expected_status = u'Deaktiveret'
+            self.change_status(expected_status)
+
+            time.sleep(1)
+
+            for params in params_to_update:
+                self.assert_update_success(
+                    params,
+                    {'status': expected_status}
+                )
 
 
 @tag('selenium')
