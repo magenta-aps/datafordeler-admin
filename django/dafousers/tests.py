@@ -11,6 +11,7 @@ from django.db.models.fields.related import ManyToManyField
 from django.test import tag
 
 import contextlib
+import copy
 import datetime
 import logging
 import os
@@ -136,21 +137,30 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         super(BrowserTest, cls).tearDownClass()
         cls.browser.quit()
 
+    def select_options(self, field, names, submit_id, id=None):
+        if id is None:
+            id = field
+        select = self.browser.find_element_by_id(id)
+        related_model = self.model._meta.get_field(field).related_model
+        options = select.find_elements_by_tag_name('option')
+        for option in options:
+            labels = self.m2m_names_to_labels(related_model, names)
+            for label in labels:
+                if option.text.strip() in label:
+                    self.click(option)
+        add_button = self.browser.find_element_by_id(submit_id)
+        self.click(add_button)
+
     def fill_in_form(self, submit_id=None, **kwargs):
         for field, value in kwargs.items():
 
             if field in ['user_profiles', 'system_roles', 'area_restrictions']:
-                related_model = self.model._meta.get_field(field).related_model
-                id = "id_" + field
-                select = self.browser.find_element_by_id(id + '_from')
-                options = select.find_elements_by_tag_name('option')
-                for option in options:
-                    labels = self.m2m_names_to_labels(related_model, value)
-                    for label in labels:
-                        if option.text.strip() in label:
-                            self.click(option)
-                add_button = self.browser.find_element_by_id(id + '_add_link')
-                self.click(add_button)
+                self.select_options(
+                    field,
+                    value,
+                    'id_%s_add_link' % field,
+                    'id_%s_from' % field
+                )
 
             else:
                 e = self.browser.find_element_by_id("id_" + field)
@@ -198,6 +208,21 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
 
     def setup(self):
         pass
+
+    def get_object_name(self, params=None):
+        if params is None:
+            params = self.create_form_params
+        return params['name']
+
+    def get_bulk_add_permissions_params_updated(self):
+        result = {}
+
+        for field, value in self.create_form_params.items():
+            if isinstance(value, list):
+                result[field] = \
+                    value + \
+                    self.bulk_add_permissions_params[field]
+        return result
 
     logged_in = False
 
@@ -326,58 +351,29 @@ class CrudTestMixin(object):
             if isinstance(actual, FieldFile):
                 continue
             if isinstance(field, ManyToManyField):
-                continue
+                actual = [related.pk for related in actual.all()]
             self.assertEquals(expected, actual)
 
     def get_row_with_name(self, rows, name):
+        list = self.get_rows_with_names(rows, [name])
+        return list[0]
+
+    def get_rows_with_names(self, rows, names):
+        result = []
         for row in rows:
             elements = row.find_elements_by_class_name('txtdata')
             if len(elements) > 0:
-                if elements[0].text == name:
-                    return row
+                if elements[0].text in names:
+                    result.append(row)
+        return result
 
-    def test_create(self):
-        print("%s.test_create" % self.__class__.__name__)
-        self.login()
-
-        self.setup()
-
-        self.browser.get(self.live_server_url + self.frontpage)
-        create_button = self.browser.find_element_by_id(
-            self.create_button_id
-        )
-        self.click(create_button)
-        self.assert_page(self.page + self.create_page)
-
-        self.fill_in_form('submit_save', **self.create_form_params)
-        self.assert_page(self.page + self.list_page)
-
-        created_object = self.model.objects.search(self.object_name).first()
-        self.assertIsNotNone(created_object)
-        self.compare_result(created_object, self.create_form_params)
-
-        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
-        self.assertEquals(
-            self.expected_number_of_objects, len(rows) - 1,
-                                             'must contain %s rows, however %s found' %
-                                             (self.expected_number_of_objects, len(rows) - 1)
-        )
-        actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
-        self.assert_lists(self.expected_titles, actual_titles, "List headers")
-        object_row = self.get_row_with_name(rows, self.object_name)
-        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
-        self.assert_lists(self.expected_values, actual_values, "List data")
-
-    def test_edit(self):
-        print("%s.test_edit" % self.__class__.__name__)
-        self.login()
-
-        self.setup()
+    def create_test_object(self, form_params):
 
         for file in self.files:
             shutil.copy(file, settings.MEDIA_ROOT)
+
         create_params = {'changed_by': USERNAME}
-        create_params.update(self.convert_form_params(self.create_form_params))
+        create_params.update(self.convert_form_params(form_params))
 
         for (key, value) in create_params.items():
             if value in self.files:
@@ -397,6 +393,7 @@ class CrudTestMixin(object):
         created_object.save()
         for key, value in m2m_params.items():
             m2m_field = None
+            m2m_values = None
             if key == 'user_profiles':
                 m2m_field = created_object.user_profiles
                 m2m_values = models.UserProfile.objects.filter(pk__in=value)
@@ -409,18 +406,66 @@ class CrudTestMixin(object):
             m2m_field.add(*m2m_values)
 
             # If there is a certificate years valid field then create a certificate
-            if 'certificate_years_valid' in self.create_form_params.keys():
+            if 'certificate_years_valid' in form_params.keys():
                 created_object.create_certificate(self.certificate_years)
+
+        return created_object
+
+    def assert_update_success(self, original, changes):
+        updated_params = dict(original.items() + changes.items())
+        updated_object_name = self.get_object_name(updated_params)
+        created_object = self.model.objects.search(updated_object_name).first()
+        self.compare_result(created_object, updated_params)
+
+    def test_create(self):
+        print("%s.test_create" % self.__class__.__name__)
+        self.login()
+
+        self.setup()
+
+        self.browser.get(self.live_server_url + self.frontpage)
+        create_button = self.browser.find_element_by_id(
+            self.create_button_id
+        )
+        self.click(create_button)
+        self.assert_page(self.page + self.create_page)
+
+        self.fill_in_form('submit_save', **self.create_form_params)
+        self.assert_page(self.page + self.list_page)
+
+        created_object = self.model.objects.search(self.get_object_name()).first()
+        self.assertIsNotNone(created_object)
+        self.compare_result(created_object, self.create_form_params)
+
+        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
+        self.assertEquals(
+            self.number_of_original_objects + 1,
+            len(rows) - 1,
+            'must contain %s rows, however %s found' % (self.number_of_original_objects + 1, len(rows) - 1)
+        )
+        actual_titles = [element.text for element in rows[0].find_elements_by_class_name('ordering')]
+        self.assert_lists(self.expected_titles, actual_titles, "List headers")
+        object_row = self.get_row_with_name(rows, self.get_object_name())
+        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
+        self.assert_lists(self.expected_values, actual_values, "List data")
+
+    def test_edit(self):
+        print("%s.test_edit" % self.__class__.__name__)
+        self.login()
+        self.setup()
+
+        created_object = self.create_test_object(self.create_form_params)
 
         # Test that the item exists in the item list
         self.browser.get(self.live_server_url + self.page + self.list_page)
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
         self.assertEquals(
-            self.expected_number_of_objects, len(rows) - 1,
-                                             'must contain %s rows, however %s found' %
-                                             (self.expected_number_of_objects, len(rows) - 1)
+            self.number_of_original_objects + 1,
+            len(rows) - 1,
+            'must contain %s rows, however %s found' % (self.number_of_original_objects + 1, len(rows) - 1)
         )
-        object_row = self.get_row_with_name(rows, self.object_name)
+
+        object_row = self.get_row_with_name(rows, self.get_object_name())
         actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
         self.assert_lists(self.expected_values, actual_values, "List data")
         link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
@@ -436,17 +481,19 @@ class CrudTestMixin(object):
         self.browser.get(self.live_server_url + self.frontpage)
         search_field = self.browser.find_element_by_id(search_field_id)
         search_field.clear()
-        search_field.send_keys(self.object_name[0:6])
+        search_field.send_keys(self.get_object_name()[0:6])
         time.sleep(1)
 
         result_list = self.browser.find_elements_by_css_selector('#%s_results>a' % search_field_id)
         result_link = None
-        sought_text = "%s: %s" % (self.model._meta.verbose_name.title(), self.object_name)
+        sought_text = "%s: %s" % (self.model._meta.verbose_name.title(), self.get_object_name())
         for link in result_list:
             if link.text == sought_text:
                 result_link = link
                 break
+
         self.assertIsNotNone(result_link)
+
         result_link.click()
         self.assert_page((self.page + self.edit_page) % created_object.pk)
 
@@ -454,194 +501,310 @@ class CrudTestMixin(object):
         self.fill_in_form('submit_save', **self.edit_form_params)
         self.assert_page(self.page + self.list_page)
 
-        updated_params = dict(self.create_form_params.items() + self.edit_form_params.items())
+        self.assert_update_success(
+            self.create_form_params,
+            self.edit_form_params
+        )
 
-        created_object = self.model.objects.search(self.object_name).first()
-        self.compare_result(created_object, updated_params)
+    def select_permissions_and_submit(self, permission_type):
+        add_permissions = self.browser.find_element_by_id('add_%s' % permission_type)
+        if permission_type in self.bulk_add_permissions_params:
+            self.click(add_permissions)
+            names = self.bulk_add_permissions_params[permission_type]
+            self.select_options(
+                permission_type,
+                names,
+                'submit_%s_popup' % permission_type
+            )
 
+    def test_bulk_add_permissions(self):
+        print("%s.test_bulk_add_permissions" % self.__class__.__name__)
+        self.login()
+        self.setup()
+
+        iterations = 10
+
+        create_objects_params = []
+        for i in range(iterations):
+            object = copy.copy(self.create_form_params)
+            name_key = None
+            if 'name' in object:
+                name_key = 'name'
+            elif 'lastname' in object:
+                name_key = 'lastname'
+            if name_key is not None:
+                object[name_key] += " %s" % i
+
+            email_key = None
+            if 'email' in object:
+                email_key = 'email'
+            elif 'contact_email' in object:
+                email_key = 'contact_email'
+            if email_key is not None:
+                object[email_key] += " %s" % i
+
+            self.create_test_object(object)
+            create_objects_params.append(object)
+
+        objects_to_update = [2, 3, 4, 7, 8]
+
+        # Test that the item exists in the item list
+        self.browser.get(self.live_server_url + self.page + self.list_page)
+        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
+        self.assertEquals(
+            self.number_of_original_objects + iterations,
+            len(rows) - 1,
+            'must contain %s rows, however %s found' % (self.number_of_original_objects, len(rows) - 1)
+        )
+
+        for i in objects_to_update:
+            object_row = self.get_row_with_name(
+                rows,
+                self.get_object_name(create_objects_params[i])
+            )
+            checkbox = object_row.find_element_by_css_selector(
+                'input[type=checkbox]',
+            )
+            self.click(checkbox)
+
+        if self.model == models.UserProfile:
+            self.select_permissions_and_submit('system_roles')
+            self.select_permissions_and_submit('area_restrictions')
+        else:
+            self.select_permissions_and_submit('user_profiles')
+
+        time.sleep(1)
+
+        for i in objects_to_update:
+            self.assert_update_success(
+                create_objects_params[i],
+                self.get_bulk_add_permissions_params_updated()
+            )
 
 
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
 
-    model = models.IdentityProviderAccount
-    base_name = 'identityprovideraccount'
-    create_button_id = 'create_identityprovider_account'
-    page = '/organisation/'
+    def __init__(self, *args, **kwargs):
+        super(IdentityProviderAccountTest, self).__init__(*args, **kwargs)
+        self.model = models.IdentityProviderAccount
+        self.base_name = 'identityprovideraccount'
+        self.create_button_id = 'create_identityprovider_account'
+        self.page = '/organisation/'
 
-    resource_path = os.path.abspath(os.getcwd() + "/../testresources")
-    files = [
-        resource_path + "/test_metadata.xml"
-    ]
+        resource_path = os.path.abspath(os.getcwd() + "/../testresources")
+        self.files = [
+            resource_path + "/test_metadata.xml"
+        ]
 
-    create_form_params = {
-        'name': 'Magenta ApS',
-        'contact_name': 'Peter Rasmussen',
-        'contact_email': 'pera@magenta.dk',
-        'idp_type': u'Primær IdP (ingen validering af brugerprofiler)',
-        'metadata_xml_file': resource_path + "/test_metadata.xml",
-        'userprofile_attribute': 'urn:user_profiles',
-        'userprofile_attribute_format': 'Kommasepareret liste',
-        'userprofile_adjustment_filter_type': 'Ingen tilpasninger',
-        'organisation': u'Magenta leverer Grønlands datafordeler',
-        'status': u'Aktiv',
-        'user_profiles': [u'DAFO Serviceudbyder']
-    }
+        self.create_form_params = {
+            'name': 'Magenta ApS',
+            'contact_name': 'Peter Rasmussen',
+            'contact_email': 'pera@magenta.dk',
+            'idp_type': u'Primær IdP (ingen validering af brugerprofiler)',
+            'metadata_xml_file': resource_path + "/test_metadata.xml",
+            'userprofile_attribute': 'urn:user_profiles',
+            'userprofile_attribute_format': 'Kommasepareret liste',
+            'userprofile_adjustment_filter_type': 'Ingen tilpasninger',
+            'organisation': u'Magenta leverer Grønlands datafordeler',
+            'status': u'Aktiv',
+            'user_profiles': [u'DAFO Serviceudbyder']
+        }
 
-    edit_form_params = {
-        'idp_type': u'Sekundær IdP (kan kun udstede angivne brugerprofiler)',
-        'metadata_xml_file': resource_path + "/test_metadata.xml"
-    }
+        self.edit_form_params = {
+            'idp_type': u'Sekundær IdP (kan kun udstede angivne brugerprofiler)',
+            'metadata_xml_file': resource_path + "/test_metadata.xml"
+        }
 
-    object_name = create_form_params['name']
+        self.bulk_add_permissions_params = {
+            'user_profiles': [u'Magenta CPRBroker']
+        }
 
-    expected_titles = [
-        u'Navn',
-        u'Navn på kontaktperson',
-        u'E-mailadresse på kontaktperson',
-        u'IdP type',
-        u'IdP Entity ID',
-        u'Status'
-    ]
+        self.expected_titles = [
+            u'Navn',
+            u'Navn på kontaktperson',
+            u'E-mailadresse på kontaktperson',
+            u'IdP type',
+            u'IdP Entity ID',
+            u'Status'
+        ]
 
-    expected_values = [
-        object_name,
-        create_form_params['contact_name'],
-        create_form_params['contact_email'],
-        create_form_params['idp_type'],
-        u'https://accounts.google.com/o/saml2?idpid=foobar',
-        create_form_params['status']
-    ]
+        self.expected_values = [
+            self.get_object_name(),
+            self.create_form_params['contact_name'],
+            self.create_form_params['contact_email'],
+            self.create_form_params['idp_type'],
+            u'https://accounts.google.com/o/saml2?idpid=foobar',
+            self.create_form_params['status']
+        ]
 
-    expected_number_of_objects = 1
+        self.number_of_original_objects = 0
+
+    def setup(self):
+        user_profile = models.UserProfile(
+            name=u'Magenta CPRBroker',
+            changed_by="admin"
+        )
+        user_profile.save()
 
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class PasswordUserTest(CrudTestMixin, BrowserTest):
 
-    model = models.PasswordUser
-    base_name = 'passworduser'
-    create_button_id = 'create_password_user'
-    page = '/user/'
+    def __init__(self, *args, **kwargs):
+        super(PasswordUserTest, self).__init__(*args, **kwargs)
+        self.model = models.PasswordUser
+        self.base_name = 'passworduser'
+        self.create_button_id = 'create_password_user'
+        self.page = '/user/'
 
-    create_form_params = {
-        'givenname': u'Peter',
-        'lastname': u'Rasmussen',
-        'email': u'pera@magenta.dk',
-        'organisation': u'Magenta ApS',
-        'status': u'Aktiv',
-        'user_profiles': [u'DAFO Serviceudbyder']
-    }
+        self.create_form_params = {
+            'givenname': u'Peter',
+            'lastname': u'Rasmussen',
+            'email': u'pera@magenta.dk',
+            'organisation': u'Magenta ApS',
+            'status': u'Aktiv',
+            'user_profiles': [u'DAFO Serviceudbyder']
+        }
 
-    edit_form_params = {
-        'email': u'pera@magenta2.dk',
-        'organisation': u'Magenta 2 ApS'
-    }
+        self.edit_form_params = {
+            'email': u'pera@magenta2.dk',
+            'organisation': u'Magenta 2 ApS'
+        }
 
-    object_name = create_form_params['givenname'] + " " + create_form_params['lastname']
+        self.bulk_add_permissions_params = {
+            'user_profiles': [u'Magenta CPRBroker']
+        }
 
-    expected_titles = [
-        u'Bruger',
-        u'Email',
-        u'Arbejdssted',
-        u'Status'
-    ]
+        self.expected_titles = [
+            u'Bruger',
+            u'Email',
+            u'Arbejdssted',
+            u'Status'
+        ]
 
-    expected_values = [
-        object_name,
-        create_form_params['email'],
-        create_form_params['organisation'],
-        create_form_params['status']
-    ]
+        self.expected_values = [
+            self.get_object_name(),
+            self.create_form_params['email'],
+            self.create_form_params['organisation'],
+            self.create_form_params['status']
+        ]
 
-    expected_number_of_objects = 3
+        self.number_of_original_objects = 2
+
+    def setup(self):
+        user_profile = models.UserProfile(
+            name=u'Magenta CPRBroker',
+            changed_by="admin"
+        )
+        user_profile.save()
+
+    def get_object_name(self, params=None):
+        if params is None:
+            params = self.create_form_params
+        return params['givenname'] + " " + params['lastname']
 
 
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class CertificateUserTest(CrudTestMixin, BrowserTest):
 
-    model = models.CertificateUser
-    base_name = 'certificateuser'
-    create_button_id = 'create_certificate_user'
-    page = '/system/'
+    def __init__(self, *args, **kwargs):
+        super(CertificateUserTest, self).__init__(*args, **kwargs)
+        self.model = models.CertificateUser
+        self.base_name = 'certificateuser'
+        self.create_button_id = 'create_certificate_user'
+        self.page = '/system/'
 
-    create_form_params = {
-        'name': u'Magenta ApS',
-        'identification_mode': u'Identificerer brugere via \'på-vegne-af\'',
-        'contact_name': u'Peter Rasmussen',
-        'contact_email': u'pera@magenta.dk',
-        'certificate_years_valid': u'3 år',
-        'organisation': u'Magenta leverer Grønlands Datafordeler',
-        'comment': u'I følge aftale.',
-        'status': u'Aktiv',
-        'user_profiles': [u'DAFO Serviceudbyder']
-    }
+        self.create_form_params = {
+            'name': u'Magenta ApS',
+            'identification_mode': u'Identificerer brugere via \'på-vegne-af\'',
+            'contact_name': u'Peter Rasmussen',
+            'contact_email': u'pera@magenta.dk',
+            'certificate_years_valid': u'3 år',
+            'organisation': u'Magenta leverer Grønlands Datafordeler',
+            'comment': u'I følge aftale.',
+            'status': u'Aktiv',
+            'user_profiles': [u'DAFO Serviceudbyder']
+        }
 
-    edit_form_params = {
-    }
+        self.edit_form_params = {
+        }
 
-    edit_form_action = 'delete_invalid_certificates'
+        self.bulk_add_permissions_params = {
+            'user_profiles': [u'Magenta CPRBroker']
+        }
 
-    object_name = create_form_params['name']
+        self.edit_form_action = 'delete_invalid_certificates'
 
-    expected_titles = [
-        u'Navn',
-        u'Næste udløbsdato',
-        u'Identifikationsmetode',
-        u'Navn på kontaktperson',
-        u'E-mailadresse på kontaktperson',
-        u'Status'
-    ]
+        self.expected_titles = [
+            u'Navn',
+            u'Næste udløbsdato',
+            u'Identifikationsmetode',
+            u'Navn på kontaktperson',
+            u'E-mailadresse på kontaktperson',
+            u'Status'
+        ]
 
-    d = datetime.datetime.now()
-    certificate_years = 3
-    d = d + datetime.timedelta(days=(certificate_years*365))
+        d = datetime.datetime.now()
+        self.certificate_years = 3
+        d = d + datetime.timedelta(days=(self.certificate_years*365))
 
-    expected_values = [
-        object_name,
-        d,
-        create_form_params['identification_mode'],
-        create_form_params['contact_name'],
-        create_form_params['contact_email'],
-        create_form_params['status']
-    ]
+        self.expected_values = [
+            self.get_object_name(),
+            d,
+            self.create_form_params['identification_mode'],
+            self.create_form_params['contact_name'],
+            self.create_form_params['contact_email'],
+            self.create_form_params['status']
+        ]
 
-    expected_number_of_objects = 1
+        self.number_of_original_objects = 0
+
+    def setup(self):
+        user_profile = models.UserProfile(
+            name=u'Magenta CPRBroker',
+            changed_by="admin"
+        )
+        user_profile.save()
 
 
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class UserProfileTest(CrudTestMixin, BrowserTest):
 
-    model = models.UserProfile
-    base_name = 'userprofile'
-    create_button_id = 'create_user_profile'
-    page = '/user-profile/'
+    def __init__(self, *args, **kwargs):
+        super(UserProfileTest, self).__init__(*args, **kwargs)
+        self.model = models.UserProfile
+        self.base_name = 'userprofile'
+        self.create_button_id = 'create_user_profile'
+        self.page = '/user-profile/'
 
-    files = []
+        self.files = []
 
-    create_form_params = {
-        'name': u'Magenta CPRBroker',
-        'area_restrictions': [u'Vest']
-    }
+        self.create_form_params = {
+            'name': u'Magenta CPRBroker',
+            'area_restrictions': [u'Vest']
+        }
 
-    edit_form_params = {
-        'area_restrictions': [u'Vest', u'Syd']
-    }
+        self.edit_form_params = {
+            'area_restrictions': [u'Vest', u'Syd']
+        }
 
-    object_name = create_form_params['name']
+        self.bulk_add_permissions_params = {
+            'area_restrictions': [u'Syd']
+        }
 
-    expected_titles = [
-        u'Navn',
-    ]
+        self.expected_titles = [
+            u'Navn',
+        ]
 
-    expected_values = [
-        object_name
-    ]
+        self.expected_values = [
+            self.get_object_name()
+        ]
 
-    expected_number_of_objects = 3
+        self.number_of_original_objects = 2
 
     def setup(self):
         municipality_type = models.AreaRestrictionType(name=u'Kommune')
