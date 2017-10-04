@@ -1704,6 +1704,7 @@ div.logout-container .spotbox {
     height: 26px;
     padding: 0 10px;
     background: var(--dafo-lightblue) url(../images/search.png) no-repeat 12px;
+    background-color: var(--dafo-lightblue)
 }
 
 .history-entry-top {

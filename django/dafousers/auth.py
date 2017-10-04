@@ -260,7 +260,7 @@ class DafoAuthInfo(object):
     @property
     def admin_area_restrictions(self):
         if self.has_user_profile("DAFO Administrator"):
-            return SystemRole.objects.all()
+            return AreaRestriction.objects.all()
         elif self.has_user_profile("DAFO Serviceudbyder"):
             # A serviceprovider's area restrictions are limited to restrictions
             # for services he has access to.

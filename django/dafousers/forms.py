@@ -73,14 +73,14 @@ class CertificateUserForm(AccessAccountForm):
     current_time = forms.CharField(
         required=False,
         widget=forms.HiddenInput(),
-        initial=timezone.now().strftime('%Y-%m-%d %H:%M:%S+00:00')
+        initial=timezone.now().strftime("%Y-%m-%d %H:%M:%S")
     )
 
     class Meta:
         model = models.CertificateUser
         fields = [
             'name', 'identification_mode', 'organisation', 'comment',
-            'contact_name', 'contact_email'
+            'contact_name', 'contact_email', 'status'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -99,7 +99,7 @@ class IdentityProviderAccountForm(AccessAccountForm):
         model = models.IdentityProviderAccount
         fields = ['name', 'idp_entity_id', 'idp_type', 'metadata_xml_file', 'metadata_xml', 'organisation',
                   'contact_name', 'contact_email', 'userprofile_attribute', 'userprofile_attribute_format',
-                  'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value']
+                  'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value', 'status']
 
 
 class UserProfileForm(forms.ModelForm):

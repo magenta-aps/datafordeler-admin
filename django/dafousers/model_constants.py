@@ -55,7 +55,7 @@ class IdentityProviderAccount(object):
     # If changing any of these values also update DafoMetadataProvider.java in
     # the dafo-sts-saml project.
     USERPROFILE_FORMAT_MULTIVALUE = 1
-    USERPROFILE_FORMAT_COMMASEPARATED = 1
+    USERPROFILE_FORMAT_COMMASEPARATED = 2
 
     userprofile_attribute_format_choices = (
         (USERPROFILE_FORMAT_MULTIVALUE, _(u"Multiværdi attribut")),
@@ -69,7 +69,7 @@ class IdentityProviderAccount(object):
     userprofile_filter_choices = (
         (USERPROFILE_FILTER_NONE, _(u"Ingen tilpasninger")),
         (USERPROFILE_FILTER_REMOVE_PREFIX, _(u"Fjern angivet prefix")),
-        (USERPROFILE_FILTER_REMOVE_PREFIX, _(u"Fjern angivet postfix")),
+        (USERPROFILE_FILTER_REMOVE_POSTFIX, _(u"Fjern angivet postfix")),
     )
 
     IDP_TYPE_PRIMARY = 1

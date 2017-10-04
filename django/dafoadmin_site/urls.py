@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.core.urlresolvers import reverse_lazy
+from django.conf import settings
 from django.conf.urls import url, include
 from django.views.generic import RedirectView
 import dafousers.views
@@ -29,7 +30,9 @@ root_redirect = RedirectView.as_view(
 urlpatterns = [
     # Redirect root URL to admin
     # url(r'^$', root_redirect, name="index"),
-    url(r'^admin/', admin.site.urls),
     url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
 ]
+
+if settings.ENABLE_DJANGO_ADMIN:
+    urlpatterns = [url(r'^admin/', admin.site.urls)] + urlpatterns
