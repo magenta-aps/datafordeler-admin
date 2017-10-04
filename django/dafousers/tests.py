@@ -310,6 +310,7 @@ class CrudTestMixin(object):
     create_page = 'add/'
     list_page = 'list/'
     edit_page = '%d/'
+    history_page = '%d/history'
 
     files = []
 
@@ -457,14 +458,9 @@ class CrudTestMixin(object):
         created_object = self.create_test_object(self.create_form_params)
 
         # Test that the item exists in the item list
-        self.browser.get(self.live_server_url + self.page + self.list_page)
-        rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
-        self.assertEquals(
-            self.number_of_original_objects + 1,
-            len(rows) - 1,
-            'must contain %s rows, however %s found' % (self.number_of_original_objects + 1, len(rows) - 1)
-        )
+        rows = self.assert_new_object_in_list(1)
 
+        # Click the new object
         object_row = self.get_row_with_name(rows, self.get_object_name())
         actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
         self.assert_lists(self.expected_values, actual_values, "List data")
@@ -505,6 +501,41 @@ class CrudTestMixin(object):
             self.create_form_params,
             self.edit_form_params
         )
+
+    def test_history(self):
+        print("%s.test_history" % self.__class__.__name__)
+        self.login()
+        self.setup()
+
+        created_object = self.create_test_object(self.create_form_params)
+
+        # Test that the item exists in the item list
+        rows = self.assert_new_object_in_list(1)
+
+        # Click the new object
+        object_row = self.get_row_with_name(rows, self.get_object_name())
+        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
+        self.assert_lists(self.expected_values, actual_values, "List data")
+        link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
+        link.click()
+        self.assert_page((self.page + self.edit_page) % created_object.pk)
+
+        # Edit the form
+        self.fill_in_form('submit_save', **self.edit_form_params)
+        self.assert_page(self.page + self.list_page)
+
+        self.assert_update_success(
+            self.create_form_params,
+            self.edit_form_params
+        )
+
+        # Go to history page
+        link = object_row.find_element_by_id('goto_history')
+        link.click()
+        self.assert_page((self.page + self.history_page) % created_object.pk)
+        entries = object_row.find_elements_by_class('history-entry')[0]
+
+
 
     def select_permissions_and_submit(self, permission_type):
         add_permissions = self.browser.find_element_by_id('add_%s' % permission_type)
