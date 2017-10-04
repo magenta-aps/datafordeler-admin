@@ -18,7 +18,7 @@
 
             <a class="button filter_field blue" href="{% url 'dafousers:certificateuser-add' %}">
                 <div class="flex-left">
-                    <img src="/static/resources/images/brugerliste/check-white.png">
+                    <img src="{% static 'resources/images/check-white.png' %}">
                 </div>
                 <div class="flex-center">
                     OPRET NYT SYSTEM
@@ -28,13 +28,13 @@
             <div class="filter_field" style="display: inline-block;">
                 <div class="button dropbtn gray" onclick="toggleShow('status')">
                     <div class="flex-left">
-                        <img src="/static/resources/images/brugerliste/change.png">
+                        <img src="{% static 'resources/images/change.png' %}">
                     </div>
                     <div class="flex-center">
                         SKIFT STATUS
                     </div>
                     <div class="flex-right">
-                        <img src="/static/resources/images/brugerliste/dropdown-arrow.png">
+                        <img src="{% static 'resources/images/dropdown-arrow.png' %}">
                     </div>
                 </div>
                 <span id="status" class="dropdown-content slider white">
@@ -46,7 +46,7 @@
 
             <div class="button filter_field gray" onclick="showPopup('permissions-popup')">
                 <div class="flex-left">
-                    <img src="/static/resources/images/brugerliste/check-black.png">
+                    <img src="{% static 'resources/images/check-black.png' %}">
                 </div>
                 <div class="flex-center">
                     TILDEL RETTIGHEDER

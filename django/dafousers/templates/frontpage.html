@@ -9,7 +9,7 @@
     <div class="frontpage">
         <div class="block">
             <div class="block-title">
-                <img src="/static/resources/images/brugerliste/access.png">
+                <img src="{% static 'resources/images/access.png' %}">
                 <div>ADGANG</div>
             </div>
             <div class="block-content">
@@ -74,19 +74,17 @@
 
         <div class="block">
             <div class="block-title">
-                <img src="/static/resources/images/brugerliste/configuration.png">
+                <img src="{% static 'resources/images/configuration.png' %}">
                 <div>KONFIGURATION</div>
             </div>
             <div class="block-content">
-                <div class="block-row" style="height: 131px">
-                {% if disabled_for_now %}
-                    <a href="" class="block-link blue">
+                <div class="block-row">
+                    <a href="{% url 'dafoconfig:plugin-list' %}" class="block-link blue">
                         <div class="block-link-content">
                             <div class="block-link-icon icon-administer-registers"></div>
                         </div>
                         <div class="block-link-title">ADMINISTRÉR REGISTRE</div>
                     </a>
-                {% endif %}
                 </div>
 
 

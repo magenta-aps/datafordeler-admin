@@ -26,7 +26,6 @@ import jks
 import os
 import uuid
 
-
 class EntityWithHistory(models.Model):
 
     class Meta:

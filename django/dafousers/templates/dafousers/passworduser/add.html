@@ -77,7 +77,7 @@
 
                 <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
-                        <img src="/static/resources/images/brugerliste/check-white.png">
+                        <img src="{% static 'resources/images/check-white.png' %}">
                     </div>
                     <div class="flex-center">
                         OPRET NY BRUGER
@@ -86,7 +86,7 @@
 
                 <button class="row_field button blue" onclick="submitForm('form_submit', '_addanother')">
                     <div class="flex-left">
-                        <img src="/static/resources/images/brugerliste/plus-white.png">
+                        <img src="{% static 'resources/images/plus-white.png' %}">
                     </div>
                     <div class="flex-center">
                         OPRET OG TILFØJ ENDNU EN
@@ -101,7 +101,7 @@
             <div class="info-box" style="margin-top: 27%;">
                 <div class="text-box">
 
-                    <img class="img " src="/static/resources/images/brugerliste/exclamation-mark-round.png">
+                    <img class="img" src="{% static 'resources/images/exclamation-mark-round.png' %}">
 
                     <p>Du kan levere dette kodeord til den oprettede bruger. Kodeordet er gældende når du har oprettet brugeren.</p>
 
@@ -109,7 +109,7 @@
 
                     <div class="row_field button gray" onclick="newPassword()">
                         <div class="flex-left">
-                            <img src="/static/resources/images/brugerliste/password-key.png">
+                            <img src="{% static 'resources/images/password-key.png' %}">
                         </div>
                         <div class="flex-center">
                             NYT KODEORD

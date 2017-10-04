@@ -82,7 +82,7 @@
 
                 <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
-                        <img src="/static/resources/images/brugerliste/check-white.png">
+                        <img src="{% static 'resources/images/check-white.png' %}">
                     </div>
                     <div class="flex-center">
                         GEM ÆNDRINGER
@@ -90,7 +90,7 @@
                 </button>
                 <a class="row_field button gray" href="{% url 'dafousers:certificateuser-history' form.instance.pk %}">
                     <div class="flex-left">
-                        <img src="/static/resources/images/brugerliste/history.png">
+                        <img src="{% static 'resources/images/history.png' %}">
                     </div>
                     <div class="flex-center">
                         SE HISTORIK
@@ -104,7 +104,7 @@
             <div id="new-certificate-box" class="new-password-box">
                 <div class="new-password-content">
                     <div class="new-password-left">
-                        <img class="img " src="/static/resources/images/brugerliste/exclamation-mark-round.png">
+                        <img class="img " src="{% static 'resources/images/exclamation-mark-round.png' %}">
                     </div>
 
                     <div class="new-password-right">

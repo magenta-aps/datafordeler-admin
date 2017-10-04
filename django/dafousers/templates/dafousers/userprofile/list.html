@@ -18,7 +18,7 @@
 
             <a class="button filter_field blue" href="{% url 'dafousers:userprofile-add' %}">
                 <div class="flex-left">
-                    <img src="/static/resources/images/brugerliste/check-white.png">
+                    <img src="{% static 'resources/images/check-white.png' %}">
                 </div>
                 <div class="flex-center">
                     OPRET NY BRUGERPROFIL
@@ -27,7 +27,7 @@
 
             <div class="button filter_field gray" onclick="showPopup('system-roles-popup')">
                 <div class="flex-left">
-                    <img src="/static/resources/images/brugerliste/check-black.png">
+                    <img src="{% static 'resources/images/check-black.png' %}">
                 </div>
                 <div class="flex-center">
                     TILDEL SYSTEMROLLER
@@ -36,7 +36,7 @@
 
             <div class="button filter_field gray" onclick="showPopup('area-restrictions-popup')">
                 <div class="flex-left">
-                    <img src="/static/resources/images/brugerliste/check-black.png">
+                    <img src="{% static 'resources/images/check-black.png' %}">
                 </div>
                 <div class="flex-center">
                     TILDEL OMRÅDEBEGRÆNSNINGER

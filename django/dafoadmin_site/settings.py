@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SITE_DIR)
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'django_windows_tools',
     'django_markup',
     'dafousers',
+    'dafoconfig'
 ]
 
 MIDDLEWARE = [
@@ -88,8 +90,18 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'configuration': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'datafordeler',
+        'USER': 'test',
+        'PASSWORD': 'test',
+        'HOST': '127.0.0.1',
     }
 }
+
+DATABASE_ROUTERS = ['dafoadmin_site.routers.ModelDatabaseRouter']
+
 
 
 # Password validation
@@ -132,6 +144,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")
+]
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 CERT_ROOT = os.path.join(BASE_DIR, "cert")
 CERT_TMP_ROOT = os.path.join(CERT_ROOT, "tmp")

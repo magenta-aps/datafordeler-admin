@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.views.generic import RedirectView
 import dafousers.views
+import dafoconfig.views
 
 root_redirect = RedirectView.as_view(
     url=reverse_lazy('admin:index'),
@@ -27,6 +28,9 @@ root_redirect = RedirectView.as_view(
 )
 
 urlpatterns = [
+    # Redirect root URL to admin
+    # url(r'^$', root_redirect, name="index"),
+    url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
 ]
 
