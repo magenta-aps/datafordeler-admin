@@ -1,0 +1,36 @@
+{% extends 'index.html' %}
+{% load staticfiles %}
+
+{% block title %}
+    Pluginoversigt
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="title">Pluginoversigt</div>
+    </div>
+
+    <div class="plugin_list">
+        <table>
+            <tr>
+                <td class="ordering">
+                    <div id="order-name">Navn</div>
+                </td>
+                <td class="ordering">
+                    <div id="order-next_expiration">Konfiguration</div>
+                </td>
+            </tr>
+
+            {% for plugin in list %}
+                <tr>
+                    <td class="txtdata">{{ plugin.name }}</td>
+                    <td class="txtdata">
+                        <a href="{{ plugin.configlink }}">Redigér</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}

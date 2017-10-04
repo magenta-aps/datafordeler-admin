@@ -30,6 +30,6 @@ urlpatterns = [
     # Redirect root URL to admin
     # url(r'^$', root_redirect, name="index"),
     url(r'^admin/', admin.site.urls),
+    url(r'^plugin/', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
-    url(r'^', include('dafoconfig.urls', namespace='dafoconfig'))
 ]

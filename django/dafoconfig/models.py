@@ -9,6 +9,11 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+import django.db.models.options as options
+
+if 'database' not in options.DEFAULT_NAMES:
+    options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('database',)
+
 
 class CprConfig(models.Model):
 

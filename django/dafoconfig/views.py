@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.urls import reverse
+from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
 import re
 
@@ -8,7 +10,7 @@ from .models import CvrConfig, CprConfig, GladdregConfig
 from .forms import CvrConfigurationForm, CprConfigurationForm, GladdrregConfigurationForm
 
 
-class ConfigurationView(UpdateView):
+class PluginConfigurationView(UpdateView):
 
     plugin_name = None
 
@@ -22,26 +24,26 @@ class ConfigurationView(UpdateView):
         }
 
         context.update(kwargs)
-        return super(ConfigurationView, self).get_context_data(**context)
+        return super(PluginConfigurationView, self).get_context_data(**context)
 
     def get_sections(self):
         return [{'items': self.get_form()}]
 
 
-class CvrConfigurationView(ConfigurationView):
+class CvrPluginConfigurationView(PluginConfigurationView):
 
     model = CvrConfig
     form_class = CvrConfigurationForm
-    template_name = "form.html"
-    plugin_name = "CVR"
+    template_name = 'form.html'
+    plugin_name = 'CVR'
 
 
-class CprConfigurationView(ConfigurationView):
+class CprPluginConfigurationView(PluginConfigurationView):
 
     model = CprConfig
     form_class = CprConfigurationForm
-    template_name = "form.html"
-    plugin_name = "CPR"
+    template_name = 'form.html'
+    plugin_name = 'CPR'
 
     def get_sections(self):
         form = self.get_form()
@@ -61,9 +63,34 @@ class CprConfigurationView(ConfigurationView):
         return sections.values()
 
 
-class GladdregConfigurationView(ConfigurationView):
+class GladdregPluginConfigurationView(PluginConfigurationView):
 
     model = GladdregConfig
     form_class = GladdrregConfigurationForm
-    template_name = "form.html"
-    plugin_name = "Gladdrreg"
+    template_name = 'form.html'
+    plugin_name = 'Gladdrreg'
+
+
+class PluginListView(TemplateView):
+
+    template_name = 'list.html'
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'list': [
+                {
+                    'name': 'CVR',
+                    'configlink': reverse('dafoconfig:plugin-cvr-edit')
+                },
+                {
+                    'name': 'CPR',
+                    'configlink': reverse('dafoconfig:plugin-cpr-edit')
+                },
+                {
+                    'name': 'Gladdrreg',
+                    'configlink': reverse('dafoconfig:plugin-gladdrreg-edit')
+                },
+            ]
+        }
+        context.update(kwargs)
+        return super(PluginListView, self).get_context_data(**context)

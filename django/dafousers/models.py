@@ -26,9 +26,6 @@ import hashlib
 import os
 import uuid
 
-import django.db.models.options as options
-options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('database',)
-
 class EntityWithHistory(models.Model):
 
     class Meta:
