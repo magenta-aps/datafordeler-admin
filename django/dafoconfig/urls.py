@@ -9,23 +9,28 @@ import dafoconfig.views as dafo_views
 
 urlpatterns = [
     url(
-        r'^$',
+        r'^plugin/?$',
         dafo_views.PluginListView.as_view(),
         name='plugin-list'
     ),
     url(
-        r'^cvr/config/?$',
+        r'^plugin/cvr/config/?$',
         dafo_views.CvrPluginConfigurationView.as_view(),
         name='plugin-cvr-edit'
     ),
     url(
-        r'^cpr/config/?$',
+        r'^plugin/cpr/config/?$',
         dafo_views.CprPluginConfigurationView.as_view(),
         name='plugin-cpr-edit'
     ),
     url(
-        r'^gladdrreg/config/?$',
+        r'^plugin/gladdrreg/config/?$',
         dafo_views.GladdregPluginConfigurationView.as_view(),
         name='plugin-gladdrreg-edit'
+    ),
+    url(
+        r'^ajax/update_plugin_queryset/$',
+        dafo_views.PluginListTable.as_view(),
+        name='update_plugin_queryset'
     ),
 ]

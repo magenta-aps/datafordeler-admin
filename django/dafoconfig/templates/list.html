@@ -6,31 +6,22 @@
 {% endblock %}
 
 {% block content %}
+    <form id="list_form" action="" method="post">
 
-    <div class="row">
-        <div class="title">Pluginoversigt</div>
-    </div>
+        <div class="row">
+            <div class="title">Pluginoversigt</div>
+        </div>
 
-    <div class="plugin_list">
-        <table>
-            <tr>
-                <td class="ordering">
-                    <div id="order-name">Navn</div>
-                </td>
-                <td class="ordering">
-                    <div id="order-next_expiration">Konfiguration</div>
-                </td>
-            </tr>
+        <div class="update_plugin_queryset_body">
+            {% include 'table.html' %}
+        </div>
 
-            {% for plugin in list %}
-                <tr>
-                    <td class="txtdata">{{ plugin.name }}</td>
-                    <td class="txtdata">
-                        <a href="{{ plugin.configlink }}">Redigér</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
+        <input style="display:none;" id="order" value="{{ order }}" >
+        <input style="display:none;" id="filter" value="" >
+        <input style="display:none;" id="object_type" value="plugin" >
+        <input style="display:none;" id="form_submit" name="action" value="" >
+        <div id="lightbox"></div>
+
+    </form>
 
 {% endblock %}

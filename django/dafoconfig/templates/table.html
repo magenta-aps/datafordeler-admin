@@ -1,0 +1,19 @@
+<table>
+    <tr>
+        <td class="ordering">
+            <div id="order-name">Navn</div>
+        </td>
+        <td>
+            <div id="order-next_expiration">Konfiguration</div>
+        </td>
+    </tr>
+
+    {% for plugin in list %}
+        <tr>
+            <td class="txtdata">{{ plugin.name }}</td>
+            <td class="txtdata">
+                <a href="{{ plugin.configlink }}">Redigér</a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>

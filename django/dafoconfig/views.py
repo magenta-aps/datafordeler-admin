@@ -6,9 +6,9 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
 import re
 
+# from dafoadmin.dafousers.views import LoginRequiredMixin
 from .models import CvrConfig, CprConfig, GladdregConfig
 from .forms import CvrConfigurationForm, CprConfigurationForm, GladdrregConfigurationForm
-
 
 class PluginConfigurationView(UpdateView):
 
@@ -71,26 +71,45 @@ class GladdregPluginConfigurationView(PluginConfigurationView):
     plugin_name = 'Gladdrreg'
 
 
-class PluginListView(TemplateView):
+class PluginListTable(TemplateView):
 
-    template_name = 'list.html'
+    template_name = 'table.html'
 
     def get_context_data(self, **kwargs):
+
+        list = [
+            {
+                'name': 'CVR',
+                'configlink': reverse('dafoconfig:plugin-cvr-edit')
+            },
+            {
+                'name': 'CPR',
+                'configlink': reverse('dafoconfig:plugin-cpr-edit')
+            },
+            {
+                'name': 'Gladdrreg',
+                'configlink': reverse('dafoconfig:plugin-gladdrreg-edit')
+            },
+        ]
+
+        order = self.request.GET.get('order', 'name')
+        if order:
+            reversed = False
+            if order[0] == '-':
+                order = order[1:]
+                reversed = True
+            if order == "name":
+                list = sorted(list, key=lambda item: item['name'], reverse=reversed)
+
+
         context = {
-            'list': [
-                {
-                    'name': 'CVR',
-                    'configlink': reverse('dafoconfig:plugin-cvr-edit')
-                },
-                {
-                    'name': 'CPR',
-                    'configlink': reverse('dafoconfig:plugin-cpr-edit')
-                },
-                {
-                    'name': 'Gladdrreg',
-                    'configlink': reverse('dafoconfig:plugin-gladdrreg-edit')
-                },
-            ]
+            'list': list,
+            'order': order
         }
         context.update(kwargs)
-        return super(PluginListView, self).get_context_data(**context)
+        return super(PluginListTable, self).get_context_data(**context)
+
+
+class PluginListView(PluginListTable):
+
+    template_name = 'list.html'
