@@ -144,6 +144,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static_files")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")
+]
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
 CERT_ROOT = os.path.join(BASE_DIR, "cert")
 CERT_TMP_ROOT = os.path.join(CERT_ROOT, "tmp")
