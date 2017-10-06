@@ -200,6 +200,7 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
             submit = self.browser.find_element_by_css_selector(
                 "input[type=submit]",
             )
+
         self.click(submit)
 
     def click(self, element):
@@ -268,7 +269,7 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
         return result
 
     def assert_page(self, expected_page):
-        self.assertEquals(
+        self.assertEqual(
             self.live_server_url + expected_page,
             self.browser.current_url,
             "expected: %s, got %s" % (self.live_server_url + expected_page, self.browser.current_url)
@@ -310,7 +311,7 @@ class CrudTestMixin(object):
     create_page = 'add/'
     list_page = 'list/'
     edit_page = '%d/'
-    history_page = '%d/history'
+    history_page = '%d/history/'
 
     files = []
 
@@ -353,7 +354,7 @@ class CrudTestMixin(object):
                 continue
             if isinstance(field, ManyToManyField):
                 actual = [related.pk for related in actual.all()]
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
 
     def get_row_with_name(self, rows, name):
         list = self.get_rows_with_names(rows, [name])
@@ -391,7 +392,11 @@ class CrudTestMixin(object):
         }
 
         created_object = self.model(**singleton_params)
+        if self.model == models.IdentityProviderAccount:
+            created_object.save_metadata()
+
         created_object.save()
+
         for key, value in m2m_params.items():
             m2m_field = None
             m2m_values = None
@@ -410,6 +415,8 @@ class CrudTestMixin(object):
             if 'certificate_years_valid' in form_params.keys():
                 created_object.create_certificate(self.certificate_years)
 
+        created_object.save()
+
         return created_object
 
     def assert_update_success(self, original, changes):
@@ -417,6 +424,15 @@ class CrudTestMixin(object):
         updated_object_name = self.get_object_name(updated_params)
         created_object = self.model.objects.search(updated_object_name).first()
         self.compare_result(created_object, updated_params)
+
+    def click_object_in_list(self, rows, id, expected_values):
+        object_row = self.get_row_with_name(rows, self.get_object_name())
+        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
+        if expected_values is not None:
+            self.assert_lists(expected_values, actual_values, "List data")
+        link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
+        self.click(link)
+        self.assert_page((self.page + self.edit_page) % id)
 
     def test_create(self):
         print("%s.test_create" % self.__class__.__name__)
@@ -439,7 +455,7 @@ class CrudTestMixin(object):
         self.compare_result(created_object, self.create_form_params)
 
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
-        self.assertEquals(
+        self.assertEqual(
             self.number_of_original_objects + 1,
             len(rows) - 1,
             'must contain %s rows, however %s found' % (self.number_of_original_objects + 1, len(rows) - 1)
@@ -461,12 +477,7 @@ class CrudTestMixin(object):
         rows = self.assert_new_object_in_list(1)
 
         # Click the new object
-        object_row = self.get_row_with_name(rows, self.get_object_name())
-        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
-        self.assert_lists(self.expected_values, actual_values, "List data")
-        link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
-        link.click()
-        self.assert_page((self.page + self.edit_page) % created_object.pk)
+        self.click_object_in_list(rows, created_object.pk, self.expected_values)
 
         if self.model == models.UserProfile:
             search_field_id = 'search_user_profile'
@@ -490,7 +501,7 @@ class CrudTestMixin(object):
 
         self.assertIsNotNone(result_link)
 
-        result_link.click()
+        self.click(result_link)
         self.assert_page((self.page + self.edit_page) % created_object.pk)
 
         # Edit the form
@@ -513,12 +524,7 @@ class CrudTestMixin(object):
         rows = self.assert_new_object_in_list(1)
 
         # Click the new object
-        object_row = self.get_row_with_name(rows, self.get_object_name())
-        actual_values = [element.text for element in object_row.find_elements_by_class_name('txtdata')]
-        self.assert_lists(self.expected_values, actual_values, "List data")
-        link = object_row.find_elements_by_css_selector('.txtdata>a')[0]
-        link.click()
-        self.assert_page((self.page + self.edit_page) % created_object.pk)
+        self.click_object_in_list(rows, created_object.pk, self.expected_values)
 
         # Edit the form
         self.fill_in_form('submit_save', **self.edit_form_params)
@@ -529,13 +535,63 @@ class CrudTestMixin(object):
             self.edit_form_params
         )
 
+        # Get updated rows
+        rows = self.assert_new_object_in_list(1)
+
+        # Click the new object
+        self.click_object_in_list(rows, created_object.pk, None)
+
         # Go to history page
-        link = object_row.find_element_by_id('goto_history')
-        link.click()
+        link = self.browser.find_element_by_id('goto_history')
+        self.click(link)
         self.assert_page((self.page + self.history_page) % created_object.pk)
-        entries = object_row.find_elements_by_class('history-entry')[0]
 
+        # Get reversed entry list
+        entries = list(
+            reversed(
+                self.browser.find_elements_by_css_selector('.history-entry')
+            )
+        )
 
+        expected_history_entries = 2
+
+        self.assertEqual(
+            expected_history_entries,
+            len(entries),
+            '%s history entries were expected, however, %s was found' % (expected_history_entries, len(entries))
+        )
+
+        for i in range(2):
+            for param in entries[i].find_elements_by_css_selector('.history-entry-content>.row.row_title'):
+                param_parts = param.find_elements_by_class_name('row_field')
+                param_title = param_parts[0].text
+                param_value = param_parts[1].text
+
+                if i == 0:
+                    expected_items = self.create_form_params
+                else:
+                    expected_items = dict(self.create_form_params.items() + self.edit_form_params.items())
+
+                expected_params = {}
+                for key, value in expected_items.items():
+                    try:
+                        field = self.model._meta.get_field(key)
+                        if isinstance(field, ManyToManyField):
+                            related_model = field.related_model
+                            value = self.m2m_names_to_labels(related_model, value)
+                            value = "\n".join(value)
+                        expected_params[field.verbose_name] = value
+                    except FieldDoesNotExist:
+                        if key != u'certificate_years_valid':
+                            print("The field %s does not exist." % key)
+                for expected_title, expected_value in expected_params.items():
+                    if param_title == expected_title:
+                        self.assertEqual(
+                            expected_value,
+                            param_value,
+                            "expected the historical value for %s in history entry %s to be %s, however, it was %s" %
+                            (param_title, i, expected_value, param_value)
+                        )
 
     def select_permissions_and_submit(self, permission_type):
         add_permissions = self.browser.find_element_by_id('add_%s' % permission_type)
@@ -589,7 +645,7 @@ class CrudTestMixin(object):
         # Test that the item exists in the item list
         self.browser.get(self.live_server_url + self.page + self.list_page)
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
-        self.assertEquals(
+        self.assertEqual(
             self.number_of_original_objects + iterations,
             len(rows) - 1,
             'must contain %s rows, however %s found' % (self.number_of_original_objects, len(rows) - 1)

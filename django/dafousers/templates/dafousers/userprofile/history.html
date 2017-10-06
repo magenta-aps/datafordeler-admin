@@ -31,21 +31,27 @@
                             Opdateret d. <b>{{ entry.updated }}</b> af <b>{{ entry.changed_by }}</b>
                         </div>
                         <div class="history-entry-content">
-                            <div class="row_field">Navn</div>
-                            <div class="row_field">{{ entry.name }}</div>
-
-                            <div class="row_field">Tildelte systemroller</div>
-                            <div class="row_field">
-                                    {% for system_roles in entry.system_roles.all %}
-                                        <div>{{ system_roles }}</div>
-                                    {% endfor %}
+                            <div class="row row_title">
+                                <div class="row_field">Navn</div>
+                                <div class="row_field">{{ entry.name }}</div>
                             </div>
 
-                            <div class="row_field">Tildelte områdeafgrænsninger</div>
-                            <div class="row_field">
-                                {% for area_restriction in entry.area_restrictions.all %}
-                                    <div>{{ area_restriction }}</div>
-                                {% endfor %}
+                            <div class="row row_title">
+                                <div class="row_field">Tildelte systemroller</div>
+                                <div class="row_field">
+                                        {% for system_roles in entry.system_roles.all %}
+                                            <div>{{ system_roles }}</div>
+                                        {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="row row_title">
+                                <div class="row_field">Tildelte områdeafgrænsninger</div>
+                                <div class="row_field">
+                                    {% for area_restriction in entry.area_restrictions.all %}
+                                        <div>{{ area_restriction }}</div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>

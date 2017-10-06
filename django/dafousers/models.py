@@ -55,11 +55,14 @@ class EntityWithHistory(models.Model):
         # Set latest update time to now
         self.updated = timezone.now()
 
+        pk_before_save = self.pk
+
         # Save ourselves
         result = super(EntityWithHistory, self).save(*args, **kwargs)
 
-        # Save history record
-        self.history_class.create_from_entity(self)
+        # Save history record only when the object has been created and then m2m fields added
+        if pk_before_save is not None:
+            self.history_class.create_from_entity(self)
 
         return result
 
@@ -102,8 +105,7 @@ class HistoryForEntity(object):
 
         # Add many-to-many relation
         for r in rel_data:
-            for v in rel_data[r]:
-                getattr(new_obj, r).add(v.pk)
+            setattr(new_obj, r, rel_data[r])
 
         return new_obj
 
@@ -222,7 +224,7 @@ class AccessAccount(models.Model):
     )
     user_profiles = models.ManyToManyField(
         'UserProfile',
-        verbose_name=_("Tilknyttede brugerprofiler"),
+        verbose_name=_("Tildelte brugerprofiler"),
         blank=True
     )
 
@@ -270,12 +272,12 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         default=""
     )
     email = models.EmailField(
-        verbose_name=_(u"E-mail"),
+        verbose_name=_(u"Email"),
         unique=True,
         blank=False
     )
     organisation = models.CharField(
-        verbose_name=_(u"Information om brugerens organisation"),
+        verbose_name=_(u"Arbejdssted"),
         max_length=2048,
         blank=True,
         default=""
@@ -467,13 +469,13 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
         default=""
     )
     idp_entity_id = models.CharField(
-        verbose_name=_(u"EntityID"),
+        verbose_name=_(u"IdP-id"),
         max_length=2048,
         blank=True,
         default=""
     )
     idp_type = models.IntegerField(
-        verbose_name=_(u"IdP type"),
+        verbose_name=_(u"IdP-type"),
         choices=CONSTANTS.idp_type_choices,
         default=CONSTANTS.IDP_TYPE_SECONDARY
     )
@@ -536,11 +538,8 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
     def get_absolute_url(self):
         return reverse('dafousers:identityprovideraccount-list')
 
-    def save(self, *args, **kwargs):
-        result = super(IdentityProviderAccount, self).save(*args, **kwargs)
-
-        if(self.metadata_xml_file and
-                os.path.exists(self.metadata_xml_file.path)):
+    def save_metadata(self):
+        if self.metadata_xml_file:
 
             try:
                 # Store certificate in blob instead of file
@@ -551,20 +550,13 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
 
                 # Remove the file so data is only stored in the blob
                 self.metadata_xml_file.close()
-                self.metadata_xml_file.delete()
                 self.metadata_xml_file = None
 
-                # Save once more to store data retrieved from the uploaded file
-                result = super(IdentityProviderAccount, self).save(
-                    *args, **kwargs
-                )
             except Exception as e:
                 print "Failed to parse uploaded xml, error is: %s" % e
 
         # Update the last-update-of-idp-data timestamp
         UpdateTimestamps.touch(self.CONSTANTS.IDP_UPDATE_TIMESTAMP_NAME)
-
-        return result
 
     @classmethod
     def get_readonly_fields(self):
@@ -711,12 +703,12 @@ class UserProfile(EntityWithHistory):
     )
     system_roles = models.ManyToManyField(
         'SystemRole',
-        verbose_name=_("Tilknyttede systemroller"),
+        verbose_name=_("Tildelte systemroller"),
         blank=True
     )
     area_restrictions = models.ManyToManyField(
         'AreaRestriction',
-        verbose_name=_("Tilknyttede områdebegrænsninger"),
+        verbose_name=_("Tildelte områdeafgrænsninger"),
         blank=True
     )
 
