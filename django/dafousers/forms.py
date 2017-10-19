@@ -3,9 +3,11 @@
 
 from django import forms
 from django.contrib.admin import widgets
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from dafousers import models, model_constants
+from xml.etree import ElementTree
 
 
 class AccessAccountForm(forms.ModelForm):
@@ -100,6 +102,19 @@ class IdentityProviderAccountForm(AccessAccountForm):
         fields = ['name', 'idp_entity_id', 'idp_type', 'metadata_xml_file', 'metadata_xml', 'organisation',
                   'contact_name', 'contact_email', 'userprofile_attribute', 'userprofile_attribute_format',
                   'userprofile_adjustment_filter_type', 'userprofile_adjustment_filter_value', 'status']
+
+    def clean_metadata_xml_file(self):
+        super(AccessAccountForm, self).clean()
+
+        metadata_xml_file = self.cleaned_data.get('metadata_xml_file')
+
+        if metadata_xml_file:
+            metadata_xml = metadata_xml_file.read()
+            metadata_xml_file.seek(0)
+            xml_root = ElementTree.fromstring(metadata_xml)
+
+            if xml_root.get('entityID') is None:
+                raise ValidationError('Metadata-filen er i forkert format')
 
 
 class UserProfileForm(forms.ModelForm):
