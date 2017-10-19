@@ -546,10 +546,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
                 self.metadata_xml = self.metadata_xml_file.read()
 
                 xml_root = ElementTree.fromstring(self.metadata_xml)
-                if "entityID" in xml_root:
-                    self.idp_entity_id = xml_root.get("entityID")
-                else:
-                    self.idp_entity_id = ""
+                self.idp_entity_id = xml_root.get("entityID")
 
                 # Remove the file so data is only stored in the blob
                 self.metadata_xml_file.close()
