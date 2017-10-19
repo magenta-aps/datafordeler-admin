@@ -2020,3 +2020,8 @@ ul.timelist, .timelist li {
 #rst-documentation img {
     max-width: 100%;
 }
+
+.alert {
+  color: red;
+  font-weight: bold;
+}
