@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -71,22 +73,30 @@ class CvrConfig(models.Model):
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
-    username = models.CharField(max_length=255, blank=True, null=True)
-    password = models.CharField(max_length=255, blank=True, null=True)
     registeraddress = models.CharField(max_length=255, blank=True, null=True)
     pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
 
-    companyregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
-    companyinitialquery = models.CharField(max_length=255, blank=True, null=True)
-    companyunitinitialquery = models.CharField(max_length=255, blank=True, null=True)
 
-    companyunitregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
-    companyunitupdatequery = models.CharField(max_length=255, blank=True, null=True)
-    companyupdatequery = models.CharField(max_length=255, blank=True, null=True)
+    companyregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    companyregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
+    companyregisterscrolladdress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll dataadresse")
+    companyregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
+    companyregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
+    companyregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
 
-    participantregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
-    participantinitialquery = models.CharField(max_length=255, blank=True, null=True)
-    participantupdatequery = models.CharField(max_length=255, blank=True, null=True)
+    companyunitregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    companyunitregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
+    companyunitregisterscrolladdress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll dataadresse")
+    companyunitregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
+    companyunitregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
+    companyunitregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
+
+    participantregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    participantregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
+    participantregisterscrolladdress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll dataadresse")
+    participantregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
+    participantregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
+    participantregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
 
 
     class Meta:

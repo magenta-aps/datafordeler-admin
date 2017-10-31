@@ -19,6 +19,7 @@ from .forms import CvrConfigurationForm, CprConfigurationForm, GladdrregConfigur
 class PluginConfigurationView(UpdateView):
 
     plugin_name = None
+    sectioned = False
 
     def get_object(self, queryset=None):
         return self.model.objects.first()
@@ -33,7 +34,26 @@ class PluginConfigurationView(UpdateView):
         return super(PluginConfigurationView, self).get_context_data(**context)
 
     def get_sections(self):
-        return [{'items': self.get_form()}]
+        if self.sectioned:
+            other = 'other'
+            form = self.get_form()
+            regex = re.compile('([a-zA-Z]+register)')
+            sections = {}
+            for (name, field) in form.fields.items():
+                m = regex.match(name)
+                key = other
+                if m:
+                    key = m.group(1)
+                if not key in sections:
+                    obj = {'items': []}
+                    if key != other:
+                        obj['name'] = key
+                    sections[key] = obj
+                sections[key]['items'].append(form[name])
+            return ([sections[other]] if other in sections else []) + \
+                   [values for key, values in sections.items() if key != other]
+        else:
+            return [{'items': self.get_form()}]
 
 
 class CvrPluginConfigurationView(PluginConfigurationView):
@@ -42,6 +62,7 @@ class CvrPluginConfigurationView(PluginConfigurationView):
     form_class = CvrConfigurationForm
     template_name = 'form.html'
     plugin_name = 'CVR'
+    sectioned = True
 
 
 class CprPluginConfigurationView(PluginConfigurationView):
@@ -50,23 +71,7 @@ class CprPluginConfigurationView(PluginConfigurationView):
     form_class = CprConfigurationForm
     template_name = 'form.html'
     plugin_name = 'CPR'
-
-    def get_sections(self):
-        form = self.get_form()
-        regex = re.compile('([a-zA-Z]+register)')
-        sections = {}
-        for (name, field) in form.fields.items():
-            m = regex.match(name)
-            key = 'other'
-            if m:
-                key = m.group(1)
-            if not key in sections:
-                obj = {'items': []}
-                if key != 'other':
-                    obj['name'] = key
-                sections[key] = obj
-            sections[key]['items'].append(form[name])
-        return sections.values()
+    sectioned = True
 
 
 class GladdregPluginConfigurationView(PluginConfigurationView):
