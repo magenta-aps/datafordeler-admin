@@ -64,11 +64,30 @@ class CprConfig(models.Model):
 
 
 class CvrConfig(models.Model):
+
+    type_choices = [
+        (-1, u"Deaktiveret"),
+        (1, u"HTTP-server")
+    ]
+
     id = models.CharField(primary_key=True, max_length=255)
     username = models.CharField(max_length=255, blank=True, null=True)
     password = models.CharField(max_length=255, blank=True, null=True)
     registeraddress = models.CharField(max_length=255, blank=True, null=True)
     pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
+
+    companyregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
+    companyinitialquery = models.CharField(max_length=255, blank=True, null=True)
+    companyunitinitialquery = models.CharField(max_length=255, blank=True, null=True)
+
+    companyunitregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
+    companyunitupdatequery = models.CharField(max_length=255, blank=True, null=True)
+    companyupdatequery = models.CharField(max_length=255, blank=True, null=True)
+
+    participantregistertype = models.IntegerField(blank=True, null=True, choices=type_choices)
+    participantinitialquery = models.CharField(max_length=255, blank=True, null=True)
+    participantupdatequery = models.CharField(max_length=255, blank=True, null=True)
+
 
     class Meta:
         managed = False
