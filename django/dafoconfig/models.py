@@ -27,6 +27,7 @@ class CprConfig(models.Model):
     ]
 
     type_choices = [
+        (-1, u"Deaktiveret"),
         (0, u"Lokal fil"),
         (1, u"FTP-server")
     ]
