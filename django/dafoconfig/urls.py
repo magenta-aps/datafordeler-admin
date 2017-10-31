@@ -33,4 +33,10 @@ urlpatterns = [
         dafo_views.PluginListTable.as_view(),
         name='update_plugin_queryset'
     ),
+
+    url(
+        r'^plugin/(?P<plugin>[a-z]+)/pull/?$',
+        dafo_views.PluginPullView.as_view(),
+        name='plugin-pull'
+    ),
 ]

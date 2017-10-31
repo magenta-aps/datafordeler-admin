@@ -8,7 +8,6 @@
       <meta name="apple-mobile-web-app-capable" content="yes"/>
       <link href="{% static 'resources/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}" type="text/css" rel="stylesheet"/>
       <link href="{% static 'resources/css/style.css' %}" type="text/css" rel="stylesheet"/>
-      <link href="{% static 'resources/css/dafoconfig_style.css' %}" type="text/css" rel="stylesheet"/>
       <link href="https://fonts.googleapis.com/css?family=Ubuntu" type="text/css" rel="stylesheet">
 
       <script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
@@ -26,7 +25,6 @@
     {% block head_extra %}{% endblock %}
   </head>
   <body class="{%block body_class%}{% endblock %}">
-  DAFOCONFIG INDEX
         <div class="top_bar">
             {% if request.user.is_authenticated %}
             <a href="{% url 'dafousers:frontpage' %}">

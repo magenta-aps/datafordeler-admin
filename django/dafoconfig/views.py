@@ -1,10 +1,16 @@
+# -*- coding: utf-8 -*-
+
+import json
+
 from django.shortcuts import render
 
 # Create your views here.
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
+from django.shortcuts import redirect
 import re
+import requests
 
 # from dafoadmin.dafousers.views import LoginRequiredMixin
 from .models import CvrConfig, CprConfig, GladdregConfig
@@ -113,3 +119,77 @@ class PluginListTable(TemplateView):
 class PluginListView(PluginListTable):
 
     template_name = 'list.html'
+
+
+class PluginPullView(TemplateView):
+
+    template_name = 'pull.html'
+
+    # def get_tokenheader(config, req):
+    #     if req is None:
+    #         username = config['username']
+    #         password = config['password']
+    #     else:
+    #         username = req['username']
+    #         password = req['password']
+    #     tokenurl = config['tokenurl'] + "?username=" + username + "&password=" + password
+    #     token = requests.get(tokenurl).text
+    #     return {'Authorization': 'SAML ' + token }
+
+    status_conversion = {
+        'cancelled': u'Afbrudt',
+        'running': u'Kørende',
+        'queued': u'Lagt i kø',
+        'failure': u'Fejlet',
+        'successful': u'Færdig'
+    }
+
+    def get_context_data(self, **kwargs):
+        context = self.get_status()
+        context.update(**kwargs)
+        return context
+
+    def get_plugin(self):
+        return self.kwargs['plugin']
+
+    def get_status(self):
+        status = {}
+
+        response = requests.get('http://localhost:8445/command/pull/summary/all/running')
+        if response.status_code == 200:
+            running_pulls = response.json()
+            for command in running_pulls:
+                command['commandBody'] = json.loads(command['commandBody'])
+            status['running'] = [
+                {
+                    'plugin': command['commandBody']['plugin'],
+                    'id': command['id'],
+                    'received': command.get('received')
+                }
+                for command in running_pulls
+            ]
+
+        response = requests.get("http://localhost:8445/command/pull/summary/%s/latest" % self.get_plugin())
+        if response.status_code == 200:
+            latest_pulls = response.json()
+            command = latest_pulls[0] if len(latest_pulls) > 0 else None
+            print command
+            if command is not None:
+                command['commandBody'] = json.loads(command['commandBody'])
+                status['latest'] = {
+                    'plugin': command['commandBody']['plugin'],
+                    'id': command['id'],
+                    'received': command.get('received'),
+                    'handled': command.get('handled'),
+                    'status': self.status_conversion.get(command.get('status')),
+                    'errorMessage': command.get('errorMessage')
+                }
+        return status
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('sync_start') is not None:
+            requests.post('http://localhost:8445/command/pull', json={'plugin': self.get_plugin()})
+        elif request.POST.get('sync_stop') is not None:
+            id = request.POST.get('sync_stop')
+            requests.delete("http://localhost:8445/command/%s" % id)
+        return redirect(reverse('dafoconfig:plugin-pull', args=[self.get_plugin()]))
