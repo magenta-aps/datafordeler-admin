@@ -3,15 +3,13 @@
 
 {%block head_extra %}
     {{ form.media }}
+    <link href="{% static 'resources/css/dafoconfig_style.css' %}" type="text/css" rel="stylesheet"/>
 {% endblock %}
 
 {% block title %}
     Ret konfiguration
 {% endblock %}
 
-{% block head_extra %}
-    <link href="{% static 'resources/css/dafoconfig_style.css' %}" type="text/css" rel="stylesheet"/>
-{% endblock %}
 
 {% block content %}
     <form id="pluginconfig_form" enctype="multipart/form-data" action="" method="post">

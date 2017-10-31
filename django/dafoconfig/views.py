@@ -86,15 +86,18 @@ class PluginListTable(TemplateView):
         list = [
             {
                 'name': 'CVR',
-                'configlink': reverse('dafoconfig:plugin-cvr-edit')
+                'configlink': reverse('dafoconfig:plugin-cvr-edit'),
+                'synclink': reverse('dafoconfig:plugin-pull', args=['cvr'])
             },
             {
                 'name': 'CPR',
-                'configlink': reverse('dafoconfig:plugin-cpr-edit')
+                'configlink': reverse('dafoconfig:plugin-cpr-edit'),
+                'synclink': reverse('dafoconfig:plugin-pull', args=['cpr'])
             },
             {
                 'name': 'Gladdrreg',
-                'configlink': reverse('dafoconfig:plugin-gladdrreg-edit')
+                'configlink': reverse('dafoconfig:plugin-gladdrreg-edit'),
+                'synclink': reverse('dafoconfig:plugin-pull', args=['gladdrreg'])
             },
         ]
 
