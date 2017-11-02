@@ -224,3 +224,5 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 
 # The certificate key we sign certificates with
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
+
+PULLCOMMAND_HOST = 'http://localhost:8445'

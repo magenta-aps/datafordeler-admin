@@ -4,6 +4,8 @@ import json
 import re
 
 import requests
+from common.views import LoginRequiredMixin
+from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -15,7 +17,7 @@ from .forms import CvrConfigurationForm, CprConfigurationForm, \
 from .models import CvrConfig, CprConfig, GladdregConfig
 
 
-class PluginConfigurationView(UpdateView):
+class PluginConfigurationView(LoginRequiredMixin, UpdateView):
 
     plugin_name = None
     sectioned = False
@@ -81,7 +83,7 @@ class GladdregPluginConfigurationView(PluginConfigurationView):
     plugin_name = 'Gladdrreg'
 
 
-class PluginListTable(TemplateView):
+class PluginListTable(LoginRequiredMixin, TemplateView):
 
     template_name = 'table.html'
 
@@ -101,7 +103,9 @@ class PluginListTable(TemplateView):
             {
                 'name': 'Gladdrreg',
                 'configlink': reverse('dafoconfig:plugin-gladdrreg-edit'),
-                'synclink': reverse('dafoconfig:plugin-pull', args=['gladdrreg'])
+                'synclink': reverse(
+                    'dafoconfig:plugin-pull', args=['gladdrreg']
+                )
             },
         ]
 
@@ -112,7 +116,10 @@ class PluginListTable(TemplateView):
                 order = order[1:]
                 reversed = True
             if order == "name":
-                list = sorted(list, key=lambda item: item['name'], reverse=reversed)
+                list = sorted(
+                    list, key=lambda item: item['name'],
+                    reverse=reversed
+                )
 
 
         context = {
@@ -128,7 +135,7 @@ class PluginListView(PluginListTable):
     template_name = 'list.html'
 
 
-class PluginPullView(TemplateView):
+class PluginPullView(LoginRequiredMixin, TemplateView):
 
     template_name = 'pull.html'
 
@@ -139,7 +146,8 @@ class PluginPullView(TemplateView):
     #     else:
     #         username = req['username']
     #         password = req['password']
-    #     tokenurl = config['tokenurl'] + "?username=" + username + "&password=" + password
+    #     tokenurl = config['tokenurl'] + \
+    #                "?username=" + username + "&password=" + password
     #     token = requests.get(tokenurl).text
     #     return {'Authorization': 'SAML ' + token }
 
@@ -162,7 +170,9 @@ class PluginPullView(TemplateView):
     def get_status(self):
         status = {}
 
-        response = requests.get('http://localhost:8445/command/pull/summary/all/running')
+        response = requests.get(
+            "%s/command/pull/summary/all/running" % settings.PULLCOMMAND_HOST
+        )
         if response.status_code == 200:
             running_pulls = response.json()
             for command in running_pulls:
@@ -176,7 +186,11 @@ class PluginPullView(TemplateView):
                 for command in running_pulls
             ]
 
-        response = requests.get("http://localhost:8445/command/pull/summary/%s/latest" % self.get_plugin())
+        response = requests.get(
+            "%s/command/pull/summary/%s/latest" % (
+                settings.PULLCOMMAND_HOST, self.get_plugin()
+            )
+        )
         if response.status_code == 200:
             latest_pulls = response.json()
             command = latest_pulls[0] if len(latest_pulls) > 0 else None
@@ -188,15 +202,22 @@ class PluginPullView(TemplateView):
                     'id': command['id'],
                     'received': command.get('received'),
                     'handled': command.get('handled'),
-                    'status': self.status_conversion.get(command.get('status')),
+                    'status': self.status_conversion.get(
+                        command.get('status')
+                    ),
                     'errorMessage': command.get('errorMessage')
                 }
         return status
 
     def post(self, request, *args, **kwargs):
         if request.POST.get('sync_start') is not None:
-            requests.post('http://localhost:8445/command/pull', json={'plugin': self.get_plugin()})
+            requests.post(
+                "%s/command/pull" % settings.PULLCOMMAND_HOST,
+                json={'plugin': self.get_plugin()}
+            )
         elif request.POST.get('sync_stop') is not None:
             id = request.POST.get('sync_stop')
-            requests.delete("http://localhost:8445/command/%s" % id)
-        return redirect(reverse('dafoconfig:plugin-pull', args=[self.get_plugin()]))
+            requests.delete("%s/command/%s" % (settings.PULLCOMMAND_HOST, id))
+        return redirect(
+            reverse('dafoconfig:plugin-pull', args=[self.get_plugin()])
+        )

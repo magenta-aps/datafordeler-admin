@@ -15,11 +15,6 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 
 
-# Create your views here.
-
-
-
-
 class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
     model = None
 
