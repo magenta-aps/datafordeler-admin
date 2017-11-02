@@ -102,8 +102,8 @@ class LoginRequiredMixin(object):
         """Check for login and dispatch the view."""
 
         self.authinfo = update_user_auth_info(self.request)
-        # self.check_userprofiles()
-        # self.check_system_roles()
+        self.check_userprofiles()
+        self.check_system_roles()
 
         return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
