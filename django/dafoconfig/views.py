@@ -13,7 +13,6 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CvrConfigurationForm, CprConfigurationForm, \
     GladdrregConfigurationForm
-# from dafoadmin.dafousers.views import LoginRequiredMixin
 from .models import CvrConfig, CprConfig, GladdregConfig
 
 

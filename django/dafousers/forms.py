@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
-from django import forms
+from dafousers import models, model_constants
 from django.contrib.admin import widgets
 from django.utils import timezone
 from django.utils.translation import ugettext as _
-from dafousers import models, model_constants
+
+from django import forms
 
 
 class AccessAccountForm(forms.ModelForm):
