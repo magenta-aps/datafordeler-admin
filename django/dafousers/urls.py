@@ -1,10 +1,5 @@
-from django.conf import settings
-from django.conf.urls import url
-from django.conf.urls.static import static
-from django.views.decorators.csrf import csrf_exempt
-from django.views.i18n import JavaScriptCatalog
 import dafousers.views as dafo_views
-import django.contrib.auth.views
+from django.conf.urls import url
 
 urlpatterns = [
 
@@ -95,22 +90,6 @@ urlpatterns = [
     url(r'^ajax/update_userprofile/$',
         dafo_views.UserProfileAjaxUpdate.as_view(),
         name='update_userprofile'),
-
-    # GLOBAL
-    url(r'^frontpage/$',
-        csrf_exempt(dafo_views.FrontpageView.as_view()),
-        name="frontpage"),
-    url(r'^$',
-        dafo_views.IndexView.as_view(),
-        name="index"),
-    url(r'^login/',
-        csrf_exempt(dafo_views.LoginView.as_view()),
-        name='login'),
-    url(r'^logout/',
-        django.contrib.auth.views.logout,
-        {'template_name': 'dafousers/logged_out.html'},
-        name='logout'),
-
     # AJAX Calls
     url(r'^ajax/search_org_user_system/$',
         dafo_views.search_org_user_system,
@@ -119,11 +98,4 @@ urlpatterns = [
         dafo_views.search_user_profile,
         name='search_user_profile'),
 
-    # jsi18n views
-    url(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='javascript-catalog'),
-
-    # Restructured text documentation
-    url(r'^doc/(?P<docfile>.*)[.]rst',
-        dafo_views.RstDocView.as_view(),
-        name="doc"),
-] + static(settings.DOC_STATIC_URL, document_root=settings.DOC_STATIC_DIR)
+]

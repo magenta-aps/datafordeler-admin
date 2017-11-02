@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import json
+import re
 
-from django.shortcuts import render
-
-# Create your views here.
+import requests
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
-from django.shortcuts import redirect
-import re
-import requests
 
+from .forms import CvrConfigurationForm, CprConfigurationForm, \
+    GladdrregConfigurationForm
 # from dafoadmin.dafousers.views import LoginRequiredMixin
 from .models import CvrConfig, CprConfig, GladdregConfig
-from .forms import CvrConfigurationForm, CprConfigurationForm, GladdrregConfigurationForm
+
 
 class PluginConfigurationView(UpdateView):
 
