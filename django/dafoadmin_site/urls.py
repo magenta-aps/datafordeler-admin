@@ -18,6 +18,8 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from common import views as common_views
+
 # root_redirect = RedirectView.as_view(
 #     url=reverse_lazy('admin:index'),
 #     permanent=False
@@ -30,6 +32,8 @@ urlpatterns = [
     url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
 ]
+
+handler403 = common_views.ErrorView.as_view()
 
 if settings.ENABLE_DJANGO_ADMIN:
     urlpatterns = [url(r'^admin/', admin.site.urls)] + urlpatterns

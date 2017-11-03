@@ -4,9 +4,10 @@ from django.forms import ModelForm as ModelForm
 from django.forms.widgets import Textarea
 
 from .models import CvrConfig, CprConfig, GladdregConfig
+from dafousers.forms import AccessAccountForm
 
 
-class ConfigurationForm(ModelForm):
+class ConfigurationForm(AccessAccountForm):
     pass
 
 
