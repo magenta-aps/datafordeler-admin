@@ -9,8 +9,15 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
-import django.db.models.options as options
+import requests
+
+import fancy_cronfield.fields
+from django.conf import settings
+from django.core import validators
 from django.db import models
+from django.db.models import options
+from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 
 if 'database' not in options.DEFAULT_NAMES:
     options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('database',)
@@ -113,3 +120,88 @@ class GladdregConfig(models.Model):
         managed = False
         database = 'configuration'
         db_table = 'gladdreg_config'
+
+
+class DumpConfig(models.Model):
+    class Meta:
+        managed = False
+        database = 'configuration'
+        db_table = 'dump_config'
+
+        verbose_name = 'Dataudtræksopsætning'
+        verbose_name_plural = 'Dataudtræksopsætninger'
+
+        ordering = (
+            'name',
+        )
+        unique_together = (
+            ('requestPath', 'format', 'charset', 'destinationURI'),
+        )
+
+    charset_choices = [
+        ("us-ascii", "US-ASCII",),
+        ("iso-8859-1", "ISO-8859-1",),
+        ("utf-8", "UTF-8",),
+        ("utf-16", "UTF-16",),
+    ]
+
+    format_choices = [
+        ("application/json", "JSON"),
+        ("application/xml", "XML"),
+        ("text/csv", "CSV"),
+        ("text/tsv", "TSV"),
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+
+    name = models.CharField(
+        unique=True, max_length=20,
+        verbose_name=_('Navn'),
+    )
+
+    notes = models.TextField(
+        max_length=1000, blank=True,
+        verbose_name=_('Noter'),
+    )
+
+    format = models.CharField(
+        max_length=20,
+        choices=format_choices,
+        default=format_choices[0],
+        verbose_name=_("Format"),
+    )
+
+    charset = models.CharField(
+        max_length=20,
+        choices=charset_choices,
+        default='utf-8',
+        verbose_name=_("Kodning"),
+    )
+
+    destinationURI = models.TextField(
+        db_column='destination_uri',
+        max_length=255, null=True, blank=True,
+        verbose_name=_("Destination"),
+    )
+
+    requestPath = models.TextField(
+        db_column='request_path',
+        max_length=255,
+    )
+
+    schedule = fancy_cronfield.fields.CronField(
+        max_length=100,
+        default='0 2 * * *',
+    )
+
+    def get_absolute_url(self):
+        return reverse('dafoconfig:dump-edit', kwargs={'pk': self.pk})
+
+    def save(self, *args, **kwargs):
+        super(DumpConfig, self).save( *args, **kwargs)
+
+        r = requests.get(settings.PULLCOMMAND_HOST + '/dump/notify')
+        r.raise_for_status()
+
+    def __unicode__(self):
+        return self.name

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_windows_tools',
     'django_markup',
+    'fancy_cronfield',
     'common',
     'dafousers',
     'dafoconfig'

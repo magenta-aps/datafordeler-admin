@@ -33,4 +33,19 @@ urlpatterns = [
         dafo_views.PluginPullView.as_view(),
         name='plugin-pull'
     ),
+
+
+    # DUMP
+    url(r'^dump/(?P<pk>[0-9]+)/$',
+        dafo_views.DumpEdit.as_view(),
+        name='dump-edit'),
+    url(r'^dump/(?P<pk>[0-9]+)/delete$',
+        dafo_views.DumpDelete.as_view(),
+        name='dump-delete'),
+    url(r'^dump/add/$',
+        dafo_views.DumpCreate.as_view(),
+        name='dump-add'),
+    url(r'^dump/list/$',
+        dafo_views.DumpList.as_view(),
+        name='dump-list'),
 ]
