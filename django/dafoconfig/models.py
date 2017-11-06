@@ -70,6 +70,9 @@ class CprConfig(models.Model):
         database = 'configuration'
         db_table = 'cpr_config'
 
+        verbose_name = 'Konfiguration af CPR-register'
+        verbose_name_plural = 'Konfigurationer af CPR-registre'
+
 
 class CvrConfig(models.Model):
 
@@ -110,6 +113,9 @@ class CvrConfig(models.Model):
         database = 'configuration'
         db_table = 'cvr_config'
 
+        verbose_name = 'Konfiguration af CVR-register'
+        verbose_name_plural = 'Konfigurationer af CVR-registre'
+
 
 class GladdregConfig(models.Model):
     id = models.CharField(primary_key=True, max_length=255)
@@ -120,6 +126,9 @@ class GladdregConfig(models.Model):
         managed = False
         database = 'configuration'
         db_table = 'gladdreg_config'
+
+        verbose_name = 'Konfiguration af Adresseopslagsregister'
+        verbose_name_plural = 'Konfigurationer af Adresseopslagsregistre'
 
 
 class DumpConfig(models.Model):
