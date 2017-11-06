@@ -226,3 +226,10 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 
 PULLCOMMAND_HOST = 'http://localhost:8445'
+
+# psycopg2cffi is a replacement for psycopg2 that supports PyPy
+try:
+    from psycopg2cffi import compat
+    compat.register()
+except ImportError:
+    pass
