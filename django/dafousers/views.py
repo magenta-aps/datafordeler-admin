@@ -271,16 +271,27 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
 
         if '_status' in action:
             parts = action.split("_")
-            status = parts[2]
-            users.update(status=status)
+            status = int(parts[2])
+            for x in users:
+                if x.status != status:
+                    x.status = status
+                    # Save user to trigger history update
+                    x.save()
         elif action == '_add_user_profiles':
             user_profiles_ids = request.POST.getlist('user_profiles')
             user_profiles = authinfo.admin_user_profiles.filter(
                 id__in=user_profiles_ids
             )
-            for user_profile in user_profiles:
-                for user in users:
-                    user.user_profiles.add(user_profile)
+            for user in users:
+                changed = False
+                existing = set(user.user_profiles.all())
+                for x in user_profiles:
+                    if x not in existing:
+                        user.user_profiles.add(x)
+                        changed = True
+                if changed:
+                    # Save user to trigger history update
+                    user.save()
 
         return HttpResponse("Success")
 
