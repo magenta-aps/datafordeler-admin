@@ -10,6 +10,7 @@
 from __future__ import unicode_literals
 
 import django.db.models.options as options
+import json
 from django.db import models
 
 if 'database' not in options.DEFAULT_NAMES:
@@ -113,3 +114,40 @@ class GladdregConfig(models.Model):
         managed = False
         database = 'configuration'
         db_table = 'gladdreg_config'
+
+
+class Command(models.Model):
+
+    STATUS_QUEUED = 0
+    STATUS_PROCESSING = 1
+    STATUS_SUCCESS = 2
+    STATUS_FAILED = 3
+    STATUS_CANCEL = 4
+    STATUS_CANCELLED = 5
+
+    status_choices = [
+        (STATUS_QUEUED, u"I kø"),
+        (STATUS_PROCESSING, u"Kører"),
+        (STATUS_SUCCESS, u"Færdig"),
+        (STATUS_FAILED, u"Fejlet"),
+        (STATUS_CANCEL, u"Afbryder"),
+        (STATUS_CANCELLED, u"Afbrudt")
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+    commandbody = models.CharField(max_length=255, blank=True, null=True)
+    commandname = models.CharField(max_length=255)
+    errormessage = models.CharField(max_length=2048, blank=True, null=True)
+    handled = models.DateTimeField(blank=True, null=True)
+    issuer = models.CharField(max_length=255)
+    received = models.DateTimeField(blank=True, null=True)
+    status = models.IntegerField(blank=True, null=True, choices=status_choices)
+
+    @property
+    def commandbody_json(self):
+        return json.loads(self.commandbody)
+
+    class Meta:
+        managed = False
+        database = 'configuration'
+        db_table = 'command'

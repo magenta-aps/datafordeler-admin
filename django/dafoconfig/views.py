@@ -3,9 +3,8 @@
 import json
 import re
 
-import requests
 from common.views import LoginRequiredMixin
-from django.conf import settings
+from datetime import datetime
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -13,7 +12,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CvrConfigurationForm, CprConfigurationForm, \
     GladdrregConfigurationForm
-from .models import CvrConfig, CprConfig, GladdregConfig
+from .models import CvrConfig, CprConfig, GladdregConfig, Command
 
 
 class PluginConfigurationView(LoginRequiredMixin, UpdateView):
@@ -88,7 +87,7 @@ class PluginListTable(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
 
-        list = [
+        plugin_list = [
             {
                 'name': 'CVR',
                 'configlink': reverse('dafoconfig:plugin-cvr-edit'),
@@ -110,19 +109,18 @@ class PluginListTable(LoginRequiredMixin, TemplateView):
 
         order = self.request.GET.get('order', 'name')
         if order:
-            reversed = False
+            do_reverse = False
             if order[0] == '-':
                 order = order[1:]
-                reversed = True
+                do_reverse = True
             if order == "name":
-                list = sorted(
-                    list, key=lambda item: item['name'],
-                    reverse=reversed
+                plugin_list = sorted(
+                    plugin_list, key=lambda item: item['name'],
+                    reverse=do_reverse
                 )
 
-
         context = {
-            'list': list,
+            'list': plugin_list,
             'order': order
         }
         context.update(kwargs)
@@ -138,25 +136,18 @@ class PluginPullView(LoginRequiredMixin, TemplateView):
 
     template_name = 'pull.html'
 
-    # def get_tokenheader(config, req):
-    #     if req is None:
-    #         username = config['username']
-    #         password = config['password']
-    #     else:
-    #         username = req['username']
-    #         password = req['password']
-    #     tokenurl = config['tokenurl'] + \
-    #                "?username=" + username + "&password=" + password
-    #     token = requests.get(tokenurl).text
-    #     return {'Authorization': 'SAML ' + token }
-
     status_conversion = {
-        'cancelled': u'Afbrudt',
-        'running': u'Kørende',
-        'queued': u'Lagt i kø',
-        'failure': u'Fejlet',
-        'successful': u'Færdig'
+        Command.STATUS_CANCELLED: u'Afbrudt',
+        Command.STATUS_PROCESSING: u'Kørende',
+        Command.STATUS_QUEUED: u'Lagt i kø',
+        Command.STATUS_FAILED: u'Fejlet',
+        Command.STATUS_CANCEL: u'Afbryder',
+        Command.STATUS_SUCCESS: u'Færdig'
     }
+
+    available_command_names = [
+        'pull'
+    ]
 
     def get_context_data(self, **kwargs):
         context = self.get_status()
@@ -169,54 +160,82 @@ class PluginPullView(LoginRequiredMixin, TemplateView):
     def get_status(self):
         status = {}
 
-        response = requests.get(
-            "%s/command/pull/summary/all/running" % settings.PULLCOMMAND_HOST
-        )
-        if response.status_code == 200:
-            running_pulls = response.json()
-            for command in running_pulls:
-                command['commandBody'] = json.loads(command['commandBody'])
-            status['running'] = [
-                {
-                    'plugin': command['commandBody']['plugin'],
-                    'id': command['id'],
-                    'received': command.get('received')
-                }
-                for command in running_pulls
-            ]
+        running_pulls = self.get_pull_summary('all', 'running')
+        status['running'] = [
+            {
+                'plugin': command.commandbody_json['plugin'],
+                'id': command.id,
+                'received': command.received
+            }
+            for command in running_pulls
+        ]
 
-        response = requests.get(
-            "%s/command/pull/summary/%s/latest" % (
-                settings.PULLCOMMAND_HOST, self.get_plugin()
-            )
-        )
-        if response.status_code == 200:
-            latest_pulls = response.json()
-            command = latest_pulls[0] if len(latest_pulls) > 0 else None
-            print command
-            if command is not None:
-                command['commandBody'] = json.loads(command['commandBody'])
-                status['latest'] = {
-                    'plugin': command['commandBody']['plugin'],
-                    'id': command['id'],
-                    'received': command.get('received'),
-                    'handled': command.get('handled'),
-                    'status': self.status_conversion.get(
-                        command.get('status')
-                    ),
-                    'errorMessage': command.get('errorMessage')
-                }
+        latest_pulls = self.get_pull_summary(self.get_plugin(), 'latest')
+        command = latest_pulls[0] if len(latest_pulls) > 0 else None
+        if command is not None:
+            print command.status
+            status['latest'] = {
+                'plugin': command.commandbody_json['plugin'],
+                'id': command.id,
+                'received': command.received,
+                'handled': command.handled,
+                'status': self.status_conversion.get(
+                    command.status
+                ),
+                'errorMessage': command.errormessage
+            }
+
         return status
 
     def post(self, request, *args, **kwargs):
         if request.POST.get('sync_start') is not None:
-            requests.post(
-                "%s/command/pull" % settings.PULLCOMMAND_HOST,
-                json={'plugin': self.get_plugin()}
-            )
+            self.create_command('pull', {'plugin': self.get_plugin()})
+
         elif request.POST.get('sync_stop') is not None:
             id = request.POST.get('sync_stop')
-            requests.delete("%s/command/%s" % (settings.PULLCOMMAND_HOST, id))
+            self.cancel_command(id)
+
         return redirect(
             reverse('dafoconfig:plugin-pull', args=[self.get_plugin()])
         )
+
+    def create_command(self, command_name, command_data):
+        if command_name in self.available_command_names:
+            command = Command(
+                commandname=command_name.lower(),
+                commandbody=json.dumps(command_data),
+                issuer="admin interface",
+                received=datetime.now(),
+                status=Command.STATUS_QUEUED
+            )
+            command.save()
+
+    def cancel_command(self, command_id):
+        try:
+            command = Command.objects.get(id=command_id)
+            command.status = Command.STATUS_CANCEL
+            command.save()
+        except Command.DoesNotExist:
+            pass
+
+    def get_pull_summary(self, plugin_name, state):
+        commands = []
+        valid_states = ['latest', 'running']
+        if state not in valid_states:
+            return []
+        qs = Command.objects.filter(commandname='pull')
+        if state == 'running':
+            qs = qs.filter(
+                status__in=[Command.STATUS_QUEUED, Command.STATUS_PROCESSING]
+            )
+        plugins = [plugin_name] \
+            if plugin_name != 'all' \
+            else ['cpr', 'cvr', 'gladdrreg']
+        for plugin in plugins:
+            pqs = qs.filter(
+                commandbody__icontains="\"plugin\": \"%s\"" % plugin
+            ).order_by('-handled')
+            command = pqs.first()
+            if command is not None:
+                commands.append(command)
+        return commands
