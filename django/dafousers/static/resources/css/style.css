@@ -24,3 +24,11 @@
     background: url(/static/admin/img/icon-deletelink.svg) 0 no-repeat;
 }
 
+#rst-documentation img {
+    max-width: 100%;
+}
+
+.alert {
+  color: red;
+  font-weight: bold;
+}

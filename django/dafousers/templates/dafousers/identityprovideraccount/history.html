@@ -17,7 +17,8 @@
             <div class="row">
                 <div class="title">Historik</div>
                 <div class="back">
-                    <a href="{% url 'dafousers:identityprovideraccount-edit' identityprovider_account_id %}">
+                    <a id="go_back"
+                       href="{% url 'dafousers:identityprovideraccount-edit' identityprovider_account_id %}">
                         Gå tilbage til valgt organisation
                     </a>
                 </div>
@@ -37,6 +38,11 @@
                             </div>
 
                             <div class="row row_title">
+                                <div class="row_field">IdP-id</div>
+                                <div class="row_field">{{ entry.idp_entity_id }}</div>
+                            </div>
+
+                            <div class="row row_title">
                                 <div class="row_field">IdP-type</div>
                                 <div class="row_field">{{ entry.get_idp_type_display }}</div>
                             </div>
@@ -49,11 +55,6 @@
                             <div class="row row_title">
                                 <div class="row_field">E-mailadresse på kontaktperson</div>
                                 <div class="row_field">{{ entry.contact_email }}</div>
-                            </div>
-
-                            <div class="row row_title">
-                                <div class="row_field">Næste udløbsdato for IdP-metadata</div>
-                                <div class="row_field">{{ entry.next_expiration }}</div>
                             </div>
 
                             <div class="row row_title">

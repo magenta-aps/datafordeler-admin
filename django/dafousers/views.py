@@ -1,34 +1,32 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
+import os
+import tempfile
+import urllib
+from dafousers import models, forms
 from dafousers.auth import update_user_auth_info
-from dafousers import models, model_constants, forms
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import _get_login_redirect_url
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.db.models import Min
 from django.http import Http404
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic.edit import CreateView
 from django.views.generic import View, TemplateView, UpdateView
+from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-
-import json
-import tempfile
-import urllib
-import os
+from xml.etree import ElementTree
 
 
 # Create your views here.
@@ -38,15 +36,11 @@ class IndexView(TemplateView):
     def dispatch(self, *args, **kwargs):
         auth_info = update_user_auth_info(self.request)
         if auth_info and auth_info.system_roles.filter(
-            role_name__in=["DAFO Serviceudbyder", "DAFO Administrator"]
+                role_name__in=["DAFO Serviceudbyder", "DAFO Administrator"]
         ).exists():
             return HttpResponseRedirect(reverse("dafousers:frontpage"))
 
         return super(IndexView, self).dispatch(*args, **kwargs)
-
-
-class FrontpageView(TemplateView):
-    template_name = 'frontpage.html'
 
 
 class LoginRequiredMixin(object):
@@ -76,7 +70,7 @@ class LoginRequiredMixin(object):
         # of the specified_permissions
         if self.needs_userprofiles_any is not None:
             if not self.authinfo.user_profiles.filter(
-                name__in=self.needs_userprofiles_any
+                    name__in=self.needs_userprofiles_any
             ).exists():
                 raise PermissionDenied(
                     "User does not have any of the needed userprofiles: %s" % (
@@ -97,7 +91,7 @@ class LoginRequiredMixin(object):
                 )
         if self.needs_system_roles_any is not None:
             if not self.authinfo.system_roles.filter(
-                role_name__in=self.needs_system_roles_any
+                    role_name__in=self.needs_system_roles_any
             ).exists():
                 raise PermissionDenied(
                     "User does not have any of the needed system roles: %s" % (
@@ -110,6 +104,14 @@ class LoginRequiredMixin(object):
         """Check for login and dispatch the view."""
 
         self.authinfo = update_user_auth_info(self.request)
+
+        # If self.authinfo is None then the user was not a PasswordUser, CertificateUser or IdentityProviderAccount.
+        # We raise a permission denied exception
+        if self.authinfo is None:
+            raise PermissionDenied(
+                "User is not a PasswordUser, CertificateUser or IdentityProviderAccount"
+            )
+
         self.check_userprofiles()
         self.check_system_roles()
 
@@ -120,6 +122,10 @@ class LoginRequiredMixin(object):
         kwargs = super(LoginRequiredMixin, self).get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+
+class FrontpageView(LoginRequiredMixin, TemplateView):
+    template_name = 'frontpage.html'
 
 
 class LoginView(TemplateView):
@@ -156,7 +162,7 @@ class LoginView(TemplateView):
                 if "token" in request.session:
                     del request.session["token"]
                 return HttpResponseRedirect(_get_login_redirect_url(
-                        request, redirect_to
+                    request, redirect_to
                 ))
         else:
             form = self.authentication_form(request)
@@ -220,7 +226,7 @@ class LoginView(TemplateView):
                     request.GET.get(self.redirect_field_name, '')
                 )
                 return HttpResponseRedirect(_get_login_redirect_url(
-                        request, redirect_to
+                    request, redirect_to
                 ))
 
         # Dispatch to Django login to get redirect or context from there
@@ -245,7 +251,7 @@ class RstDocView(TemplateView):
             *doc_file.split("/")
         )
         if not (
-            os.path.exists(doc_file_path) and os.path.isfile(doc_file_path)
+                    os.path.exists(doc_file_path) and os.path.isfile(doc_file_path)
         ):
             raise Http404("%s is not an RST file" % doc_file_path)
         with open(doc_file_path) as f:
@@ -265,16 +271,27 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
 
         if '_status' in action:
             parts = action.split("_")
-            status = parts[2]
-            users.update(status=status)
+            status = int(parts[2])
+            for x in users:
+                if x.status != status:
+                    x.status = status
+                    # Save user to trigger history update
+                    x.save()
         elif action == '_add_user_profiles':
             user_profiles_ids = request.POST.getlist('user_profiles')
             user_profiles = authinfo.admin_user_profiles.filter(
                 id__in=user_profiles_ids
             )
-            for user_profile in user_profiles:
-                for user in users:
-                    user.user_profiles.add(user_profile)
+            for user in users:
+                changed = False
+                existing = set(user.user_profiles.all())
+                for x in user_profiles:
+                    if x not in existing:
+                        user.user_profiles.add(x)
+                        changed = True
+                if changed:
+                    # Save user to trigger history update
+                    user.save()
 
         return HttpResponse("Success")
 
@@ -311,6 +328,7 @@ class PasswordUserCreate(LoginRequiredMixin, CreateView):
 
         result = super(PasswordUserCreate, self).form_valid(form)
         form.instance.user_profiles = form.cleaned_data['user_profiles']
+        form.instance.save()
         return result
 
     def get_success_url(self):
@@ -414,6 +432,7 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
         form.instance.user_profiles = form.cleaned_data['user_profiles']
         certificate_years_valid = form.cleaned_data['certificate_years_valid']
         form.instance.create_certificate(int(certificate_years_valid))
+        form.instance.save()
         return result
 
     def get_success_url(self):
@@ -524,7 +543,12 @@ class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
         form.instance.identified_user = user_id
 
         result = super(IdentityProviderAccountCreate, self).form_valid(form)
+
         form.instance.user_profiles = form.cleaned_data['user_profiles']
+
+        form.instance.save_metadata()
+        form.instance.save()
+
         return result
 
     def get_success_url(self):
@@ -571,6 +595,8 @@ class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
+        form.instance.save_metadata()
+
         return super(IdentityProviderAccountEdit, self).form_valid(form)
 
     def get_success_url(self):
@@ -615,6 +641,7 @@ class UserProfileCreate(LoginRequiredMixin, CreateView):
         form.instance.accessaccount_set.add(
             self.request.user.dafoauthinfo.access_account_user
         )
+        form.instance.save()
         return result
 
     def get_success_url(self):
@@ -670,7 +697,6 @@ class UserProfileEdit(LoginRequiredMixin, UpdateView):
 
 
 class UserProfileAjaxUpdate(LoginRequiredMixin, View):
-
     def post(self, request, *args, **kwargs):
         ids = request.POST.getlist('user_id')
         authinfo = request.user.dafoauthinfo
@@ -755,13 +781,13 @@ def search_user_profile(request):
     search_term = request.GET.get('search_term', None)
     result = []
     if search_term == "":
-        return render(request, 'org_user_system_auto.html', {'object_list': result})
+        return render(request, 'search-autocomplete.html', {'object_list': result})
 
     user_profiles = models.UserProfile.objects.search(search_term)
 
     for user_profile in user_profiles:
         result.append({
-            "text": user_profile.name,
+            "text": "Brugerprofil: " + user_profile.name,
             "url": reverse('dafousers:userprofile-edit', kwargs={"pk": user_profile.id})
         })
 
@@ -769,7 +795,6 @@ def search_user_profile(request):
 
 
 class CertificateDownload(LoginRequiredMixin, View):
-
     def get(self, request, *args, **kwargs):
         cert = models.Certificate.objects.get(pk=kwargs.get('pk'))
         cert_date = cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S")

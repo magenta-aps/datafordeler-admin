@@ -26,7 +26,10 @@
             <div class="row">
                 <div class="title">Opret bruger</div>
                 <div class="back">
-                    <a href="{% url 'dafousers:passworduser-list' %}">Gå til brugeroversigten</a>
+                    <a id="go_back"
+                       href="{% url 'dafousers:passworduser-list' %}">
+                        Gå til brugeroversigten
+                    </a>
                 </div>
             </div>
 
@@ -75,7 +78,9 @@
 
             <div class="row">
 
-                <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
+                <button id="submit_save"
+                        class="row_field button blue"
+                        onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/check-white.png' %}">
                     </div>
@@ -84,7 +89,9 @@
                     </div>
                 </button>
 
-                <button class="row_field button blue" onclick="submitForm('form_submit', '_addanother')">
+                <button id="submit_addanother"
+                        class="row_field button blue"
+                        onclick="submitForm('form_submit', '_addanother')">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/plus-white.png' %}">
                     </div>
@@ -107,7 +114,7 @@
 
                     <p>Vær opmærksom på, at kodeordet ikke længere bliver vist når du har oprettet brugeren.</p>
 
-                    <div class="row_field button gray" onclick="newPassword()">
+                    <div id="new_password" class="row_field button gray" onclick="newPassword()">
                         <div class="flex-left">
                             <img src="{% static 'resources/images/password-key.png' %}">
                         </div>

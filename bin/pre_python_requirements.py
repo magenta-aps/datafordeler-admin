@@ -18,7 +18,6 @@ import time
 import platform
 import subprocess
 import ssl
-import django
 import shutil
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

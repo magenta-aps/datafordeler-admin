@@ -18,7 +18,10 @@
             <div class="row">
                 <div class="title">Ret organisation</div>
                 <div class="back">
-                    <a href="{% url 'dafousers:identityprovideraccount-list' %}">Gå til organisationsoversigten</a>
+                    <a id="go_back"
+                       href="{% url 'dafousers:identityprovideraccount-list' %}">
+                        Gå til organisationsoversigten
+                    </a>
                 </div>
             </div>
 
@@ -88,7 +91,9 @@
 
             <div class="row">
 
-                <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
+                <button id="submit_save"
+                        class="row_field button blue"
+                        onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/check-white.png' %}">
                     </div>
@@ -96,7 +101,9 @@
                         GEM ÆNDRINGER
                     </div>
                 </button>
-                <a class="row_field button gray" href="{% url 'dafousers:identityprovideraccount-history' form.instance.pk %}">
+                <a id="goto_history"
+                   class="row_field button gray"
+                   href="{% url 'dafousers:identityprovideraccount-history' form.instance.pk %}">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/history.png' %}">
                     </div>

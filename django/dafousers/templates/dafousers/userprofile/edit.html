@@ -18,7 +18,10 @@
             <div class="row">
                 <div class="title">Ret brugerprofil</div>
                 <div class="back">
-                    <a href="{% url 'dafousers:userprofile-list' %}">Gå til brugerprofiloversigten</a>
+                    <a id="go_back"
+                       href="{% url 'dafousers:userprofile-list' %}">
+                        Gå til brugerprofiloversigten
+                    </a>
                 </div>
             </div>
 
@@ -53,7 +56,9 @@
 
             <div class="row">
 
-                <button class="row_field button blue" onclick="submitForm('form_submit', '_save')">
+                <button id="submit_save"
+                        class="row_field button blue"
+                        onclick="submitForm('form_submit', '_save')">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/check-white.png' %}">
                     </div>
@@ -61,7 +66,9 @@
                         GEM ÆNDRINGER
                     </div>
                 </button>
-                <a class="row_field button gray" href="{% url 'dafousers:userprofile-history' form.instance.pk %}">
+                <a id="goto_history"
+                   class="row_field button gray"
+                   href="{% url 'dafousers:userprofile-history' form.instance.pk %}">
                     <div class="flex-left">
                         <img src="{% static 'resources/images/history.png' %}">
                     </div>

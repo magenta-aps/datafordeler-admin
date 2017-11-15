@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+from django.utils.translation import ugettext_lazy as _
 import os
 
 
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -128,7 +130,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'da-dk'
+LANGUAGE_CODE = 'da'
+
+LANGUAGES = [
+  ('da', _('Danish')),
+]
 
 TIME_ZONE = 'Europe/Copenhagen'
 
@@ -164,6 +170,9 @@ MARKUP_SETTINGS = {
 
 # Enable or disable Django admin
 ENABLE_DJANGO_ADMIN = False
+
+# Enable session expiration on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # The name of the certificate key we sign certificates with
 ROOT_CERT_NAME = "default.jks"
@@ -221,3 +230,6 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 
 # The certificate key we sign certificates with
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
+
+
+SELENIUM_DISPLAY = ":0"

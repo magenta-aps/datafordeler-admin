@@ -52,6 +52,7 @@ GOTO activatevirtualenv
 :activatevirtualenv
 call "%~dp0%configure_environment.bat"
 python "%~dp0%bin\pre_python_requirements.py"
+pip install pypiwin32
 pip install -r "%~dp0%doc\requirements.txt"
 python "%~dp0%bin\initial_setup.py"
 python "%MAMAGE_SCRIPT%" migrate
