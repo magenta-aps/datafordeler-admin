@@ -19,9 +19,13 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
 
     plugin_name = None
     sectioned = False
+    success_url = reverse('plugin-list')
 
     def get_object(self, queryset=None):
         return self.model.objects.first()
+
+    def get_success_url(self):
+        return reverse('dafoconfig:plugin-list')
 
     def get_context_data(self, **kwargs):
         context = {
