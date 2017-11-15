@@ -14,22 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.core.urlresolvers import reverse_lazy
 from django.conf import settings
 from django.conf.urls import url, include
-from django.views.generic import RedirectView
-import dafousers.views
-import dafoconfig.views
+from django.contrib import admin
 
-root_redirect = RedirectView.as_view(
-    url=reverse_lazy('admin:index'),
-    permanent=False
-)
+# root_redirect = RedirectView.as_view(
+#     url=reverse_lazy('admin:index'),
+#     permanent=False
+# )
 
 urlpatterns = [
     # Redirect root URL to admin
     # url(r'^$', root_redirect, name="index"),
+    url(r'^', include('common.urls', namespace='common')),
     url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
 ]

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+import datetime
+import zlib
 from base64 import b64decode
+from xml.etree import ElementTree
+
 from dafousers.model_constants import SystemRole as sr_contants
 from dafousers.models import AreaRestriction
 from dafousers.models import IdentityProviderAccount
 from dafousers.models import PasswordUser
 from dafousers.models import SystemRole
 from dafousers.models import UserProfile
-from django.db.models import Func, F
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import PermissionDenied
+from django.db.models import Func, F
 from django.utils import timezone
 from signxml import XMLVerifier
-from xml.etree import ElementTree
-
-import datetime
-import zlib
 
 
 class DafoUsersAuthBackend(object):

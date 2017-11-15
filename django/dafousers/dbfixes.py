@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.db import models
-from django.conf import settings
-
 
 import sys
+
+from django.conf import settings
+from django.db import models
 
 fixed = {}
 schema = settings.DATABASES.get('default', {}).get('SQL_SERVER_SCHEMA')

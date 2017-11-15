@@ -27,11 +27,11 @@
   <body class="{%block body_class%}{% endblock %}">
         <div class="top_bar">
             {% if request.user.is_authenticated %}
-            <a href="{% url 'dafousers:frontpage' %}">
+            <a href="{% url 'common:frontpage' %}">
                 <img class="logo" src="{% static 'resources/images/logo.png' %}">
             </a>
             {% else %}
-            <a href="{% url 'dafousers:index' %}">
+            <a href="{% url 'common:index' %}">
                 <img class="logo" src="{% static 'resources/images/logo.png' %}">
             </a>
             {% endif %}
@@ -73,11 +73,11 @@
                 {% block buttons %}
                 <div class="buttons">
                     {% if request.user.is_authenticated %}
-                    <a href="{% url 'dafousers:frontpage' %}" class="glyphicon glyphicon-home" aria-hidden="true"></a>
-                    <a href="{% url 'dafousers:logout' %}" class="glyphicon glyphicon-log-out" aria-hidden="true"></a>
+                    <a href="{% url 'common:frontpage' %}" class="glyphicon glyphicon-home" aria-hidden="true"></a>
+                    <a href="{% url 'common:logout' %}" class="glyphicon glyphicon-log-out" aria-hidden="true"></a>
                     {% else %}
-                    <a href="{% url 'dafousers:index' %}" class="glyphicon glyphicon-home" aria-hidden="true"></a>
-                    <a href="{% url 'dafousers:login' %}" class="glyphicon glyphicon-log-in" aria-hidden="true"></a>
+                    <a href="{% url 'common:index' %}" class="glyphicon glyphicon-home" aria-hidden="true"></a>
+                    <a href="{% url 'common:login' %}" class="glyphicon glyphicon-log-in" aria-hidden="true"></a>
                     {% endif %}
                 </div>
                 {% endblock %}
