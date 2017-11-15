@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from dafousers import models, model_constants
 from xml.etree import ElementTree
+from xml.etree.ElementTree import ParseError
 
 
 class AccessAccountForm(forms.ModelForm):
@@ -111,7 +112,10 @@ class IdentityProviderAccountForm(AccessAccountForm):
         if metadata_xml_file:
             metadata_xml = metadata_xml_file.read()
             metadata_xml_file.seek(0)
-            xml_root = ElementTree.fromstring(metadata_xml)
+            try:
+                xml_root = ElementTree.fromstring(metadata_xml)
+            except ParseError as e:
+                raise ValidationError('Metadata-filen er i forkert format')
 
             if xml_root.get('entityID') is None:
                 raise ValidationError('Metadata-filen er i forkert format')
