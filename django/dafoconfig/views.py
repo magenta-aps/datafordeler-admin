@@ -19,7 +19,6 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
 
     plugin_name = None
     sectioned = False
-    success_url = reverse('plugin-list')
 
     def get_object(self, queryset=None):
         return self.model.objects.first()
