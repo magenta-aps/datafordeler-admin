@@ -820,6 +820,7 @@
 
 
 html {
+  position: relative;
   font-family: 'Verdana normal', 'Verdana';
   font-weight: 400;
   font-style: normal;
@@ -833,9 +834,9 @@ select {
 }
 
 body {
-  border: 0;
-  margin: 0;
-  padding: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
 }
 
 
@@ -959,8 +960,12 @@ input {
 }
 
 .top_bar {
-  height:67px;
-  background-color:var(--dafo-blue);
+    position: fixed;
+    right: 0;
+    top: 0;
+    left: 0;
+    height:67px;
+    background-color:var(--dafo-blue);
 }
 
 .top_menus {
@@ -1014,9 +1019,8 @@ input {
 }
 
 .content {
-    margin: 50px 70px;
+    margin: 7em 5em 5em 5em;
     width: calc(100% - 140px);
-    min-height: 45em;
     display: grid;
 }
 
@@ -1090,14 +1094,18 @@ input {
 }
 
 .bottom_bar {
-  height:38px;
-  background-color:var(--dafo-blue);
-  overflow-y: hidden;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height:38px;
+    background-color:var(--dafo-blue);
+    overflow-y: hidden;
 }
 
 .bottom_bar p {
-  color: white;
-  padding-left: 50px;
+    color: white;
+    padding-left: 50px;
 }
 
 .small-label {
