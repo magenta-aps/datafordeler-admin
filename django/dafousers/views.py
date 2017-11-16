@@ -5,6 +5,7 @@ import tempfile
 
 from common.views import LoginRequiredMixin
 from dafousers import models, forms
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Min
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -31,6 +32,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                     x.status = status
                     # Save user to trigger history update
                     x.save()
+            return HttpResponse('Statusser er blevet opdateret.')
         elif action == '_add_user_profiles':
             user_profiles_ids = request.POST.getlist('user_profiles')
             user_profiles = authinfo.admin_user_profiles.filter(
@@ -47,7 +49,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                     # Save user to trigger history update
                     user.save()
 
-        return HttpResponse("Success")
+        return HttpResponse('Tildelte brugerprofiler er blevet opdateret.')
 
 
 class AccessAccountListTable(LoginRequiredMixin, ListView):
@@ -62,7 +64,7 @@ class AccessAccountListTable(LoginRequiredMixin, ListView):
         )
 
 
-class PasswordUserCreate(LoginRequiredMixin, CreateView):
+class PasswordUserCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/passworduser/add.html'
     form_class = forms.PasswordUserForm
     model = models.PasswordUser
@@ -91,6 +93,9 @@ class PasswordUserCreate(LoginRequiredMixin, CreateView):
             return reverse('dafousers:passworduser-list')
         elif action == '_addanother':
             return reverse('dafousers:passworduser-add')
+
+    def get_success_message(self, cleaned_data):
+        return 'Brugeren {} er blevet oprettet.'.format(self.object)
 
 
 class PasswordUserList(LoginRequiredMixin, ListView):
@@ -121,7 +126,7 @@ class PasswordUserHistory(LoginRequiredMixin, ListView):
         return context
 
 
-class PasswordUserEdit(LoginRequiredMixin, UpdateView):
+class PasswordUserEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/passworduser/edit.html'
     model = models.PasswordUser
     form_class = forms.PasswordUserForm
@@ -140,6 +145,9 @@ class PasswordUserEdit(LoginRequiredMixin, UpdateView):
         action = self.request.POST.get('action')
         if action == '_save':
             return reverse('dafousers:passworduser-list')
+
+    def get_success_message(self, cleaned_data):
+        return 'Brugeren {} er blevet opdateret.'.format(self.object)
 
 
 def get_passworduser_queryset(filter, order):
@@ -170,7 +178,7 @@ class PasswordUserListTable(AccessAccountListTable):
     template_name = 'dafousers/passworduser/table.html'
 
 
-class CertificateUserCreate(LoginRequiredMixin, CreateView):
+class CertificateUserCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/certificateuser/add.html'
     form_class = forms.CertificateUserForm
     model = models.CertificateUser
@@ -195,6 +203,9 @@ class CertificateUserCreate(LoginRequiredMixin, CreateView):
             return reverse('dafousers:certificateuser-list')
         elif action == '_addanother':
             return reverse('dafousers:certificateuser-add')
+
+    def get_success_message(self, cleaned_data):
+        return 'Systemet {} er blevet oprettet.'.format(self.object)
 
 
 class CertificateUserList(LoginRequiredMixin, ListView):
@@ -225,7 +236,7 @@ class CertificateUserHistory(LoginRequiredMixin, ListView):
         return context
 
 
-class CertificateUserEdit(LoginRequiredMixin, UpdateView):
+class CertificateUserEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/certificateuser/edit.html'
     model = models.CertificateUser
     form_class = forms.CertificateUserForm
@@ -252,6 +263,9 @@ class CertificateUserEdit(LoginRequiredMixin, UpdateView):
         action = self.request.POST.get('action')
         if action == '_save':
             return reverse('dafousers:certificateuser-list')
+
+    def get_success_message(self, cleaned_data):
+        return 'Systemet {} er blevet opdateret.'.format(self.object)
 
 
 def get_certificateuser_queryset(filter, order):
@@ -284,7 +298,7 @@ class CertificateUserListTable(AccessAccountListTable):
     get_queryset_method = get_certificateuser_queryset
 
 
-class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
+class IdentityProviderAccountCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/identityprovideraccount/add.html'
     form_class = forms.IdentityProviderAccountForm
     model = models.IdentityProviderAccount
@@ -311,6 +325,9 @@ class IdentityProviderAccountCreate(LoginRequiredMixin, CreateView):
             return reverse('dafousers:identityprovideraccount-list')
         elif action == '_addanother':
             return reverse('dafousers:identityprovideraccount-add')
+
+    def get_success_message(self, cleaned_data):
+        return 'Organisationen {} er blevet oprettet.'.format(self.object)
 
 
 class IdentityProviderAccountList(LoginRequiredMixin, ListView):
@@ -341,7 +358,7 @@ class IdentityProviderAccountHistory(LoginRequiredMixin, ListView):
         return context
 
 
-class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
+class IdentityProviderAccountEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/identityprovideraccount/edit.html'
     model = models.IdentityProviderAccount
     form_class = forms.IdentityProviderAccountForm
@@ -357,6 +374,9 @@ class IdentityProviderAccountEdit(LoginRequiredMixin, UpdateView):
         action = self.request.POST.get('action')
         if action == '_save':
             return reverse('dafousers:identityprovideraccount-list')
+
+    def get_success_message(self, cleaned_data):
+        return 'Organisationen {} er blevet opdateret.'.format(self.object)
 
 
 def get_identityprovideraccount_queryset(filter, order):
@@ -381,7 +401,7 @@ class IdentityProviderAccountListTable(AccessAccountListTable):
     template_name = 'dafousers/identityprovideraccount/table.html'
 
 
-class UserProfileCreate(LoginRequiredMixin, CreateView):
+class UserProfileCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/userprofile/add.html'
     form_class = forms.UserProfileForm
     model = models.UserProfile
@@ -404,6 +424,9 @@ class UserProfileCreate(LoginRequiredMixin, CreateView):
             return reverse('dafousers:userprofile-list')
         elif action == '_addanother':
             return reverse('dafousers:userprofile-add')
+
+    def get_success_message(self, cleaned_data):
+        return 'Brugerprofilen {} er blevet oprettet.'.format(self.object)
 
 
 class UserProfileList(LoginRequiredMixin, ListView):
@@ -437,7 +460,7 @@ class UserProfileHistory(LoginRequiredMixin, ListView):
         return context
 
 
-class UserProfileEdit(LoginRequiredMixin, UpdateView):
+class UserProfileEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/userprofile/edit.html'
     model = models.UserProfile
     form_class = forms.UserProfileForm
@@ -449,6 +472,9 @@ class UserProfileEdit(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('dafousers:userprofile-list')
 
+    def get_success_message(self, cleaned_data):
+        return 'Brugerprofilen {} er blevet opdateret.'.format(self.object)
+
 
 class UserProfileAjaxUpdate(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -458,11 +484,14 @@ class UserProfileAjaxUpdate(LoginRequiredMixin, View):
             id__in=ids
         )
         action = request.POST.get('action')
+        type = ''
         if '_status' in action:
             parts = action.split("_")
             status = parts[2]
             user_profiles.update(status=status)
+            return HttpResponse('Statusser er blevet opdateret.')
         elif action == '_add_system_roles':
+            type = 'systemroller'
             system_roles_ids = request.POST.getlist('system_roles')
             system_roles = authinfo.admin_system_roles.filter(
                 id__in=system_roles_ids
@@ -471,6 +500,7 @@ class UserProfileAjaxUpdate(LoginRequiredMixin, View):
                 for user_profile in user_profiles:
                     user_profile.system_roles.add(system_role)
         elif action == '_add_area_restrictions':
+            type = 'områdeafgrænsninger'
             area_restrictions_ids = request.POST.getlist('area_restrictions')
             area_restrictions = authinfo.admin_area_restrictions.filter(
                 id__in=area_restrictions_ids
@@ -478,7 +508,7 @@ class UserProfileAjaxUpdate(LoginRequiredMixin, View):
             for area_restriction in area_restrictions:
                 for user_profile in user_profiles:
                     user_profile.area_restrictions.add(area_restriction)
-        return HttpResponse("Success")
+        return HttpResponse('Tildelte %s er blevet opdateret.' % type)
 
 
 class UserProfileListTable(LoginRequiredMixin, ListView):
