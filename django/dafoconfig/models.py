@@ -73,9 +73,7 @@ class CvrConfig(models.Model):
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
-    registeraddress = models.CharField(max_length=255, blank=True, null=True)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
-
+    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
 
     companyregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     companyregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
@@ -107,8 +105,8 @@ class CvrConfig(models.Model):
 
 class GladdregConfig(models.Model):
     id = models.CharField(primary_key=True, max_length=255)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
-    registeraddress = models.CharField(max_length=255, blank=True, null=True)
+    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
+    registeraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Registeradresse")
 
     class Meta:
         managed = False
