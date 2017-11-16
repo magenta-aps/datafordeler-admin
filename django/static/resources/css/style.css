@@ -834,9 +834,9 @@ select {
 }
 
 body {
-  border: 0;
-  margin: 0;
-  padding: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
 }
 
 
@@ -960,12 +960,12 @@ input {
 }
 
 .top_bar {
-  position: fixed;
-  right: 0;
-  top: 0;
-  left: 0;
-  height:67px;
-  background-color:var(--dafo-blue);
+    position: fixed;
+    right: 0;
+    top: 0;
+    left: 0;
+    height:67px;
+    background-color:var(--dafo-blue);
 }
 
 .top_menus {
@@ -1019,7 +1019,7 @@ input {
 }
 
 .content {
-    margin: 50px 70px;
+    margin: 7em 5em 5em 5em;
     width: calc(100% - 140px);
     display: grid;
 }

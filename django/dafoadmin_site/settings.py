@@ -235,4 +235,5 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 
 SELENIUM_DISPLAY = ":0"
+
 PULLCOMMAND_HOST = 'http://localhost:8445'

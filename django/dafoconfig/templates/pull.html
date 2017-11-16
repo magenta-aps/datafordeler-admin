@@ -26,14 +26,11 @@
             <form id="sync_form" action="" method="post">
                 {% csrf_token %}
                 <table>
-                    <thead>
-                        <tr>
-                            <td class="ordering">Plugin</td>
-                            <td class="ordering">Startet</td>
-                            <td class="ordering"></td>
-                        </tr>
-                    </thead>
-                    <tbody>
+                    <tr>
+                        <td class="ordering">Plugin</td>
+                        <td class="ordering">Startet</td>
+                        <td class="ordering"></td>
+                    </tr>
                     {% for command in running %}
                         <tr>
                             <td class="txtdata">{{ command.plugin }}</td>
@@ -41,7 +38,6 @@
                             <td class="txtdata"><button type="submit" name="sync_stop" value="{{ command.id }}">Afbryd</button></td>
                         </tr>
                     {% endfor %}
-                    </tbody>
                 </table>
             </form>
             <form method="get" action="{% url 'dafoconfig:plugin-pull' plugin %}">
@@ -50,25 +46,23 @@
         {% elif latest %}
             Seneste synkronisering for {{ latest.plugin }}
             <table>
-                <thead>
                 <tr>
                     <td class="ordering">Startet</td>
                     <td class="ordering">Sluttet</td>
                     <td class="ordering">Status</td>
                     <td class="ordering">Fejlbesked</td>
                 </tr>
-                </thead>
-                <tbody>
                 <tr>
                     <td class="txtdata">{{ latest.received }}</td>
                     <td class="txtdata">{% if latest.handled %}{{ latest.handled }}{% endif %}</td>
                     <td class="txtdata">{{ latest.status }}</td>
                     <td class="txtdata">{% if latest.errorMessage %}{{ latest.errorMessage }}{% else %}[ingen fejl]{% endif %}</td>
                 </tr>
-                </tbody>
             </table>
             <form method="get" action="{% url 'dafoconfig:plugin-pull' plugin %}">
-                <button href="">Opdatér</button>
+                <button href="" class="row_field button blue">
+                    <div class="flex-center">OPDATÉR</div>
+                </button>
             </form>
         {% endif %}
     </div>
@@ -77,7 +71,10 @@
         <div class="row">
             <form id="sync_form" action="" method="post">
                 {% csrf_token %}
-                Sæt en synkronisering i gang: <button type="submit" name="sync_start">Synkronisér</button>
+                Sæt en synkronisering i gang:<br/>
+                <button type="submit" name="sync_start" class="row_field button blue">
+                    <div class="flex-center">SYNKRONISÉR</div>
+                </button>
             </form>
         </div>
     {% endif %}
