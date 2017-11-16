@@ -7,6 +7,7 @@ from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
 
 
 class ConfigurationForm(ModelForm):
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
         super(ConfigurationForm, self).__init__(*args, **kwargs)

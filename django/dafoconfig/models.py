@@ -9,6 +9,8 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
+import json
+
 import requests
 
 import fancy_cronfield.fields
@@ -82,9 +84,7 @@ class CvrConfig(models.Model):
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
-    registeraddress = models.CharField(max_length=255, blank=True, null=True)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
-
+    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
 
     companyregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     companyregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
@@ -119,8 +119,8 @@ class CvrConfig(models.Model):
 
 class GladdregConfig(models.Model):
     id = models.CharField(primary_key=True, max_length=255)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True)
-    registeraddress = models.CharField(max_length=255, blank=True, null=True)
+    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
+    registeraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Registeradresse")
 
     class Meta:
         managed = False
@@ -214,3 +214,39 @@ class DumpConfig(models.Model):
 
     def __unicode__(self):
         return self.name
+
+class Command(models.Model):
+
+    STATUS_QUEUED = 0
+    STATUS_PROCESSING = 1
+    STATUS_SUCCESS = 2
+    STATUS_FAILED = 3
+    STATUS_CANCEL = 4
+    STATUS_CANCELLED = 5
+
+    status_choices = [
+        (STATUS_QUEUED, u"I kø"),
+        (STATUS_PROCESSING, u"Kører"),
+        (STATUS_SUCCESS, u"Færdig"),
+        (STATUS_FAILED, u"Fejlet"),
+        (STATUS_CANCEL, u"Afbryder"),
+        (STATUS_CANCELLED, u"Afbrudt")
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+    commandbody = models.CharField(max_length=255, blank=True, null=True)
+    commandname = models.CharField(max_length=255)
+    errormessage = models.CharField(max_length=2048, blank=True, null=True)
+    handled = models.DateTimeField(blank=True, null=True)
+    issuer = models.CharField(max_length=255)
+    received = models.DateTimeField(blank=True, null=True)
+    status = models.IntegerField(blank=True, null=True, choices=status_choices)
+
+    @property
+    def commandbody_json(self):
+        return json.loads(self.commandbody)
+
+    class Meta:
+        managed = False
+        database = 'configuration'
+        db_table = 'command'
