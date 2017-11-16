@@ -4,6 +4,8 @@
 import os
 import urllib
 
+from django.shortcuts import render_to_response
+
 from dafousers.auth import update_user_auth_info
 from dafousers.models import IdentityProviderAccount
 from django.conf import settings
@@ -41,6 +43,10 @@ class FrontpageView(TemplateView):
     template_name = 'frontpage.html'
 
 
+class ErrorView(TemplateView):
+    template_name = 'error.html'
+
+
 class LoginRequiredMixin(object):
     """Include to require login."""
 
@@ -51,10 +57,17 @@ class LoginRequiredMixin(object):
     # provider to get manage anything in the system.
     needs_system_roles_any = ["DAFO Serviceudbyder", "DAFO Administrator"]
 
+    def check_has_authinfo(self):
+        if not self.authinfo:
+            raise PermissionDenied(
+                "User is not a DAFO user!",
+            )
+
     def check_userprofiles(self):
         # If needs_userprofiles is defined check that the user has all
         # the needed permissions
         if self.needs_userprofiles is not None:
+            self.check_has_authinfo()
             match_nr = self.authinfo.user_profiles.filter(
                 name__in=self.needs_userprofiles
             ).count()
@@ -67,6 +80,7 @@ class LoginRequiredMixin(object):
         # If needs_userprofiles_any is defined check that the user has any
         # of the specified_permissions
         if self.needs_userprofiles_any is not None:
+            self.check_has_authinfo()
             if not self.authinfo.user_profiles.filter(
                     name__in=self.needs_userprofiles_any
             ).exists():
@@ -78,6 +92,7 @@ class LoginRequiredMixin(object):
 
     def check_system_roles(self):
         if self.needs_system_roles is not None:
+            self.check_has_authinfo()
             match_nr = self.authinfo.system_roles.filter(
                 role_name__in=self.needs_system_roles
             ).count()
@@ -88,6 +103,7 @@ class LoginRequiredMixin(object):
                     )
                 )
         if self.needs_system_roles_any is not None:
+            self.check_has_authinfo()
             if not self.authinfo.system_roles.filter(
                     role_name__in=self.needs_system_roles_any
             ).exists():
