@@ -84,6 +84,11 @@
             </div>
         </div>
         <div class="content">
+            <div id="messages" class="messages" {% if not messages %}style="display:none"{% endif %}>
+                {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
             {% if form.errors %}
                 {% for field in form %}
                     {% for error in field.errors %}
