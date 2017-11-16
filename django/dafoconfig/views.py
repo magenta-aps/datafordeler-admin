@@ -3,16 +3,37 @@
 import json
 import re
 
+import requests
+from django.forms import model_to_dict
+
 from common.views import LoginRequiredMixin
 from datetime import datetime
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
-from django.views.generic.edit import UpdateView
+
+from django.views.generic.edit import UpdateView, DeleteView
 
 from .forms import CvrConfigurationForm, CprConfigurationForm, \
     GladdrregConfigurationForm
 from .models import CvrConfig, CprConfig, GladdregConfig, Command
+from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.list import ListView
+from django.shortcuts import redirect
+import logging
+import re
+import requests
+
+# from dafoadmin.dafousers.views import LoginRequiredMixin
+from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
+from .forms import (
+    CvrConfigurationForm,
+    CprConfigurationForm,
+    DumpConfigurationForm,
+    GladdrregConfigurationForm,
+)
+
+logger = logging.getLogger('django.server')
 
 
 class PluginConfigurationView(LoginRequiredMixin, UpdateView):
@@ -242,3 +263,39 @@ class PluginPullView(LoginRequiredMixin, TemplateView):
             if command is not None:
                 commands.append(command)
         return commands
+
+
+class DumpCreate(LoginRequiredMixin, CreateView):
+    template_name = 'dump/add.html'
+    form_class = DumpConfigurationForm
+    model = DumpConfig
+
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        if action == '_save':
+            return reverse('dafoconfig:dump-list')
+        elif action == '_addanother':
+            return reverse('dafoconfig:dump-add')
+
+
+class DumpEdit(LoginRequiredMixin, UpdateView):
+    model = DumpConfig
+    form_class = DumpConfigurationForm
+    template_name = 'dump/edit.html'
+
+
+class DumpList(LoginRequiredMixin, ListView):
+    template_name = 'dump/list.html'
+    model = DumpConfig
+
+
+class DumpDelete(LoginRequiredMixin, DeleteView):
+    template_name = 'dump/delete.html'
+    model = DumpConfig
+
+    success_url = reverse_lazy('dafoconfig:dump-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(DumpDelete, self).get_context_data(**kwargs)
+        context.update(fields=model_to_dict(self.object))
+        return context

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
-from django.forms import ModelForm as ModelForm
+import fancy_cronfield.widgets
+from django.forms import ModelForm as ModelForm, IntegerField
 from django.forms.widgets import Textarea
 
-from .models import CvrConfig, CprConfig, GladdregConfig
+from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
 
 
 class ConfigurationForm(ModelForm):
@@ -37,3 +37,15 @@ class GladdrregConfigurationForm(ConfigurationForm):
     class Meta:
         model = GladdregConfig
         exclude = ['id']
+
+
+class DumpConfigurationForm(ConfigurationForm):
+    class Meta:
+        model = DumpConfig
+        exclude = ['id']
+
+    widgets = {
+        'schedule': fancy_cronfield.widgets.CronWidget(
+            options={'use_gentle_select': True}
+        ),
+    }
