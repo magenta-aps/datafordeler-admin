@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_windows_tools',
     'django_markup',
+    'common',
     'dafousers',
     'dafoconfig'
 ]
@@ -69,7 +70,9 @@ ROOT_URLCONF = 'dafoadmin_site.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -231,5 +234,6 @@ if os.path.exists(LOCAL_SETTINGS_FILE):
 # The certificate key we sign certificates with
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 
-
 SELENIUM_DISPLAY = ":0"
+
+PULLCOMMAND_HOST = 'http://localhost:8445'

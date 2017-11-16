@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
-from django import forms
+from xml.etree import ElementTree
+from xml.etree.ElementTree import ParseError
+
+from dafousers import models, model_constants
 from django.contrib.admin import widgets
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext as _
-from dafousers import models, model_constants
-from xml.etree import ElementTree
-from xml.etree.ElementTree import ParseError
+
+from django import forms
 
 
 class AccessAccountForm(forms.ModelForm):

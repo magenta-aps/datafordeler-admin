@@ -1,11 +1,5 @@
-from django.conf import settings
-from django.conf.urls import url
-from django.conf.urls.static import static
-from django.views.decorators.csrf import csrf_exempt
-from django.views.i18n import JavaScriptCatalog
-import django.contrib.auth.views
-
 import dafoconfig.views as dafo_views
+from django.conf.urls import url
 
 urlpatterns = [
     url(
@@ -32,5 +26,11 @@ urlpatterns = [
         r'^ajax/update_plugin_queryset/$',
         dafo_views.PluginListTable.as_view(),
         name='update_plugin_queryset'
+    ),
+
+    url(
+        r'^plugin/(?P<plugin>[a-z]+)/pull/?$',
+        dafo_views.PluginPullView.as_view(),
+        name='plugin-pull'
     ),
 ]

@@ -2,29 +2,28 @@
 
 from __future__ import unicode_literals
 
-from OpenSSL import crypto, SSL
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.x509.oid import NameOID
-from django.db import models
-from django.conf import settings
-from django.core.exceptions import FieldError
-from django.core.exceptions import ImproperlyConfigured
-from django.core.files.base import ContentFile, File
-from django.utils import timezone
-from django.utils.translation import ugettext as _
-from django.urls import reverse
-from dafousers import model_constants
-from dafousers.dbfixes import fix_sql_server_schemas
-from xml.etree import ElementTree
-
 import base64
 import copy
 import hashlib
-import jks
 import os
 import uuid
+from xml.etree import ElementTree
+
+import jks
+from OpenSSL import crypto
+from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import NameOID
+from dafousers import model_constants
+from dafousers.dbfixes import fix_sql_server_schemas
+from django.conf import settings
+from django.core.exceptions import FieldError
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.translation import ugettext as _
+
 
 class EntityWithHistory(models.Model):
 
