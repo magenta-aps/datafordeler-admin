@@ -32,7 +32,7 @@ class IndexView(TemplateView):
         if auth_info and auth_info.system_roles.filter(
                 role_name__in=["DAFO Serviceudbyder", "DAFO Administrator"]
         ).exists():
-            return HttpResponseRedirect(reverse("dafousers:frontpage"))
+            return HttpResponseRedirect(reverse("common:frontpage"))
 
         return super(IndexView, self).dispatch(*args, **kwargs)
 
