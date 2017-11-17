@@ -11,11 +11,7 @@ from __future__ import unicode_literals
 
 import json
 
-import requests
-
 import fancy_cronfield.fields
-from django.conf import settings
-from django.core import validators
 from django.db import models
 from django.db.models import options
 from django.urls import reverse
@@ -23,6 +19,46 @@ from django.utils.translation import ugettext_lazy as _
 
 if 'database' not in options.DEFAULT_NAMES:
     options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('database',)
+
+DEFAULT_CRON_SCHEDULE = '0 0 1 1 *'
+
+
+class CronField(fancy_cronfield.fields.CronField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault(
+            'default', DEFAULT_CRON_SCHEDULE,
+        )
+        super(CronField, self).__init__(*args, **kwargs)
+
+    def formfield(self, **kwargs):
+        kwargs.setdefault(
+            'widget',
+            fancy_cronfield.widgets.CronWidget(
+                options=dict(
+                    allow_multiple_all=False,
+                )
+            )
+        )
+        return super(CronField, self).formfield(**kwargs)
+
+    def value_from_object(self, obj):
+        """convert from quartz to "fancy" format, and ensure a value
+
+        The JavaScript doesn't handle missing values...
+        """
+
+        s = super(CronField, self).value_from_object(obj)
+        if not s:
+            return DEFAULT_CRON_SCHEDULE
+
+        # quartz uses '?', but fancycron does not
+        parts = s.replace('?', '*').split(' ')
+
+        # drop seconds...
+        if len(parts) == 6:
+            parts.pop(0)
+
+        return ' '.join(parts)
 
 
 class CprConfig(models.Model):
@@ -49,7 +85,10 @@ class CprConfig(models.Model):
     personregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     personregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     personregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
-    personregisterpullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"CRON-tidsangivelse for automatisk hentning")
+    personregisterpullcronschedule = CronField(
+        max_length=255, null=True,
+        default=DEFAULT_CRON_SCHEDULE,
+        verbose_name=u"CRON-tidsangivelse for automatisk hentning")
 
     residenceregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     residenceregisterdatacharset = models.IntegerField(blank=True, null=True, verbose_name=u"Forventet inputdata-tegnkodning", choices=charset_choices)
@@ -57,7 +96,10 @@ class CprConfig(models.Model):
     residenceregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     residenceregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     residenceregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
-    residenceregisterpullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"CRON-tidsangivelse for automatisk hentning")
+    residenceregisterpullcronschedule = CronField(
+        max_length=255, null=True,
+        default=DEFAULT_CRON_SCHEDULE,
+        verbose_name=u"CRON-tidsangivelse for automatisk hentning")
 
     roadregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     roadregisterdatacharset = models.IntegerField(blank=True, null=True, verbose_name=u"Forventet inputdata-tegnkodning", choices=charset_choices)
@@ -65,7 +107,10 @@ class CprConfig(models.Model):
     roadregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     roadregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     roadregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
-    roadregisterpullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"CRON-tidsangivelse for automatisk hentning")
+    roadregisterpullcronschedule = CronField(
+        max_length=255, null=True,
+        default=DEFAULT_CRON_SCHEDULE,
+        verbose_name=u"CRON-tidsangivelse for automatisk hentning")
 
     class Meta:
         managed = False
@@ -84,7 +129,10 @@ class CvrConfig(models.Model):
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
+    pullcronschedule = CronField(
+        max_length=255, null=True,
+        verbose_name=u"Cron-udtryk for automatisk synkronisering"
+    )
 
     companyregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     companyregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
@@ -119,7 +167,7 @@ class CvrConfig(models.Model):
 
 class GladdregConfig(models.Model):
     id = models.CharField(primary_key=True, max_length=255)
-    pullcronschedule = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
+    pullcronschedule = CronField(null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
     registeraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Registeradresse")
 
     class Meta:
@@ -198,7 +246,7 @@ class DumpConfig(models.Model):
         max_length=255,
     )
 
-    schedule = fancy_cronfield.fields.CronField(
+    schedule = CronField(
         max_length=100,
         default='0 2 * * *',
     )
