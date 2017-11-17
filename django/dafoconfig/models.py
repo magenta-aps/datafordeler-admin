@@ -206,12 +206,6 @@ class DumpConfig(models.Model):
     def get_absolute_url(self):
         return reverse('dafoconfig:dump-edit', kwargs={'pk': self.pk})
 
-    def save(self, *args, **kwargs):
-        super(DumpConfig, self).save( *args, **kwargs)
-
-        r = requests.get(settings.PULLCOMMAND_HOST + '/dump/notify')
-        r.raise_for_status()
-
     def __unicode__(self):
         return self.name
 
