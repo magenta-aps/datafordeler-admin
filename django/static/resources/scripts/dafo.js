@@ -146,9 +146,17 @@ var DAFO = window.DAFO || {};
                     url: "/ajax/update_" + objectType + "/",
                     type: "POST",
                     data: $('form').serialize(),
-                    success: function () {
+                    success: function (messageText) {
                         update_object().then(function (order) {
                             setOrderClasses();
+                            var message = document.createElement("p");
+                            message.innerHTML = messageText;
+                            var messages = document.getElementById("messages");
+                            while (messages.firstChild) {
+                                messages.removeChild(messages.firstChild);
+                            }
+                            messages.appendChild(message);
+                            messages.style.display = 'block';
                         });
                     }
                 });
