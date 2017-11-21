@@ -2007,3 +2007,36 @@ ul.timelist, .timelist li {
 .icon-list-user-profile {
   background-image: url(../images/list_user_profile.png);
 }
+
+#certificates {
+  display: block;
+}
+
+#certificates .selector {
+  width: 280px;
+}
+
+#certificates .selector-available {
+  display: none;
+}
+
+#certificates .selector-chooser {
+  float: right;
+}
+
+#certificates .selector-add {
+  background: url(../images/download.png) 0 no-repeat;
+}
+
+#certificates .selector-remove {
+  background: url(/static/admin/img/icon-deletelink.svg) 0 no-repeat;
+}
+
+#rst-documentation img {
+  max-width: 100%;
+}
+
+.alert {
+  color: red;
+  font-weight: bold;
+}
