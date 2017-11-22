@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_windows_tools',
     'django_markup',
+    'fancy_cronfield',
     'common',
     'dafousers',
     'dafoconfig'
@@ -242,3 +243,10 @@ ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 SELENIUM_DISPLAY = ":0"
 
 PULLCOMMAND_HOST = 'http://localhost:8445'
+
+# psycopg2cffi is a replacement for psycopg2 that supports PyPy
+try:
+    from psycopg2cffi import compat
+    compat.register()
+except ImportError:
+    pass
