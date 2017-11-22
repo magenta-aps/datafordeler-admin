@@ -241,7 +241,6 @@ if 'configuration' not in DATABASES:
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 
 SELENIUM_DISPLAY = ":0"
-
 PULLCOMMAND_HOST = 'http://localhost:8445'
 
 # psycopg2cffi is a replacement for psycopg2 that supports PyPy

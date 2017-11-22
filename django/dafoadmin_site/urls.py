@@ -25,15 +25,21 @@ from common import views as common_views
 #     permanent=False
 # )
 
-urlpatterns = [
-    # Redirect root URL to admin
-    # url(r'^$', root_redirect, name="index"),
-    url(r'^', include('common.urls', namespace='common')),
-    url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
-    url(r'^', include('dafousers.urls', namespace='dafousers')),
-]
+urlpatterns = []
+
+try:
+    urlpatterns = [
+        # Redirect root URL to admin
+        # url(r'^$', root_redirect, name="index"),
+        url(r'^', include('common.urls', namespace='common')),
+        url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
+        url(r'^', include('dafousers.urls', namespace='dafousers')),
+    ]
+except Exception as e:
+    print e
 
 handler403 = common_views.ErrorView.as_view()
 
 if settings.ENABLE_DJANGO_ADMIN:
     urlpatterns = [url(r'^admin/', admin.site.urls)] + urlpatterns
+
