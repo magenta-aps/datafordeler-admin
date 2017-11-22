@@ -2,22 +2,27 @@
 
 from __future__ import unicode_literals
 
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.x509.oid import NameOID
-from django.db import models
-from django.conf import settings
-from django.core.exceptions import FieldError
-from django.core.exceptions import ImproperlyConfigured
-from django.utils import timezone
-from django.utils.translation import ugettext as _
-from dafousers import model_constants
-
 import base64
 import copy
 import hashlib
 import os
+import uuid
+from xml.etree import ElementTree
+
+import jks
+from OpenSSL import crypto
+from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import NameOID
+from dafousers import model_constants
+from dafousers.dbfixes import fix_sql_server_schemas
+from django.conf import settings
+from django.core.exceptions import FieldError
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 
 class EntityWithHistory(models.Model):
@@ -48,11 +53,14 @@ class EntityWithHistory(models.Model):
         # Set latest update time to now
         self.updated = timezone.now()
 
+        pk_before_save = self.pk
+
         # Save ourselves
         result = super(EntityWithHistory, self).save(*args, **kwargs)
 
-        # Save history record
-        self.history_class.create_from_entity(self)
+        # Save history record only when the object has been created and then m2m fields added
+        if pk_before_save is not None:
+            self.history_class.create_from_entity(self)
 
         return result
 
@@ -95,8 +103,7 @@ class HistoryForEntity(object):
 
         # Add many-to-many relation
         for r in rel_data:
-            for v in rel_data[r]:
-                getattr(new_obj, r).add(v.pk)
+            setattr(new_obj, r, rel_data[r])
 
         return new_obj
 
@@ -165,6 +172,9 @@ class HistoryForEntity(object):
         new_class._meta.verbose_name = "Historik for %s" % (
             entity_class._meta.verbose_name
         )
+        new_class._meta.verbose_name_plural = "Historik for %s" % (
+            entity_class._meta.verbose_name_plural
+        )
 
         return new_class
 
@@ -212,16 +222,40 @@ class AccessAccount(models.Model):
     )
     user_profiles = models.ManyToManyField(
         'UserProfile',
-        verbose_name=_("Tilknyttede brugerprofiler"),
+        verbose_name=_("Tildelte brugerprofiler"),
         blank=True
     )
+
+    def get_updated_user_profiles(self, user, submitted):
+        editable_user_profiles = user.dafoauthinfo.admin_user_profiles
+
+        other_user_profiles = self.user_profiles.all().exclude(
+            pk__in=editable_user_profiles
+        )
+
+        return other_user_profiles.distinct() | submitted.distinct()
+
+
+class PasswordUserQuerySet(models.QuerySet):
+    def search(self, term):
+        qs = self
+        for word in term.split(" "):
+            qs = qs.filter(
+                models.Q(givenname__contains=word) |
+                models.Q(lastname__contains=word) |
+                models.Q(email__contains=word)
+            )
+        return qs
 
 
 class PasswordUser(AccessAccount, EntityWithHistory):
 
     class Meta:
+        # db_table = 'dbo].[dafousers_passworduser'
         verbose_name = _(u"bruger")
         verbose_name_plural = _(u"brugere")
+
+    objects = PasswordUserQuerySet.as_manager()
 
     givenname = models.CharField(
         verbose_name=_(u"Fornavn"),
@@ -236,12 +270,12 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         default=""
     )
     email = models.EmailField(
-        verbose_name=_(u"E-mail"),
+        verbose_name=_(u"Email"),
         unique=True,
         blank=False
     )
     organisation = models.CharField(
-        verbose_name=_(u"Information om brugerens organisation"),
+        verbose_name=_(u"Arbejdssted"),
         max_length=2048,
         blank=True,
         default=""
@@ -258,11 +292,14 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         blank=True,
         default=""
     )
-    person_identification = models.UUIDField(
+    # Have to use CharField for UUID since SQL Server and Django does not
+    # agree on how to handle UUIDs.
+    person_identification = models.CharField(
         verbose_name=_(u"Grunddata personidentifikation UUID"),
+        max_length=40,
         blank=True,
         null=True,
-        default=""
+        default=uuid.uuid4
     )
 
     @staticmethod
@@ -270,11 +307,18 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         salt = base64.b64encode(os.urandom(16))
         pwdata = hashlib.sha256()
         pwdata.update(password + salt)
-        return (salt, base64.b64encode(pwdata.digest()))
+        return salt, base64.b64encode(pwdata.digest())
 
     def __unicode__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
 
+    def get_absolute_url(self):
+        return reverse('dafousers:passworduser-list')
+
+    def check_password(self, password):
+        pwdata = hashlib.sha256()
+        pwdata.update(password + self.password_salt)
+        return base64.b64encode(pwdata.digest()) == self.encrypted_password
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 
@@ -294,16 +338,68 @@ class EntityWithCertificate(models.Model):
         verbose_name=_(u"E-mailadresse på kontaktperson"),
         blank=False
     )
-    next_expiration = models.DateTimeField(
-        verbose_name=_(u"Næste udløbsdato for certifikat(er)"),
-        blank=True,
-        null=True,
-        default=None
-    )
     certificates = models.ManyToManyField(
         "Certificate",
         verbose_name=_(u"Certifikater")
     )
+
+    @property
+    def latest_certificate(self):
+        return self.certificates.all().order_by("valid_to").first()
+
+    def create_cert(self, years_valid):
+
+        # load jks file
+        keystore = jks.KeyStore.load(
+            settings.ROOT_CERT, settings.ROOT_CERT_PASS
+        )
+        pk_entry = keystore.private_keys[settings.ROOT_CERT_ALIAS]
+        private_key = crypto.load_privatekey(
+            crypto.FILETYPE_ASN1, pk_entry.pkey
+        )
+        public_cert = crypto.load_certificate(
+            crypto.FILETYPE_ASN1, pk_entry.cert_chain[0][1]
+        )
+
+        # create cert req
+        public_key = crypto.PKey()
+        public_key.generate_key(crypto.TYPE_RSA, 2048)
+
+        cert_req = crypto.X509Req()
+        cert_req.get_subject().CN = self.contact_email
+        cert_req.set_pubkey(public_key)
+        cert_req.sign(private_key, b"sha256")
+
+        # create a cert
+        cert = crypto.X509()
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(years_valid*365*24*60*60)
+        cert.set_issuer(public_cert.get_subject())
+        cert.set_subject(cert_req.get_subject())
+        cert.set_pubkey(cert_req.get_pubkey())
+        cert.sign(private_key, b"sha256")
+
+        p12 = crypto.PKCS12()
+        p12.set_privatekey(cert_req.get_pubkey())
+        p12.set_certificate(cert)
+
+        certificate_name = "newcert-%s.crt" % os.getpid()
+        return ContentFile(
+            p12.export(),
+            name=certificate_name,
+        )
+
+    def create_certificate(self, years_valid):
+        certificate_file = self.create_cert(years_valid)
+        obj = self.certificates.create(certificate_file=certificate_file)
+
+
+class CertificateUserQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
 
 
 class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
@@ -311,6 +407,8 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     class Meta:
         verbose_name = _(u"system")
         verbose_name_plural = _(u"systemer")
+
+    objects = CertificateUserQuerySet.as_manager()
 
     name = models.CharField(
         verbose_name=_(u"Navn"),
@@ -337,49 +435,96 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
     def __unicode__(self):
         return unicode(self.name)
 
+    def get_absolute_url(self):
+        return reverse('dafousers:passworduser-list')
+
 
 CertificateUserHistory = HistoryForEntity.build_from_entity_class(
     CertificateUser
 )
 
 
-class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
-                              EntityWithHistory):
+class IdentityProviderAccountQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
+
+
+class IdentityProviderAccount(AccessAccount, EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"organisation")
         verbose_name_plural = _(u"organisationer")
 
+    objects = IdentityProviderAccountQuerySet.as_manager()
+    CONSTANTS = model_constants.IdentityProviderAccount
+
     name = models.CharField(
-        name=_(u"Navn"),
+        verbose_name=_(u"Navn"),
         max_length=2048,
         blank=True,
         default=""
+    )
+    idp_entity_id = models.CharField(
+        verbose_name=_(u"IdP-id"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+    idp_type = models.IntegerField(
+        verbose_name=_(u"IdP-type"),
+        choices=CONSTANTS.idp_type_choices,
+        default=CONSTANTS.IDP_TYPE_SECONDARY
+    )
+    metadata_xml_file = models.FileField(
+        verbose_name=_(u"Metadata-xml-fil"),
+        null=True,
+        blank=True,
+        upload_to="uploads",
     )
     metadata_xml = models.TextField(
         verbose_name=_(u"Metadata XML"),
         blank=True,
         default=""
     )
-    sso_endpoint = models.CharField(
-        name=_(u"Single-Sign-On Endpoint"),
+    contact_name = models.CharField(
+        verbose_name=_(u"Navn på kontaktperson"),
         max_length=2048,
         blank=True,
         default=""
     )
-    slo_endpoint = models.CharField(
-        name=_(u"Single-Log-Out Endpoint"),
-        max_length=2048,
-        blank=True,
-        default=""
+    contact_email = models.EmailField(
+        verbose_name=_(u"E-mailadresse på kontaktperson"),
+        blank=False
     )
     organisation = models.TextField(
-        verbose_name=_(u"Information om brugerens organisation"),
+        verbose_name=_(u"Yderligere information om organisationen"),
         blank=True,
         default=""
     )
-    nameid_format = models.CharField(
-        name=_(u"NameID format"),
+
+    userprofile_attribute = models.CharField(
+        verbose_name=_(u"SAML-attribut der indeholder brugerprofiler"),
+        max_length=2048,
+        blank=True,
+        default=""
+    )
+
+    userprofile_attribute_format = models.IntegerField(
+        verbose_name=_(u"Format for brugerprofil attribut"),
+        choices=CONSTANTS.userprofile_attribute_format_choices,
+        default=CONSTANTS.USERPROFILE_FORMAT_MULTIVALUE,
+    )
+
+    userprofile_adjustment_filter_type = models.IntegerField(
+        verbose_name=_(u"Tilpasninger til brugerprofil værdier"),
+        choices=CONSTANTS.userprofile_filter_choices,
+        default=CONSTANTS.USERPROFILE_FILTER_NONE
+    )
+
+    userprofile_adjustment_filter_value = models.CharField(
+        verbose_name=_(u"Værdi brugt ved tilpasning af brugerprofiler"),
         max_length=2048,
         blank=True,
         default=""
@@ -387,6 +532,33 @@ class IdentityProviderAccount(AccessAccount, EntityWithCertificate,
 
     def __unicode__(self):
         return unicode(self.name)
+
+    def get_absolute_url(self):
+        return reverse('dafousers:identityprovideraccount-list')
+
+    def save_metadata(self):
+        if self.metadata_xml_file:
+
+            try:
+                # Store certificate in blob instead of file
+                self.metadata_xml = self.metadata_xml_file.read()
+
+                xml_root = ElementTree.fromstring(self.metadata_xml)
+                self.idp_entity_id = xml_root.get("entityID")
+
+                # Remove the file so data is only stored in the blob
+                self.metadata_xml_file.close()
+                self.metadata_xml_file = None
+
+            except Exception as e:
+                print "Failed to parse uploaded xml, error is: %s" % e
+
+        # Update the last-update-of-idp-data timestamp
+        UpdateTimestamps.touch(self.CONSTANTS.IDP_UPDATE_TIMESTAMP_NAME)
+
+    @classmethod
+    def get_readonly_fields(self):
+        return ['metadata_xml', 'idp_entity_id']
 
 
 IdentityProviderAccountHistory = HistoryForEntity.build_from_entity_class(
@@ -438,19 +610,20 @@ class Certificate(models.Model):
         blank=True
     )
 
+    class Meta:
+        ordering = ['valid_to']
+
     def save(self, *args, **kwargs):
         # Save once, making sure files are written
-        result = super(Certificate, self).save(*args, **kwargs)
-        if(self.certificate_file and
-           os.path.exists(self.certificate_file.path)):
 
+        result = super(Certificate, self).save(*args, **kwargs)
+        if self.certificate_file:
             try:
                 # Store certificate in blob instead of file
                 self.certificate_blob = self.certificate_file.read()
-                x509_cert = x509.load_pem_x509_certificate(
-                    self.certificate_blob,
-                    default_backend()
-                )
+                p12 = crypto.load_pkcs12(self.certificate_blob)
+                p12cert = p12.get_certificate()
+                x509_cert = p12cert.to_cryptography()
 
                 # Calculate and format sha256 fingerprint
                 # (hex encoded bytes separated by ":")
@@ -484,12 +657,11 @@ class Certificate(models.Model):
                 self.subject = ", ".join(subject_parts)
 
                 # Remove the file so data is only stored in the blob
-                self.certificate_file.close()
-                self.certificate_file.delete()
-                self.certificate_file = None
+                if os.path.exists(self.certificate_file.path):
+                    self.certificate_file.close()
+                    self.certificate_file.delete()
 
-                # Save once more to store data retrieved from the certificate
-                result = super(Certificate, self).save(*args, **kwargs)
+                self.certificate_file = None
             except Exception as e:
                 print "Failed to parse certificate, error is: %s" % e
 
@@ -503,38 +675,64 @@ class Certificate(models.Model):
 
     def __unicode__(self):
         return unicode(
-            self.subject or
+            self.valid_to.strftime("%Y-%m-%d %H:%M:%S") or
             _(u"Certifikat uden subjekt")
         )
 
 
-class UserProfile(models.Model):
+class UserProfileQuerySet(models.QuerySet):
+    def search(self, term):
+        return self.filter(
+            models.Q(name__contains=term)
+        )
+
+
+class UserProfile(EntityWithHistory):
 
     class Meta:
         verbose_name = _(u"brugerprofil")
         verbose_name_plural = _(u"brugerprofiler")
 
+    objects = UserProfileQuerySet.as_manager()
+
     name = models.CharField(
         verbose_name=_(u"Navn"),
         max_length=2048
     )
-    created_by = models.CharField(
-        verbose_name=_(u"Oprettet af"),
-        max_length=2048
-    )
     system_roles = models.ManyToManyField(
         'SystemRole',
-        verbose_name=_("Tilknyttede systemroller"),
+        verbose_name=_("Tildelte systemroller"),
         blank=True
     )
     area_restrictions = models.ManyToManyField(
         'AreaRestriction',
-        verbose_name=_("Tilknyttede områdebegrænsninger"),
+        verbose_name=_("Tildelte områdeafgrænsninger"),
         blank=True
     )
 
+    def get_updated_system_roles(self, user, submitted):
+        editable_system_roles = user.dafoauthinfo.admin_system_roles
+
+        other_system_roles = self.system_roles.all().exclude(
+            pk__in=editable_system_roles
+        )
+
+        return other_system_roles.distinct() | submitted.distinct()
+
+    def get_updated_area_restrictions(self, user, submitted):
+        editable_area_restrictions = user.dafoauthinfo.admin_area_restrictions
+
+        other_area_restrictions = self.area_restrictions.all().exclude(
+            pk__in=editable_area_restrictions
+        )
+
+        return other_area_restrictions.distinct() | submitted.distinct()
+
     def __unicode__(self):
         return unicode(self.name)
+
+
+UserProfileHistory = HistoryForEntity.build_from_entity_class(UserProfile)
 
 
 class SystemRole(models.Model):
@@ -569,9 +767,34 @@ class SystemRole(models.Model):
         blank=True
     )
 
+    @property
+    def related_area_restrictions(self):
+        if self.role_type != self.constants.TYPE_SERVICE:
+            if self.parent is not None:
+                return self.parent.related_area_restrictions
+            else:
+                return AreaRestriction.objects.none()
+        return AreaRestriction.objects.filter(
+            area_restriction_type__service_name__iexact=self.role_name
+        )
+
+    @property
+    def service_name(self):
+        if self.role_type == self.constants.TYPE_SERVICE:
+            return self.target_name
+        else:
+            if self.parent is not None:
+                return self.parent.service_name
+            else:
+                return "<unknown>"
+
     def __unicode__(self):
         return unicode(
-            '%s (%s)' % (self.role_name, self.get_role_type_display())
+            '%s (%s, %s)' % (
+                self.role_name,
+                self.get_role_type_display(),
+                self.service_name.upper()
+            )
         )
 
 
@@ -605,8 +828,18 @@ class AreaRestriction(models.Model):
         null=False,
     )
 
+    @property
+    def service_name(self):
+        if self.area_restriction_type is not None:
+            return self.area_restriction_type.service_name
+        else:
+            return "<unknown>"
+
     def __unicode__(self):
-        return unicode(self.name)
+        return unicode("%s (%s)") % (
+            self.name,
+            self.service_name.upper()
+        )
 
 
 class AreaRestrictionType(models.Model):
@@ -633,3 +866,41 @@ class AreaRestrictionType(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+
+class UpdateTimestamps(models.Model):
+
+    class Meta:
+        verbose_name = _(u"Tidsstempel for opdatering")
+        verbose_name_plural = _(u"Tidsstempler for opdatering")
+
+    hide_in_dafoadmin = True
+
+    name = models.CharField(
+        verbose_name=_(u"Navn"),
+        max_length=2048
+    )
+    description = models.TextField(
+        verbose_name=_(u"Beskrivelse"),
+        blank=True,
+        default=""
+    )
+    updated = models.DateTimeField(
+        verbose_name=_(u"Opdateret"),
+        default=timezone.now
+    )
+
+    @classmethod
+    def touch(cls, name):
+        try:
+            item = cls.objects.get(name=name)
+        except UpdateTimestamps.DoesNotExist:
+            item = cls(
+                name=name,
+                description=(_(u"Auto-genereret tidsstempel for %s") % name)
+            )
+        item.updated = timezone.now()
+        item.save()
+
+
+fix_sql_server_schemas()
