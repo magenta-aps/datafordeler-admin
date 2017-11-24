@@ -886,21 +886,21 @@ input {
 }
 
 .gray {
-    background-color: var(--dafo-gray);
+    background-color: rgb(228, 228, 228);
     color: black;
 }
 
 .blue {
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     color: white;
 }
 
 .light-blue {
-    background-color: var(--dafo-lightblue);;
+    background-color: rgb(121, 182, 229);;
 }
 
 .beige {
-    background-color: var(--dafo-beige);
+    background-color: rgb(228, 228, 228);
 }
 
 .button > * {
@@ -917,8 +917,8 @@ input {
 }
 
 @media all and (min-width: 600px) {
-    .flex-left { flex: 0 }
-    .flex-right { flex: 0 }
+    .flex-left { flex: 0 1 auto }
+    .flex-right { flex: 0 1 auto }
 }
 
 @media all and (min-width: 800px) {
@@ -965,7 +965,7 @@ input {
     top: 0;
     left: 0;
     height:67px;
-    background-color:var(--dafo-blue);
+    background-color:rgb(28, 90, 136);
 }
 
 .top_menus {
@@ -1021,7 +1021,7 @@ input {
 .content {
     margin: 7em 5em 5em 5em;
     width: calc(100% - 140px);
-    display: grid;
+    display: inline-block;
 }
 
 .column {
@@ -1056,7 +1056,7 @@ input {
     min-height: 16px;
     float: left;
     margin-right: 34px;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .row_field input,
@@ -1084,7 +1084,7 @@ input {
     padding-left: 18px;
     font-weight: 700;
     font-size: 14px;
-    color: var(--dafo-darkblue);
+    color: rgb(23, 71, 106);
     float: right;
 }
 
@@ -1099,7 +1099,7 @@ input {
     bottom: 0;
     left: 0;
     height:38px;
-    background-color:var(--dafo-blue);
+    background-color:rgb(28, 90, 136);
     overflow-y: hidden;
 }
 
@@ -1141,7 +1141,7 @@ input {
 
 .new-password-box {
     display: none;
-    background-color: var(--dafo-lightgray);
+    background-color: rgb(242, 242, 242);
     margin-top: 5em;
     padding: 1em;
     max-width: 30em;
@@ -1156,7 +1156,7 @@ input {
 
 .new-password-top {
     box-sizing: border-box;
-    border: 1px solid var(--dafo-blue);
+    border: 1px solid rgb(28, 90, 136);
 }
 
 .new-password-top p {
@@ -1297,18 +1297,18 @@ a.selector-clearall {
     min-height: 100px;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 50%);
     z-index: 1001;
 }
 
 .popup.show {
-    display: inline-grid;
+    display: inline-block;
 }
 
 .popup-title {
     font-size: 22px;
     padding: 0.75em;
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     color: white;
     height: 1em;
 }
@@ -1617,26 +1617,27 @@ div.logout-container .spotbox {
     margin: 0em 8em;
 }
 .block {
-    display: inline-grid;
+    display: inline-block;
 }
 .block-title {
     padding: 0.75em 1.5em;
-    background-color: var(--dafo-lightblue);
+    background-color: rgb(121, 182, 229);
     color: white;
     display: inline-flex;
+	width: calc(100% - 3em)
 }
 .block-title div {
+	display: inline;
     padding: 0.2em;
     font-size: 30px;
 }
 .block-content {
-    display: inline-grid;
     background-image: url(../images/sky.jpg);
     background-repeat: no-repeat;
 }
 
 .block-row {
-    display: inline-flex;
+    display: flex;
 }
 
 .block-link:only-child {
@@ -1689,7 +1690,7 @@ div.logout-container .spotbox {
 }
 
 .block-search > * {
-    margin: 0.7em 1em;
+    padding: 0.3em 1em;
 }
 
 .block-search .dropdown-content {
@@ -1711,12 +1712,12 @@ div.logout-container .spotbox {
     width: 26px;
     height: 26px;
     padding: 0 10px;
-    background: var(--dafo-lightblue) url(../images/search.png) no-repeat 12px;
-    background-color: var(--dafo-lightblue)
+    background: rgb(121, 182, 229) url(../images/search.png) no-repeat 12px;
+    background-color: rgb(121, 182, 229)
 }
 
 .history-entry-top {
-    background-color: var(--dafo-lightgray);
+    background-color: rgb(242, 242, 242);
 }
 
 .history-entry > * {
@@ -1763,7 +1764,7 @@ div.logout-container .spotbox {
     font-weight: 700;
     font-size: 13px;
     text-align: left;
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     color: white;
 }
 
@@ -1785,7 +1786,7 @@ div.logout-container .spotbox {
     padding: 8px;
     text-align: center;
     border-top: none;
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     font-weight: 700;
     font-size: 12px;
     color: white;
@@ -1833,12 +1834,12 @@ div.logout-container .spotbox {
 
 .calendar td a:focus, .timelist a:focus,
 .calendar td a:hover, .timelist a:hover {
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     color: white;
 }
 
 .calendar td a:active, .timelist a:active {
-    background-color: var(--dafo-blue);
+    background-color: rgb(28, 90, 136);
     color: white;
 }
 
@@ -1955,7 +1956,7 @@ ul.timelist, .timelist li {
 .datetimeshortcuts a,
 .calendarbox a,
 .clockbox a {
-    color: var(--dafo-blue);
+    color: rgb(28, 90, 136);
     text-decoration: none;
 }
 
