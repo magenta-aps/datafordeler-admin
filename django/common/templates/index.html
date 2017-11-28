@@ -56,6 +56,7 @@
                     <div onclick="toggleShow('konfiguration')" class="dropbtn">Konfiguration</div>
                     <span id="konfiguration" class="dropdown-content blue">
                         <a href="{% url 'dafoconfig:plugin-list' %}">Administrér registre</a>
+                        <a href="{% url 'dafoconfig:dump-list' %}">Administrér filhåndtering</a>
                         <a href="{% url 'dafousers:userprofile-list' %}">Liste over brugerprofiler</a>
                         <a href="{% url 'dafousers:userprofile-add' %}">Opret brugerprofil</a>
                     </span>
