@@ -35,13 +35,19 @@
                         <tr>
                             <td class="txtdata">{{ command.plugin }}</td>
                             <td class="txtdata">{{ command.received }}</td>
-                            <td class="txtdata"><button type="submit" name="sync_stop" value="{{ command.id }}">Afbryd</button></td>
+                            <td class="txtdata">
+                                <button type="submit" name="sync_stop" value="{{ command.id }}" class="row_field button blue">
+                                    <div class="flex-center">AFBRYD</div>
+                                </button>
+                            </td>
                         </tr>
                     {% endfor %}
                 </table>
             </form>
             <form method="get" action="{% url 'dafoconfig:plugin-pull' plugin %}">
-                <button href="">Opdatér</button>
+                <button href="" class="row_field button blue">
+                    <div class="flex-center">OPDATÉR</div>
+                </button>
             </form>
         {% elif latest %}
             Seneste synkronisering for {{ latest.plugin }}
