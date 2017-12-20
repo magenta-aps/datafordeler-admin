@@ -73,9 +73,9 @@ class CprConfig(models.Model):
     ]
 
     type_choices = [
-        (-1, u"Deaktiveret"),
-        (0, u"Lokal fil"),
-        (1, u"FTP-server")
+        (0, u"Deaktiveret"),
+        (1, u"Lokal fil"),
+        (2, u"FTP-server")
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
@@ -124,8 +124,8 @@ class CprConfig(models.Model):
 class CvrConfig(models.Model):
 
     type_choices = [
-        (-1, u"Deaktiveret"),
-        (1, u"HTTP-server")
+        (0, u"Deaktiveret"),
+        (2, u"HTTP-server")
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
