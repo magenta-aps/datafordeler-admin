@@ -2040,3 +2040,24 @@ ul.timelist, .timelist li {
   color: red;
   font-weight: bold;
 }
+
+#messages p {
+  border-radius: 3px;
+  border: 1px solid;
+  padding: 3px;
+}
+
+#messages p.success {
+  background-color: #60d060;
+  border-color: #008000;
+  background-image: url('../images/check-white.png');
+  background-repeat: no-repeat;
+  background-position-x: 5px;
+  background-position-y: 5px;
+  padding-left: 25px;
+}
+
+#messages p.failure {
+  background-color: #d06060;
+  border-color: #800000;
+}
