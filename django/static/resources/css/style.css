@@ -2057,7 +2057,22 @@ ul.timelist, .timelist li {
   padding-left: 25px;
 }
 
-#messages p.failure {
+#messages p.debug {
+  background-color: #606060;
+  border-color: #808080;
+}
+
+#messages p.info {
+  background-color: #6060d0;
+  border-color: #000080;
+}
+
+#messages p.warning {
+  background-color: #d0d060;
+  border-color: #808000;
+}
+
+#messages p.error {
   background-color: #d06060;
   border-color: #800000;
 }
