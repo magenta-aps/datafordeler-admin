@@ -38,11 +38,6 @@ class IndexView(TemplateView):
 
         return super(IndexView, self).dispatch(*args, **kwargs)
 
-
-class FrontpageView(TemplateView):
-    template_name = 'frontpage.html'
-
-
 class ErrorView(TemplateView):
     template_name = 'error.html'
 
@@ -238,6 +233,10 @@ class LoginView(TemplateView):
             return super(LoginView, self).get(request, *args, **kwargs)
         else:
             return result
+
+
+class FrontpageView(LoginRequiredMixin, TemplateView):
+    template_name = 'frontpage.html'
 
 
 class RstDocView(TemplateView):
