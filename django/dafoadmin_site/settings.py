@@ -33,7 +33,7 @@ DOC_STATIC_DIR = os.path.join(DOC_DIR, 'static')
 SECRET_KEY = '&k(5=@-3amupyw_67k)6rp-sj1p^x=lg)@i*_81w9jkrc_=i15'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
