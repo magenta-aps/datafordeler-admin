@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
+import re
 import tempfile
 
 from common.views import LoginRequiredMixin
@@ -581,13 +582,22 @@ def search_user_profile(request):
 class CertificateDownload(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         cert = models.Certificate.objects.get(pk=kwargs.get('pk'))
-        cert_date = cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S")
-        tmp_file = tempfile.TemporaryFile()
-        tmp_file.write(cert.certificate_blob)
-        tmp_file.seek(0)
-        resp = HttpResponse(tmp_file, content_type='application/x-pkcs12')
-        resp['Content-Disposition'] = (
-            "attachment; filename=cert_%s.p12" % cert_date
+        user = cert.certificateuser_set.last()
+        if user is None:
+            user = "cert"
+        else:
+            user = re.sub(r'[^\x00-\x7f]', '_', user.contact_email)
+        name_parts = [user]
+        if cert.valid_to:
+            name_parts.append(cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S"))
+
+        name = "_".join(name_parts)
+
+        resp = HttpResponse(
+            cert.certificate_blob,
+            content_type='application/x-pkcs12'
         )
-        print "attachment; filename=cert_%s.p12" % cert_date
+        resp['Content-Disposition'] = (
+            "attachment; filename=%s.p12" % name
+        )
         return resp
