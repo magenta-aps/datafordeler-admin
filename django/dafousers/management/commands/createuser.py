@@ -3,10 +3,13 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 import getpass
 
-from dafousers.models import PasswordUser
+from dafousers.models import PasswordUser, UserProfile
 
 
 class Command(base.BaseCommand):
+
+    # Must be the name of the admin profile created in initial migration
+    userprofile_name = "DAFO Administrator"
 
     @staticmethod
     def input(prompt=None):
@@ -61,7 +64,16 @@ class Command(base.BaseCommand):
             firstname=None, lastname=None,
             **kwargs
     ):
-        # Validate username from parameter
+
+        # Make sure to get a userprofile object to attach to the user
+        try:
+            userprofile = UserProfile.objects.get(name=self.userprofile_name)
+        except UserProfile.DoesNotExist:
+            print "Couldn't find userprofile '%s' to assign" % \
+                  self.userprofile_name
+            return
+
+            # Validate username from parameter
         if username is not None:
             username = username.strip()
             if not self.validate_username(username):
@@ -109,3 +121,8 @@ class Command(base.BaseCommand):
         user.changed_by = "Console command 'createuser'"
         user.save()
         print "User '%s' created" % username
+
+        user.user_profiles.add(userprofile)
+        user.save()
+        print "UserProfile '%s' added to User '%s'" % \
+              (userprofile.name, username)
