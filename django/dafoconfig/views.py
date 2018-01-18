@@ -78,6 +78,15 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
         else:
             return [{'items': self.get_form()}]
 
+    def form_valid(self, form):
+        response = super(PluginConfigurationView, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            "%s was updated by %s",
+            self.object.__class__.__name__,
+            self.request.user.username
+        )
+        return response
+
 
 class CvrPluginConfigurationView(PluginConfigurationView):
 
