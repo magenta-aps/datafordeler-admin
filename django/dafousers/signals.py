@@ -37,13 +37,13 @@ def on_post_save(sender, instance, created, **kwargs):
             verbose_contents = '\n'.join(content_list)
 
             logging.getLogger('django.server').info(
-                " ".join([
-                    "%s (id=%d) was",
-                    "created"
-                    "by %s",
-                    "\nContents:\n%s"
+                "\n".join([
+                    "%s %s (id=%d) was created by %s",
+                    "Contents:",
+                    "%s"
                 ]),
                 instance.__class__.__name__,
+                unicode(instance),
                 instance.id,
                 instance.changed_by,
                 verbose_contents
@@ -88,13 +88,13 @@ def on_post_save(sender, instance, created, **kwargs):
             verbose_difference = '\n'.join(diff_list)
 
             logging.getLogger('django.server').info(
-                " ".join([
-                    "%s (id=%d) was",
-                    "updated",
-                    "by %s",
-                    "\nUpdates:\n%s"
+                "\n".join([
+                    "%s %s (id=%d) was updated by %s",
+                    "Updates:",
+                    "%s"
                 ]),
                 instance.__class__.__name__,
+                unicode(instance),
                 instance.id,
                 instance.changed_by,
                 verbose_difference
