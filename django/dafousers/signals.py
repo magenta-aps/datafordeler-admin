@@ -71,7 +71,8 @@ def on_post_save(sender, instance, created, **kwargs):
                             relvalues2 = [
                                 unicode(x) for x in value2[relkey].all()
                             ]
-                            if len(relvalues1) > 0 or len(relvalues2) > 0:
+                            if (len(relvalues1) > 0 or len(relvalues2) > 0) \
+                                    and set(relvalues1) != set(relvalues2):
                                 diff_list.append(
                                     "    %s: %s => %s" % (
                                         relkey,
