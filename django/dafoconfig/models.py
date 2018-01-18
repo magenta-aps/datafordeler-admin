@@ -61,7 +61,18 @@ class CronField(fancy_cronfield.fields.CronField):
         return ' '.join(parts)
 
 
-class CprConfig(models.Model):
+class DafoConfig(object):
+
+    def get_field_dict(self):
+        own_fields = set([f.name for f in self.__class__._meta.get_fields()])
+        return {
+            field.name: getattr(self, field.name, None)
+            for field in self.__class__._meta.get_fields()
+            if field.name in own_fields
+        }
+
+
+class CprConfig(DafoConfig, models.Model):
 
     charset_choices = [
         (0, "US-ASCII"),
@@ -127,7 +138,7 @@ class CprConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af CPR-registre'
 
 
-class CvrConfig(models.Model):
+class CvrConfig(DafoConfig, models.Model):
 
     type_choices = [
         (0, u"Deaktiveret"),
@@ -171,7 +182,7 @@ class CvrConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af CVR-registre'
 
 
-class GladdregConfig(models.Model):
+class GladdregConfig(DafoConfig, models.Model):
     id = models.CharField(primary_key=True, max_length=255)
     pullcronschedule = CronField(null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
     registeraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Registeradresse")
@@ -185,7 +196,7 @@ class GladdregConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af Adresseopslagsregistre'
 
 
-class DumpConfig(models.Model):
+class DumpConfig(DafoConfig, models.Model):
     class Meta:
         managed = False
         database = 'configuration'
