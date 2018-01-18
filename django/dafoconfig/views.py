@@ -286,11 +286,48 @@ class DumpCreate(LoginRequiredMixin, CreateView):
         elif action == '_addanother':
             return reverse('dafoconfig:dump-add')
 
+    def form_valid(self, form):
+        response = super(DumpCreate, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            '\n'.join([
+                "%s (id=%d) was created by %s",
+                'Contents:',
+                "%s"
+            ]),
+            self.object.__class__.__name__,
+            self.object.id,
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value)
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
+        )
+        return response
 
 class DumpEdit(LoginRequiredMixin, UpdateView):
     model = DumpConfig
     form_class = DumpConfigurationForm
     template_name = 'dump/edit.html'
+
+    def form_valid(self, form):
+        response = super(DumpEdit, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            '\n'.join([
+                "%s (id=%d) was updated by %s",
+                'Contents:',
+                "%s"
+            ]),
+            self.object.__class__.__name__,
+            self.object.id,
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value)
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
+        )
+        return response
 
 
 class DumpList(LoginRequiredMixin, ListView):
@@ -308,3 +345,14 @@ class DumpDelete(LoginRequiredMixin, DeleteView):
         context = super(DumpDelete, self).get_context_data(**kwargs)
         context.update(fields=model_to_dict(self.object))
         return context
+
+    def delete(self, request, *args, **kwargs):
+        id = self.get_object().id
+        response = super(DumpDelete, self).delete(request, *args, **kwargs)
+        logging.getLogger('django.server').info(
+            "%s (id=%d) was deleted by %s",
+            self.model.__name__,
+            id,
+            self.request.user.username
+        )
+        return response
