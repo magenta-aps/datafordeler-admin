@@ -78,9 +78,18 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         response = super(PluginConfigurationView, self).form_valid(form)
         logging.getLogger('django.server').info(
-            "%s was updated by %s",
+            '\n'.join([
+                "%s was updated by %s",
+                "Contents:",
+                "%s"
+            ]),
             self.object.__class__.__name__,
-            self.request.user.username
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value if 'password' not in field else '******')
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
         )
         return response
 
