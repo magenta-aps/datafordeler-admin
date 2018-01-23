@@ -83,8 +83,20 @@ def on_post_save(sender, instance, created, **kwargs):
                     else:
                         if 'password' in key:
                             value1 = value2 = '******'
+                        if value1 is not None:
+                            try:
+                                value1 = unicode(value1)
+                            except UnicodeDecodeError:
+                                value1 = value1.encode("string_escape")
+                        if value2 is not None:
+                            try:
+                                value2 = unicode(value2)
+                            except UnicodeDecodeError:
+                                value2 = value2.encode("string_escape")
                         diff_list.append(
-                            "    %s: %s => %s" % (key, value1, value2)
+                            "    %s: %s => %s" % (
+                                key, value1, value2
+                            )
                         )
             verbose_difference = '\n'.join(diff_list)
 

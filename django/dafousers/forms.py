@@ -122,6 +122,8 @@ class IdentityProviderAccountForm(AccessAccountForm):
             if xml_root.get('entityID') is None:
                 raise ValidationError('Metadata-filen er i forkert format')
 
+        return metadata_xml_file
+
 
 class UserProfileForm(forms.ModelForm):
 
