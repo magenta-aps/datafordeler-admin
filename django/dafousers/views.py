@@ -603,3 +603,9 @@ class CertificateDownload(LoginRequiredMixin, View):
             "attachment; filename=%s.p12" % name
         )
         return resp
+
+
+class DatabaseCheckView(View):
+    def get(self, request, *args, **kwargs):
+        count = models.PasswordUser.objects.count()
+        return HttpResponse()
