@@ -100,7 +100,7 @@ urlpatterns = [
 
     # MONITORING HANDLES
     url(r'^monitor/dafousers/database/?$',
-        dafo_views.DatabaseCheckView,
+        dafo_views.DatabaseCheckView.as_view(),
         name='monitoring_users_database'),
 
 ]
