@@ -41,7 +41,7 @@
                 {% block top_menus %}
                 {% if request.user.is_authenticated %}
                 <div class="menu">
-                    <div onclick="toggleShow('adgang')" class="dropbtn">Adgang</div>
+                    <div onclick="toggleMenu('#adgang')" onmouseover="hoverMenu('#adgang')" class="dropbtn">Adgang</div>
                     <span id="adgang" class="dropdown-content blue">
                         <a href="{% url 'dafousers:identityprovideraccount-add' %}">Opret organisation</a>
                         <a href="{% url 'dafousers:passworduser-add' %}">Opret bruger</a>
@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="menu">
-                    <div onclick="toggleShow('konfiguration')" class="dropbtn">Konfiguration</div>
+                    <div onclick="toggleMenu('#konfiguration')" onmouseover="hoverMenu('#konfiguration')" class="dropbtn">Konfiguration</div>
                     <span id="konfiguration" class="dropdown-content blue">
                         <a href="{% url 'dafoconfig:plugin-list' %}">Administrér registre</a>
                         <a href="{% url 'dafoconfig:dump-list' %}">Administrér filhåndtering</a>
