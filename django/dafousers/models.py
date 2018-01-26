@@ -913,4 +913,75 @@ class UpdateTimestamps(models.Model):
         item.save()
 
 
+class IssuedToken(models.Model):
+
+    class Meta:
+        verbose_name = _(u"Udstedt token")
+        verbose_name_plural = _(u"Udstedte tokens")
+
+    access_account = models.ForeignKey(
+        'AccessAccount',
+        verbose_name=_(u'Udstedt til konto'),
+        null=True,
+        default=None
+    )
+    issued_time = models.DateTimeField(
+        verbose_name=_(u'Udstedelsestidspunkt'),
+        null=True,
+        default=None,
+    )
+    token_data = models.TextField(
+        verbose_name=_(u'Token data'),
+        null=True,
+        blank=True
+    )
+    token_nameid = models.CharField(
+        verbose_name=_(u'Token NameID'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    token_on_behalf_of = models.CharField(
+        verbose_name=_(u'Token OnBehalfOf'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    error_message = models.TextField(
+        verbose_name=_(u'Eventuel fejlbesked'),
+        null=True,
+        blank=True,
+    )
+
+    # Data for identifying the requestor
+    request_service_url = models.CharField(
+        verbose_name=_(u'Udstedt via URL'),
+        max_length=2048,
+        null=True,
+        blank=True,
+    )
+    client_ip = models.CharField(
+        verbose_name=_(u'Ip på klient'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    client_user_agent = models.CharField(
+        verbose_name=_(u'User-Agent på klient'),
+        max_length=1024,
+        null=True,
+        blank=True,
+    )
+
+    def __unicode__(self):
+        if self.token_nameid:
+            if self.issued_time:
+                return "#%s, %s, %s" % (
+                    self.pk, self.token_nameid, str(self.issued_time)[0:19]
+                )
+            else:
+                return "#%s: %s" % (self.pk, self.token_nameid)
+        else:
+            return "IssuedToken #%s" % self.pk
+
 fix_sql_server_schemas()
