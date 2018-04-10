@@ -50,3 +50,26 @@ For at logge ud af DAFO Admin klikkes på "Log ud" knappen i øverste højre
 hjørne. Vær opmærksom på at dette kun logger ud af DAFO Admin og ikke ud fra
 en eventuel ekstern IdP brugt ved login via organisation.
 
+Genskabelse af mistet adgang
+----------------------------
+
+Hvis man bliver lukket ud af systemet enten på grund af en mistet adgangskode
+eller fordi man mister tilknytningen til rollen ``DAFO Administrator`` er det
+muligt at genskabe adgangen via Djangos indbyggede konsolværktøjer.
+
+Der er oprettet følgende konsolkommandoer der aktiveres via manage.py scriptet
+i roden af Django-projektet for løsningen:
+
+* ``python manage.py createuser`` - Opretter en ny superbruger
+* ``python manage.py edituser`` - Skifter password for en eksisterende bruger.
+
+Det kan være nødvendigt at aktivere det virtualenv løsningen bruger før man
+kan køre manage.py scriptet. Dette kan gøres via genvejen
+``Command Line DjangoEnv`` der findes i roden af projektet.
+
+Begge kommandoer vil interaktivt spørge brugeren om nødvendige informationer
+hvis de ikke angives via kommandolinieparametre. Hvilke kommandolinieparametre
+der understøttes kan vises ved at køre kommandoen med argumentet ``--help``:
+
+* ``python manage.py createuser --help``
+* ``python manage.py edituser --help``
