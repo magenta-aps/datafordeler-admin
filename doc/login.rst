@@ -60,7 +60,8 @@ muligt at genskabe adgangen via Djangos indbyggede konsolværktøjer.
 Der er oprettet følgende konsolkommandoer der aktiveres via manage.py scriptet
 i roden af Django-projektet for løsningen:
 
-* ``python manage.py createuser`` - Opretter en ny superbruger
+* ``python manage.py createuser`` - Opretter en ny superbruger med
+  ``DAFO Administrator`` rollen tilknyttet.
 * ``python manage.py edituser`` - Skifter password for en eksisterende bruger.
 
 Det kan være nødvendigt at aktivere det virtualenv løsningen bruger før man
@@ -73,3 +74,7 @@ der understøttes kan vises ved at køre kommandoen med argumentet ``--help``:
 
 * ``python manage.py createuser --help``
 * ``python manage.py edituser --help``
+
+Hvis den eksisterende superbruger har mistet sin adgang til 
+``DAFO Administrator`` vil det være nødvendigt at lave en ny (midlertidig)
+superbruger og logge ind med denne for at genoprette den oprindelige adgang.
