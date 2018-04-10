@@ -51,7 +51,13 @@
                 <div class="row_field">IdP metadata-fil</div>
             </div>
             <div class="row">
-                <div class="row_field">{{ form.idp_type }}</div>
+                <div class="row_field">
+                    {% if form.idp_type %}
+                        {{ form.idp_type }}
+                    {% else %}
+                        {{ view.model.CONSTANTS.idp_type_choices.1.1 }}
+                    {% endif %}
+                </div>
                 <div class="row_field">{{ form.metadata_xml_file }}</div>
             </div>
 

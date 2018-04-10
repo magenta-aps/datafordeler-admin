@@ -303,8 +303,15 @@ class CertificateUserListTable(AccessAccountListTable):
 
 class IdentityProviderAccountCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/identityprovideraccount/add.html'
-    form_class = forms.IdentityProviderAccountForm
     model = models.IdentityProviderAccount
+
+    def get_form_class(self):
+        if self.request.user.dafoauthinfo.has_user_profile(
+            "DAFO Administrator"
+        ):
+            return forms.IdentityProviderAccountForm
+        else:
+            return forms.IdentityProviderAccountFormRestricted
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
@@ -364,8 +371,15 @@ class IdentityProviderAccountHistory(LoginRequiredMixin, ListView):
 class IdentityProviderAccountEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/identityprovideraccount/edit.html'
     model = models.IdentityProviderAccount
-    form_class = forms.IdentityProviderAccountForm
     success_url = '/organisation/list/'
+
+    def get_form_class(self):
+        if self.request.user.dafoauthinfo.has_user_profile(
+            "DAFO Administrator"
+        ):
+            return forms.IdentityProviderAccountForm
+        else:
+            return forms.IdentityProviderAccountFormRestricted
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username

@@ -125,6 +125,20 @@ class IdentityProviderAccountForm(AccessAccountForm):
         return metadata_xml_file
 
 
+class IdentityProviderAccountFormRestricted(IdentityProviderAccountForm):
+    """
+    A version of the IdentityProviderAccountForm that does not allow changing
+    of IdP-type
+    """
+
+    class Meta:
+        model = models.IdentityProviderAccount
+        fields = [
+            x for x in IdentityProviderAccountForm.Meta.fields
+            if x != 'idp_type'
+        ]
+
+
 class UserProfileForm(forms.ModelForm):
 
     system_roles = forms.ModelMultipleChoiceField(

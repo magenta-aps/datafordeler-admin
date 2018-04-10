@@ -48,7 +48,13 @@
                 <div class="row_field">Metadata-xml-fil</div>
             </div>
             <div class="row">
-                <div class="row_field">{{ form.idp_type }}</div>
+                <div class="row_field">
+                    {% if form.idp_type %}
+                        {{ form.idp_type }}
+                    {% else %}
+                        {{ object.get_idp_type_display }}
+                    {% endif %}
+                </div>
                 <div class="row_field">{{ form.metadata_xml_file }}</div>
             </div>
 
