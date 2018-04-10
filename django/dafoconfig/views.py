@@ -1,37 +1,34 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 import re
+import re
+from datetime import datetime
 
 import requests
-from django.forms import model_to_dict
-
+import requests
 from common.views import LoginRequiredMixin
-from datetime import datetime
+from django.forms import model_to_dict
+from django.shortcuts import redirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
-
-from django.views.generic.edit import UpdateView, DeleteView
-
-from .forms import CvrConfigurationForm, CprConfigurationForm, \
-    GladdrregConfigurationForm
-from .models import CvrConfig, CprConfig, GladdregConfig, Command
 from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import UpdateView, DeleteView
 from django.views.generic.list import ListView
-from django.shortcuts import redirect
-import logging
-import re
-import requests
 
-# from dafoadmin.dafousers.views import LoginRequiredMixin
-from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
 from .forms import (
     CvrConfigurationForm,
     CprConfigurationForm,
     DumpConfigurationForm,
     GladdrregConfigurationForm,
 )
+from .forms import CvrConfigurationForm, CprConfigurationForm, \
+    GladdrregConfigurationForm
+# from dafoadmin.dafousers.views import LoginRequiredMixin
+from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
+from .models import CvrConfig, CprConfig, GladdregConfig, Command
 
 logger = logging.getLogger('django.server')
 
@@ -197,7 +194,6 @@ class PluginPullView(LoginRequiredMixin, TemplateView):
         latest_pulls = self.get_pull_summary(self.get_plugin(), 'latest')
         command = latest_pulls[0] if len(latest_pulls) > 0 else None
         if command is not None:
-            print command.status
             status['latest'] = {
                 'plugin': command.commandbody_json['plugin'],
                 'id': command.id,

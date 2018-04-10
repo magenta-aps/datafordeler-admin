@@ -32,6 +32,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                 if x.status != status:
                     x.status = status
                     # Save user to trigger history update
+                    x.changed_by = self.request.user.username
                     x.save()
             return HttpResponse('Statusser er blevet opdateret.')
         elif action == '_add_user_profiles':
@@ -48,6 +49,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                         changed = True
                 if changed:
                     # Save user to trigger history update
+                    user.changed_by = self.request.user.username
                     user.save()
 
         return HttpResponse('Tildelte brugerprofiler er blevet opdateret.')
