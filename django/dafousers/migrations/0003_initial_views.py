@@ -16,7 +16,7 @@ def get_sql():
         return ["SELECT (1)"]
 
     # Filname is same as this script with extension replaced with .sql
-    filename = __file__[:__file__.index(".")] + ".sql"
+    filename = __file__[:__file__.rfind(".")] + ".sql"
     f = codecs.open(filename, 'r', encoding="utf8")
     contents = "".join(f.readlines())
     f.close()

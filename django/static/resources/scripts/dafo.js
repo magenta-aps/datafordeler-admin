@@ -2,6 +2,7 @@ var DAFO = window.DAFO || {};
 
 (function($, w, DAFO) {
 
+
     // Close the dropdown if the user clicks outside of it
     w.onclick = function(event) {
         if (event.target.closest('.dropbtn') === null &&
@@ -116,6 +117,8 @@ var DAFO = window.DAFO || {};
 
 
     $(document).ready(function() {
+
+
 
         addEvent(window, 'load', function(e) {
 
