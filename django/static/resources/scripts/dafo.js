@@ -246,7 +246,29 @@ var DAFO = window.DAFO || {};
                 }
             })
             .on("click", "#create_new_certificate", function () {
+
                 toggleShow("new-certificate-box");
+
+                // $("new-certificate-box").show();
+
+                //if (  $("new-certificate-box").length == 0 ){
+                if ($('input:checkbox[name=create_new_certificate]').attr('unchecked',true)){
+                    // element is hidden
+                console.log("cer: "+$("new-certificate-box").length);
+                    //alert("Element Exist");
+                    $("#new-certificate-box").css("display", "block");
+                    var shown = true;
+                }else if (shown == true){
+                alert("Shown");
+
+                    $("#new-certificate-box").css("display", "none");
+                }
+
+
+
+               /* */
+
+
             })
 
             .on("click", "#id_certificates_download", function () {
