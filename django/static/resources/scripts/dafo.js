@@ -201,23 +201,6 @@ var DAFO = window.DAFO || {};
         });
 
 
-        //---
-
-
-
-     /*   $(".content").on("click", "#create_new_certificate", function () {
-            if (  $("certificateuser_form").length > 0 ) {
-
-                alert("there is a form");
-            }
-            if (  $("new-certificate-box").length == 0 ){
-                // element is hidden
-               // $("new-certificate-box").show();
-                alert("Element Exist");
-            }else { alert("Element Exist do not exist.");}
-
-        })*/
-
         $(".content")
             .on("click", ".ordering", function () {
                 var element = $(this)[0].children[0];
