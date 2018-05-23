@@ -14,13 +14,24 @@ var DAFO = window.DAFO || {};
         }
     };
 
+    w.closeElementsByClassName = function(className) {
+        var elements = document.getElementsByClassName(className);
+        var i;
+        for (i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            if (element.classList.contains('show')) {
+                element.classList.remove('show');
+            }
+        }
+    };
+
     w.closeDropDowns = function() {
-        $(".dropdown-content").hide();
+        closeElementsByClassName("dropdown-content");
     };
 
     w.closePopups = function() {
-        $("#lightbox").hide();
-        $(".popup").hide();
+        toggleShow("lightbox");
+        closeElementsByClassName("popup");
     };
 
     w.onkeydown = function(evt) {
@@ -31,9 +42,15 @@ var DAFO = window.DAFO || {};
         }
     };
 
+    /* When the user clicks on the button,
+    toggle between hiding and showing the dropdown content */
+    w.toggleShow = function(id) {
+        document.getElementById(id).classList.toggle("show");
+    };
+
     w.showPopup = function(popupId) {
-        $('#'+popupId).show();
-        $("#lightbox").show();
+        toggleShow(popupId);
+        toggleShow("lightbox");
     };
 
     w.show = function(id) {
@@ -53,40 +70,6 @@ var DAFO = window.DAFO || {};
         var new_pw = Password.generate(16);
         document.getElementById("id_password").value = new_pw;
         document.getElementById("password_display").innerHTML = new_pw;
-    };
-
-    w.menuOpen = null;
-    w.openMenu = function(item) {
-        var menu = $(item);
-        if (menu.length) {
-            menu.show();
-            if (w.menuOpen && !w.menuOpen.is(menu)) {
-                w.menuOpen.hide();
-            }
-            w.menuOpen = menu;
-        }
-    };
-    w.closeMenu = function(item) {
-        var menu = $(item);
-        if (menu.length) {
-            menu.hide();
-            w.menuOpen = null;
-        }
-    };
-    w.toggleMenu = function(item) {
-        var opened = w.menuOpen;
-        if (w.menuOpen) {
-            w.closeMenu(w.menuOpen);
-        }
-        if (!opened || !opened.is(item)) {
-            w.openMenu(item);
-        }
-    };
-    w.hoverMenu = function(item) {
-        var menu = $(item);
-        if (menu.length && w.menuOpen) {
-            w.openMenu(menu);
-        }
     };
 
     var Password = {
@@ -200,7 +183,6 @@ var DAFO = window.DAFO || {};
 
         });
 
-
         $(".content")
             .on("click", ".ordering", function () {
                 var element = $(this)[0].children[0];
@@ -229,31 +211,8 @@ var DAFO = window.DAFO || {};
                 }
             })
             .on("click", "#create_new_certificate", function () {
-
                 toggleShow("new-certificate-box");
-
-                // $("new-certificate-box").show();
-
-                //if (  $("new-certificate-box").length == 0 ){
-                if ($('input:checkbox[name=create_new_certificate]').attr('unchecked',true)){
-                    // element is hidden
-                console.log("cer: "+$("new-certificate-box").length);
-                    //alert("Element Exist");
-                    $("#new-certificate-box").css("display", "block");
-                    var shown = true;
-                }else if (shown == true){
-                alert("Shown");
-
-                    $("#new-certificate-box").css("display", "none");
-                }
-
-
-
-               /* */
-
-
             })
-
             .on("click", "#id_certificates_download", function () {
                 var certificates = document.getElementById("id_certificates_to");
                 for (i=0; i<certificates.options.length; i++) {
@@ -294,7 +253,7 @@ var DAFO = window.DAFO || {};
             var filter = filterElement.value;
 
             if(order !== "*")
-            var query = orderKey + "=" + order;
+                var query = orderKey + "=" + order;
 
             if(filter !== "*")
                 query += "&" + filterKey + "=" + filter;
@@ -340,21 +299,6 @@ var DAFO = window.DAFO || {};
                 }
             });
         }
-		
-		if (!Element.prototype.matches)
-    Element.prototype.matches = Element.prototype.msMatchesSelector || 
-                                Element.prototype.webkitMatchesSelector;
-
-if (!Element.prototype.closest)
-    Element.prototype.closest = function(s) {
-        var el = this;
-        if (!document.documentElement.contains(el)) return null;
-        do {
-            if (el.matches(s)) return el;
-            el = el.parentElement;
-        } while (el !== null); 
-        return null;
-    };
     });
 
 })(django.jQuery, window, DAFO);
