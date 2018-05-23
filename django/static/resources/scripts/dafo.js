@@ -2,6 +2,7 @@ var DAFO = window.DAFO || {};
 
 (function($, w, DAFO) {
 
+
     // Close the dropdown if the user clicks outside of it
     w.onclick = function(event) {
         if (event.target.closest('.dropbtn') === null &&
@@ -134,6 +135,8 @@ var DAFO = window.DAFO || {};
 
     $(document).ready(function() {
 
+
+
         addEvent(window, 'load', function(e) {
 
             if ($('#id_certificates_to').length > 0 && $('#id_current_time').length > 0) {
@@ -197,6 +200,24 @@ var DAFO = window.DAFO || {};
 
         });
 
+
+        //---
+
+
+
+     /*   $(".content").on("click", "#create_new_certificate", function () {
+            if (  $("certificateuser_form").length > 0 ) {
+
+                alert("there is a form");
+            }
+            if (  $("new-certificate-box").length == 0 ){
+                // element is hidden
+               // $("new-certificate-box").show();
+                alert("Element Exist");
+            }else { alert("Element Exist do not exist.");}
+
+        })*/
+
         $(".content")
             .on("click", ".ordering", function () {
                 var element = $(this)[0].children[0];
@@ -225,8 +246,9 @@ var DAFO = window.DAFO || {};
                 }
             })
             .on("click", "#create_new_certificate", function () {
-                $("new-certificate-box").show();
+                toggleShow("new-certificate-box");
             })
+
             .on("click", "#id_certificates_download", function () {
                 var certificates = document.getElementById("id_certificates_to");
                 for (i=0; i<certificates.options.length; i++) {
