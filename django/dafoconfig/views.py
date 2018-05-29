@@ -3,32 +3,25 @@
 import json
 import logging
 import re
-import re
 from datetime import datetime
 
-import requests
-import requests
 from common.views import LoginRequiredMixin
 from django.forms import model_to_dict
 from django.shortcuts import redirect
-from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView
 from django.views.generic.edit import UpdateView, DeleteView
 from django.views.generic.list import ListView
 
-from .forms import (
-    CvrConfigurationForm,
-    CprConfigurationForm,
-    DumpConfigurationForm,
-    GladdrregConfigurationForm,
-)
 from .forms import CvrConfigurationForm, CprConfigurationForm, \
     GladdrregConfigurationForm
-# from dafoadmin.dafousers.views import LoginRequiredMixin
-from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
+from .forms import (
+    DumpConfigurationForm,
+)
 from .models import CvrConfig, CprConfig, GladdregConfig, Command
+# from dafoadmin.dafousers.views import LoginRequiredMixin
+from .models import DumpConfig
 
 logger = logging.getLogger('django.server')
 
