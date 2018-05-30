@@ -14,11 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from common import views as common_views
 from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
-
-from common import views as common_views
 
 # root_redirect = RedirectView.as_view(
 #     url=reverse_lazy('admin:index'),

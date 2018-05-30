@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.dispatch import receiver
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.dispatch import receiver
 
 
 @receiver(user_logged_in)
