@@ -14,13 +14,10 @@ from django.views.generic.edit import CreateView
 from django.views.generic.edit import UpdateView, DeleteView
 from django.views.generic.list import ListView
 
-from .forms import CvrConfigurationForm, CprConfigurationForm, \
-    GladdrregConfigurationForm
-from .forms import (
-    DumpConfigurationForm,
-)
+from .forms import CvrConfigurationForm, CprConfigurationForm
+from .forms import DumpConfigurationForm
+from .forms import GladdrregConfigurationForm
 from .models import CvrConfig, CprConfig, GladdregConfig, Command
-# from dafoadmin.dafousers.views import LoginRequiredMixin
 from .models import DumpConfig
 
 logger = logging.getLogger('django.server')

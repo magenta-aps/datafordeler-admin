@@ -4,8 +4,6 @@
 import os
 import urllib
 
-from django.shortcuts import render_to_response
-
 from dafousers.auth import update_user_auth_info
 from dafousers.models import IdentityProviderAccount
 from django.conf import settings
