@@ -182,6 +182,50 @@ class CvrConfig(DafoConfig, models.Model):
         verbose_name_plural = 'Konfigurationer af CVR-registre'
 
 
+class GeoConfig(DafoConfig, models.Model):
+
+    type_choices = [
+        (0, u"Deaktiveret"),
+        (1, u"Lokal fil"),
+        (2, u"HTTP-server")
+    ]
+
+    id = models.CharField(primary_key=True, max_length=255)
+    pullcronschedule = CronField(
+        max_length=255, null=True,
+        verbose_name=u"Cron-udtryk for automatisk synkronisering"
+    )
+
+    municipalityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    municipalityurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    postcoderegistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    postcodeurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    localityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    localityurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    roadregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    roadurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    buildingregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    buildingurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    accessaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    accessaddressurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    unitaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    unitaddressurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    class Meta:
+        managed = False
+        database = 'configuration'
+        db_table = 'geo_config'
+
+        verbose_name = 'Konfiguration af GEO-register'
+        verbose_name_plural = 'Konfigurationer af GEO-registre'
+
+
 class GladdregConfig(DafoConfig, models.Model):
     id = models.CharField(primary_key=True, max_length=255)
     pullcronschedule = CronField(null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
@@ -273,6 +317,7 @@ class DumpConfig(DafoConfig, models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Command(models.Model):
 
