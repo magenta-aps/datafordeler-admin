@@ -18,6 +18,11 @@ urlpatterns = [
         name='plugin-cpr-edit'
     ),
     url(
+        r'^plugin/geo/config/?$',
+        dafo_views.GeoPluginConfigurationView.as_view(),
+        name='plugin-geo-edit'
+    ),
+    url(
         r'^plugin/gladdrreg/config/?$',
         dafo_views.GladdregPluginConfigurationView.as_view(),
         name='plugin-gladdrreg-edit'

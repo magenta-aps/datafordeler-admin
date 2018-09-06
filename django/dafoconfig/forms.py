@@ -3,7 +3,8 @@
 from django.forms import ModelForm as ModelForm
 from django.forms.widgets import Textarea
 
-from .models import CvrConfig, CprConfig, GladdregConfig
+from .models import CvrConfig, CprConfig, GeoConfig
+from .models import DumpConfig, GladdregConfig, Command
 
 
 class ConfigurationForm(ModelForm):
@@ -29,6 +30,13 @@ class CprConfigurationForm(ConfigurationForm):
 
     class Meta:
         model = CprConfig
+        exclude = ['id']
+
+
+class GeoConfigurationForm(ConfigurationForm):
+
+    class Meta:
+        model = GeoConfig
         exclude = ['id']
 
 

@@ -10,9 +10,13 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
 
-from .forms import CvrConfigurationForm, CprConfigurationForm, \
-    GladdrregConfigurationForm
-from .models import CvrConfig, CprConfig, GladdregConfig, Command
+from .forms import CvrConfigurationForm, CprConfigurationForm
+from .forms import DumpConfigurationForm
+from .forms import GladdrregConfigurationForm
+from .models import CvrConfig, CprConfig, GeoConfig, GladdregConfig, Command
+from .models import DumpConfig
+
+logger = logging.getLogger('django.server')
 
 
 class PluginConfigurationView(LoginRequiredMixin, UpdateView):
@@ -76,6 +80,16 @@ class CprPluginConfigurationView(PluginConfigurationView):
     sectioned = True
 
 
+class GeoPluginConfigurationView(PluginConfigurationView):
+
+    model = GeoConfig
+    form_class = CprConfigurationForm
+    template_name = 'form.html'
+    plugin_name = 'GEO'
+    sectioned = True
+
+
+
 class GladdregPluginConfigurationView(PluginConfigurationView):
 
     model = GladdregConfig
@@ -100,6 +114,11 @@ class PluginListTable(LoginRequiredMixin, TemplateView):
                 'name': 'CPR',
                 'configlink': reverse('dafoconfig:plugin-cpr-edit'),
                 'synclink': reverse('dafoconfig:plugin-pull', args=['cpr'])
+            },
+            {
+                'name': 'GEO',
+                'configlink': reverse('dafoconfig:plugin-geo-edit'),
+                'synclink': reverse('dafoconfig:plugin-pull', args=['geo'])
             },
             {
                 'name': 'Gladdrreg',
