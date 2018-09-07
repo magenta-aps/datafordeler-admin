@@ -157,6 +157,9 @@ class CvrConfig(DafoConfig, models.Model):
     companyregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
     companyregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
     companyregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
+    companyregisterdirectlookupcertificate = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Certifikat til direkte lookup")
+    companyregisterdirectlookuppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password til certifikat")
+    companyregisterdirectlookupaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Adresse til direkte lookup")
 
     companyunitregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     companyunitregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
@@ -171,6 +174,9 @@ class CvrConfig(DafoConfig, models.Model):
     participantregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
     participantregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
     participantregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
+    participantregisterdirectlookupcertificate = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Certifikat til direkte lookup")
+    participantregisterdirectlookuppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password til certifikat")
+    participantregisterdirectlookupaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Adresse til direkte lookup")
 
 
     class Meta:
