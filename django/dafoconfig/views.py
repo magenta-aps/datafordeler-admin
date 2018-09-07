@@ -16,7 +16,7 @@ from django.views.generic.list import ListView
 
 from .forms import CvrConfigurationForm, CprConfigurationForm
 from .forms import DumpConfigurationForm
-from .forms import GladdrregConfigurationForm
+from .forms import GladdrregConfigurationForm, GeoConfigurationForm
 from .models import CvrConfig, CprConfig, GeoConfig, GladdregConfig, Command
 from .models import DumpConfig
 
@@ -105,7 +105,7 @@ class CprPluginConfigurationView(PluginConfigurationView):
 class GeoPluginConfigurationView(PluginConfigurationView):
 
     model = GeoConfig
-    form_class = CprConfigurationForm
+    form_class = GeoConfigurationForm
     template_name = 'form.html'
     plugin_name = 'GEO'
     sectioned = True
