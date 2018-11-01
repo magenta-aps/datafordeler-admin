@@ -190,32 +190,43 @@ class GeoConfig(DafoConfig, models.Model):
         (2, u"HTTP-server")
     ]
 
+    charset_choices = [
+        (0, u"UTF-8"),
+        (1, u"ISO_8859_1")
+    ]
+
     id = models.CharField(primary_key=True, max_length=255)
     pullcronschedule = CronField(
         max_length=255, null=True,
         verbose_name=u"Cron-udtryk for automatisk synkronisering"
     )
 
+    tokenService = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Tokenservice")
+    username = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
+    password = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
+
+    charsetName = models.IntegerField(blank=True, null=True, verbose_name=u"Karaktersæt", choices=charset_choices)
+
     municipalityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    municipalityurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    municipalityregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     postcoderegistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    postcodeurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    postcoderegisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     localityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    localityurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    localityregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     roadregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    roadurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    roadregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     buildingregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    buildingurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    buildingregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     accessaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    accessaddressurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    accessaddressregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     unitaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
-    unitaddressurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+    unitaddressregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
 
     class Meta:
         managed = False
