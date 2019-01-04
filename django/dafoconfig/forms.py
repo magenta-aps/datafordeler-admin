@@ -12,14 +12,29 @@ from .models import DumpConfig, GladdregConfig, Command
 
 class ConfigurationForm(ModelForm):
 
+    password_placeholder = '********'
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
         super(ConfigurationForm, self).__init__(*args, **kwargs)
+        for field_name in self.initial:
+            if 'password' in field_name:
+                self.initial[field_name] = self.password_placeholder
 
     def _cronfield_changed(self):
         return any(isinstance(self.instance._meta.get_field(field_name),
                               fancy_cronfield.fields.CronField)
                    for field_name in self.changed_data)
+
+    def clean(self):
+        cleaned_data = super(ConfigurationForm, self).clean()
+        real_clean = {}
+        for name, data in cleaned_data:
+            if 'password' in name:
+                if data == self.password_placeholder:
+                    continue
+            real_clean[name] = data
+        return real_clean
 
     def save(self, commit=True):
         instance = super(ConfigurationForm, self).save(commit)
