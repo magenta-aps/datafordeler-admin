@@ -1,5 +1,7 @@
 import dafousers.views as dafo_views
+from django.conf import settings
 from django.conf.urls import url
+from django.views.generic import RedirectView
 
 urlpatterns = [
 
@@ -98,6 +100,10 @@ urlpatterns = [
         dafo_views.search_user_profile,
         name='search_user_profile'),
 
+    # Documentation link
+    url(r'^documentation-site/?$',
+        RedirectView.as_view(url=settings.ADMIN_HELP_LINK),
+        name='documentation-site'),
     # MONITORING HANDLES
     url(r'^monitor/dafousers/database/?$',
         dafo_views.DatabaseCheckView.as_view(),

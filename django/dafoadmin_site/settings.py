@@ -108,7 +108,7 @@ DATABASES = {
 
 DATABASE_ROUTERS = ['dafoadmin_site.routers.ModelDatabaseRouter']
 
-
+ADMIN_HELP_LINK = "https://doc.data.gl/"
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
