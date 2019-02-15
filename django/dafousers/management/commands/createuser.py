@@ -2,6 +2,7 @@ from django.core.management import base
 from django.core.exceptions import ValidationError
 from django.core import validators
 import getpass
+import sys
 
 from dafousers.models import PasswordUser, UserProfile
 
@@ -15,7 +16,12 @@ class Command(base.BaseCommand):
     def input(prompt=None):
         import sys
         if sys.version_info[0] < 3:
-            return raw_input(prompt)
+            value = raw_input(prompt)
+            try:
+                value = value.decode(sys.stdin.encoding)
+            except:
+                pass
+            return value
         else:
             return input(prompt)
 
