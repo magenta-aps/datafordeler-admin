@@ -11,17 +11,26 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.views import _get_login_redirect_url
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.http import HttpResponseRedirect
+from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.utils.http import is_safe_url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import TemplateView
+
+# Re-implement _get_login_redirect_url since it disappeared in
+# Django 1.11
+def _get_login_redirect_url(request, redirect_to):
+    # Ensure the user-originating redirection URL is safe.
+    if not is_safe_url(url=redirect_to, host=request.get_host()):
+        return resolve_url(settings.LOGIN_REDIRECT_URL)
+    return redirect_to
 
 
 class IndexView(TemplateView):
