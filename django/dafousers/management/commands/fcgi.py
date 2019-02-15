@@ -31,19 +31,19 @@
 
 __author__ = 'Allan Saddi <allan@saddi.com>, Ruslan Keba <ruslan@helicontech.com>, Antoine Martin <antoine@openance.com>'
 
-import msvcrt
-import struct
+import datetime
+import logging
 import os
 import os.path
-import logging
+import struct
 import sys
 import traceback
-import datetime
 import urllib
 from optparse import OptionParser
-from django.core.management.base import BaseCommand
-from django.conf import settings
 
+import msvcrt
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
 # Constants from the spec.
 

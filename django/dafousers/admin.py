@@ -1,7 +1,7 @@
-from django.contrib import admin
-from django.db import models as django_models
 # from django import forms
 import dafousers.models
+from django.contrib import admin
+from django.db import models as django_models
 
 EXCLUDE_MODELS = [
     dafousers.models.AccessAccount,

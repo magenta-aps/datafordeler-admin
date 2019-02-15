@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from dafousers import model_constants
-from django.db import migrations, models
-from django.utils import timezone
-
 import datetime
+
+from dafousers import model_constants
+from django.db import migrations
+from django.utils import timezone
 
 
 def add_defaults(apps, schema_editor, modelname, items):
