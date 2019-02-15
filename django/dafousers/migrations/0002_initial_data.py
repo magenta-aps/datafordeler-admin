@@ -142,7 +142,7 @@ def remove_useridentifications(apps, schema_editor):
 
 
 create_time = datetime.datetime(
-    2017, 4, 1, 12, 0, 0, 0, tzinfo=timezone.UTC()
+    2017, 4, 1, 12, 0, 0, 0, tzinfo=timezone.utc
 )
 
 
