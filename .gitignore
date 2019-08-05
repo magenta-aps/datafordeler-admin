@@ -1,4 +1,5 @@
 # General ignores
+env/
 .idea
 sqlite3.dll
 sqlite3_x64.dll
