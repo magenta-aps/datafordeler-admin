@@ -98,4 +98,9 @@ urlpatterns = [
         dafo_views.search_user_profile,
         name='search_user_profile'),
 
+    # MONITORING HANDLES
+    url(r'^monitor/dafousers/database/?$',
+        dafo_views.DatabaseCheckView.as_view(),
+        name='monitoring_users_database'),
+
 ]

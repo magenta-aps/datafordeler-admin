@@ -41,7 +41,7 @@
                 {% block top_menus %}
                 {% if request.user.is_authenticated %}
                 <div class="menu">
-                    <div onclick="toggleShow('adgang')" class="dropbtn">Adgang</div>
+                    <div onclick="toggleMenu('#adgang')" onmouseover="hoverMenu('#adgang')" class="dropbtn">Adgang</div>
                     <span id="adgang" class="dropdown-content blue">
                         <a href="{% url 'dafousers:identityprovideraccount-add' %}">Opret organisation</a>
                         <a href="{% url 'dafousers:passworduser-add' %}">Opret bruger</a>
@@ -53,9 +53,10 @@
                 </div>
 
                 <div class="menu">
-                    <div onclick="toggleShow('konfiguration')" class="dropbtn">Konfiguration</div>
+                    <div onclick="toggleMenu('#konfiguration')" onmouseover="hoverMenu('#konfiguration')" class="dropbtn">Konfiguration</div>
                     <span id="konfiguration" class="dropdown-content blue">
                         <a href="{% url 'dafoconfig:plugin-list' %}">Administrér registre</a>
+                        <a href="{% url 'dafoconfig:dump-list' %}">Administrér filhåndtering</a>
                         <a href="{% url 'dafousers:userprofile-list' %}">Liste over brugerprofiler</a>
                         <a href="{% url 'dafousers:userprofile-add' %}">Opret brugerprofil</a>
                     </span>
@@ -84,6 +85,26 @@
             </div>
         </div>
         <div class="content">
+            <div id="messages" class="messages" {% if not messages %}style="display:none"{% endif %}>
+                {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% if form.errors %}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">
+                            <strong>{{ error|escape }}</strong>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             {% block content %}
                 Content goes here
             {% endblock %}

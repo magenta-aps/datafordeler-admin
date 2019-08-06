@@ -2,6 +2,7 @@ var DAFO = window.DAFO || {};
 
 (function($, w, DAFO) {
 
+
     // Close the dropdown if the user clicks outside of it
     w.onclick = function(event) {
         if (event.target.closest('.dropbtn') === null &&
@@ -13,24 +14,14 @@ var DAFO = window.DAFO || {};
         }
     };
 
-    w.closeElementsByClassName = function(className) {
-        var elements = document.getElementsByClassName(className);
-        var i;
-        for (i = 0; i < elements.length; i++) {
-            var element = elements[i];
-            if (element.classList.contains('show')) {
-                element.classList.remove('show');
-            }
-        }
-    };
 
     w.closeDropDowns = function() {
-        closeElementsByClassName("dropdown-content");
+        $(".dropdown-content").hide();
     };
 
     w.closePopups = function() {
-        toggleShow("lightbox");
-        closeElementsByClassName("popup");
+        $("#lightbox").hide();
+        $(".popup").hide();
     };
 
     w.onkeydown = function(evt) {
@@ -48,8 +39,8 @@ var DAFO = window.DAFO || {};
     };
 
     w.showPopup = function(popupId) {
-        toggleShow(popupId);
-        toggleShow("lightbox");
+        $('#'+popupId).show();
+        $("#lightbox").show();
     };
 
     w.show = function(id) {
@@ -71,6 +62,39 @@ var DAFO = window.DAFO || {};
         document.getElementById("password_display").innerHTML = new_pw;
     };
 
+    w.menuOpen = null;
+    w.openMenu = function(item) {
+        var menu = $(item);
+        if (menu.length) {
+            menu.show();
+            if (w.menuOpen && !w.menuOpen.is(menu)) {
+                w.menuOpen.hide();
+            }
+            w.menuOpen = menu;
+        }
+    };
+    w.closeMenu = function(item) {
+        var menu = $(item);
+        if (menu.length) {
+            menu.hide();
+            w.menuOpen = null;
+        }
+    };
+    w.toggleMenu = function(item) {
+        var opened = w.menuOpen;
+        if (w.menuOpen) {
+            w.closeMenu(w.menuOpen);
+        }
+        if (!opened || !opened.is(item)) {
+            w.openMenu(item);
+        }
+    };
+    w.hoverMenu = function(item) {
+        var menu = $(item);
+        if (menu.length && w.menuOpen) {
+            w.openMenu(menu);
+        }
+    };
     var Password = {
 
         _pattern : /[a-zA-Z0-9]/,
@@ -116,6 +140,8 @@ var DAFO = window.DAFO || {};
 
 
     $(document).ready(function() {
+
+
 
         addEvent(window, 'load', function(e) {
 
@@ -250,7 +276,7 @@ var DAFO = window.DAFO || {};
             var filter = filterElement.value;
 
             if(order !== "*")
-            var query = orderKey + "=" + order;
+                var query = orderKey + "=" + order;
 
             if(filter !== "*")
                 query += "&" + filterKey + "=" + filter;

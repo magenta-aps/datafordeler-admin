@@ -4,9 +4,8 @@
 import os
 import urllib
 
-from django.shortcuts import render_to_response
-
 from dafousers.auth import update_user_auth_info
+from dafousers.model_constants import AccessAccount as AccessAccountConstants
 from dafousers.models import IdentityProviderAccount
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -37,10 +36,6 @@ class IndexView(TemplateView):
             return HttpResponseRedirect(reverse("common:frontpage"))
 
         return super(IndexView, self).dispatch(*args, **kwargs)
-
-
-class FrontpageView(TemplateView):
-    template_name = 'frontpage.html'
 
 
 class ErrorView(TemplateView):
@@ -181,7 +176,9 @@ class LoginView(TemplateView):
         return TemplateResponse(request, self.template_name, context)
 
     def get_context_data(self, **kwargs):
-        kwargs['idps'] = IdentityProviderAccount.objects.all()
+        kwargs['idps'] = IdentityProviderAccount.objects.filter(
+            status=AccessAccountConstants.STATUS_ACTIVE
+        )
         return kwargs
 
     def get(self, request, *args, **kwargs):
@@ -238,6 +235,10 @@ class LoginView(TemplateView):
             return super(LoginView, self).get(request, *args, **kwargs)
         else:
             return result
+
+
+class FrontpageView(LoginRequiredMixin, TemplateView):
+    template_name = 'frontpage.html'
 
 
 class RstDocView(TemplateView):

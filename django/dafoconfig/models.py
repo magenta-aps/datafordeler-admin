@@ -61,7 +61,18 @@ class CronField(fancy_cronfield.fields.CronField):
         return ' '.join(parts)
 
 
-class CprConfig(models.Model):
+class DafoConfig(object):
+
+    def get_field_dict(self):
+        own_fields = set([f.name for f in self.__class__._meta.get_fields()])
+        return {
+            field.name: getattr(self, field.name, None)
+            for field in self.__class__._meta.get_fields()
+            if field.name in own_fields
+        }
+
+
+class CprConfig(DafoConfig, models.Model):
 
     charset_choices = [
         (0, "US-ASCII"),
@@ -73,15 +84,17 @@ class CprConfig(models.Model):
     ]
 
     type_choices = [
-        (-1, u"Deaktiveret"),
-        (0, u"Lokal fil"),
-        (1, u"FTP-server")
+        (0, u"Deaktiveret"),
+        (1, u"Lokal fil"),
+        (2, u"FTP-server")
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
     personregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     personregisterdatacharset = models.IntegerField(blank=True, null=True, verbose_name=u"Forventet inputdata-tegnkodning", choices=charset_choices)
     personregisterftpaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP adresse")
+    personregisterftpdownloadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP download-mappe")
+    personregisterftpuploadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP upload-mappe")
     personregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     personregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     personregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
@@ -93,6 +106,8 @@ class CprConfig(models.Model):
     residenceregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     residenceregisterdatacharset = models.IntegerField(blank=True, null=True, verbose_name=u"Forventet inputdata-tegnkodning", choices=charset_choices)
     residenceregisterftpaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP adresse")
+    residenceregisterftpdownloadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP download-mappe")
+    residenceregisterftpuploadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP upload-mappe")
     residenceregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     residenceregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     residenceregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
@@ -104,6 +119,8 @@ class CprConfig(models.Model):
     roadregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     roadregisterdatacharset = models.IntegerField(blank=True, null=True, verbose_name=u"Forventet inputdata-tegnkodning", choices=charset_choices)
     roadregisterftpaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP adresse")
+    roadregisterftpdownloadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP download-mappe")
+    roadregisterftpuploadfolder = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP upload-mappe")
     roadregisterftpusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP brugernavn")
     roadregisterftppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"FTP password")
     roadregisterlocalfile = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Lokal fil")
@@ -121,11 +138,11 @@ class CprConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af CPR-registre'
 
 
-class CvrConfig(models.Model):
+class CvrConfig(DafoConfig, models.Model):
 
     type_choices = [
-        (-1, u"Deaktiveret"),
-        (1, u"HTTP-server")
+        (0, u"Deaktiveret"),
+        (2, u"HTTP-server")
     ]
 
     id = models.CharField(primary_key=True, max_length=255)
@@ -140,6 +157,9 @@ class CvrConfig(models.Model):
     companyregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
     companyregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
     companyregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
+    companyregisterdirectlookupcertificate = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Certifikat til direkte lookup")
+    companyregisterdirectlookuppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password til certifikat")
+    companyregisterdirectlookupaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Adresse til direkte lookup")
 
     companyunitregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
     companyunitregisterstartaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Scan/scroll startadresse")
@@ -154,6 +174,9 @@ class CvrConfig(models.Model):
     participantregisterusername = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
     participantregisterpassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
     participantregisterquery = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Forespørgsel")
+    participantregisterdirectlookupcertificate = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Certifikat til direkte lookup")
+    participantregisterdirectlookuppassword = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password til certifikat")
+    participantregisterdirectlookupaddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Adresse til direkte lookup")
 
 
     class Meta:
@@ -165,7 +188,62 @@ class CvrConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af CVR-registre'
 
 
-class GladdregConfig(models.Model):
+class GeoConfig(DafoConfig, models.Model):
+
+    type_choices = [
+        (0, u"Deaktiveret"),
+        (1, u"Lokal fil"),
+        (2, u"HTTP-server")
+    ]
+
+    charset_choices = [
+        (0, u"UTF-8"),
+        (1, u"ISO_8859_1")
+    ]
+
+    id = models.CharField(primary_key=True, max_length=255)
+    pullcronschedule = CronField(
+        max_length=255, null=True,
+        verbose_name=u"Cron-udtryk for automatisk synkronisering"
+    )
+
+    tokenService = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Tokenservice")
+    username = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Brugernavn")
+    password = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Password")
+
+    charsetName = models.IntegerField(blank=True, null=True, verbose_name=u"Karaktersæt", choices=charset_choices)
+
+    municipalityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    municipalityregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    postcoderegistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    postcoderegisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    localityregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    localityregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    roadregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    roadregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    buildingregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    buildingregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    accessaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    accessaddressregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    unitaddressregistertype = models.IntegerField(blank=True, null=True, verbose_name=u"Kildetype", choices=type_choices)
+    unitaddressregisterurl = models.CharField(max_length=1024, blank=True, null=True, verbose_name=u"Kildeadresse")
+
+    class Meta:
+        managed = False
+        database = 'configuration'
+        db_table = 'geo_config'
+
+        verbose_name = 'Konfiguration af GEO-register'
+        verbose_name_plural = 'Konfigurationer af GEO-registre'
+
+
+class GladdregConfig(DafoConfig, models.Model):
     id = models.CharField(primary_key=True, max_length=255)
     pullcronschedule = CronField(null=True, verbose_name=u"Cron-udtryk for automatisk synkronisering")
     registeraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Registeradresse")
@@ -179,7 +257,7 @@ class GladdregConfig(models.Model):
         verbose_name_plural = 'Konfigurationer af Adresseopslagsregistre'
 
 
-class DumpConfig(models.Model):
+class DumpConfig(DafoConfig, models.Model):
     class Meta:
         managed = False
         database = 'configuration'
@@ -256,6 +334,7 @@ class DumpConfig(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Command(models.Model):
 
