@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
+from xml.etree import ElementTree
+from xml.etree.ElementTree import ParseError
+
+from dafousers import models, model_constants
 from django.contrib.admin import widgets
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext as _
-from dafousers import models, model_constants
-from xml.etree import ElementTree
-from xml.etree.ElementTree import ParseError
+
 from django import forms
 
 
@@ -119,6 +121,22 @@ class IdentityProviderAccountForm(AccessAccountForm):
 
             if xml_root.get('entityID') is None:
                 raise ValidationError('Metadata-filen er i forkert format')
+
+        return metadata_xml_file
+
+
+class IdentityProviderAccountFormRestricted(IdentityProviderAccountForm):
+    """
+    A version of the IdentityProviderAccountForm that does not allow changing
+    of IdP-type
+    """
+
+    class Meta:
+        model = models.IdentityProviderAccount
+        fields = [
+            x for x in IdentityProviderAccountForm.Meta.fields
+            if x != 'idp_type'
+        ]
 
 
 class UserProfileForm(forms.ModelForm):

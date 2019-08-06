@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-from django.utils.translation import ugettext_lazy as _
 import os
 
+from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -33,9 +33,9 @@ DOC_STATIC_DIR = os.path.join(DOC_DIR, 'static')
 SECRET_KEY = '&k(5=@-3amupyw_67k)6rp-sj1p^x=lg)@i*_81w9jkrc_=i15'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -241,6 +241,7 @@ if 'configuration' not in DATABASES:
 ROOT_CERT = os.path.join(CERT_ROOT, ROOT_CERT_NAME)
 
 SELENIUM_DISPLAY = ":0"
+
 PULLCOMMAND_HOST = 'http://localhost:8445'
 
 # psycopg2cffi is a replacement for psycopg2 that supports PyPy

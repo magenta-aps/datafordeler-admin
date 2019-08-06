@@ -20,6 +20,7 @@ from django.core.exceptions import FieldError
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.db import models
+from django.db.models import Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -372,7 +373,16 @@ class EntityWithCertificate(models.Model):
 
         # create a cert
         cert = crypto.X509()
-        cert.set_serial_number(1000)
+        # Calculate serial number from own primary key and the current
+        # maximum id on certificates. Not guaranteed to be 100% unique if
+        # two certificates for the same user is generated at the exact same
+        # time, but this is unlikely to happen.
+        max_cert_pk = Certificate.objects.aggregate(
+            max_pk=Max("pk")
+        ).get("max_pk") or 0
+        cert.set_serial_number(
+            100000 * self.pk + max_cert_pk
+        )
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(years_valid*365*24*60*60)
         cert.set_issuer(public_cert.get_subject())
@@ -674,10 +684,10 @@ class Certificate(models.Model):
         return ['fingerprint', 'subject', 'valid_from', 'valid_to']
 
     def __unicode__(self):
-        return unicode(
-            self.valid_to.strftime("%Y-%m-%d %H:%M:%S") or
-            _(u"Certifikat uden subjekt")
-        )
+        if self.valid_to:
+            return unicode(self.valid_to.strftime("%Y-%m-%d %H:%M:%S"))
+        else:
+            return "Certifikat uden udløbsdato (pk=%s)" % self.pk
 
 
 class UserProfileQuerySet(models.QuerySet):
@@ -902,5 +912,76 @@ class UpdateTimestamps(models.Model):
         item.updated = timezone.now()
         item.save()
 
+
+class IssuedToken(models.Model):
+
+    class Meta:
+        verbose_name = _(u"Udstedt token")
+        verbose_name_plural = _(u"Udstedte tokens")
+
+    access_account = models.ForeignKey(
+        'AccessAccount',
+        verbose_name=_(u'Udstedt til konto'),
+        null=True,
+        default=None
+    )
+    issued_time = models.DateTimeField(
+        verbose_name=_(u'Udstedelsestidspunkt'),
+        null=True,
+        default=None,
+    )
+    token_data = models.TextField(
+        verbose_name=_(u'Token data'),
+        null=True,
+        blank=True
+    )
+    token_nameid = models.CharField(
+        verbose_name=_(u'Token NameID'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    token_on_behalf_of = models.CharField(
+        verbose_name=_(u'Token OnBehalfOf'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    error_message = models.TextField(
+        verbose_name=_(u'Eventuel fejlbesked'),
+        null=True,
+        blank=True,
+    )
+
+    # Data for identifying the requestor
+    request_service_url = models.CharField(
+        verbose_name=_(u'Udstedt via URL'),
+        max_length=2048,
+        null=True,
+        blank=True,
+    )
+    client_ip = models.CharField(
+        verbose_name=_(u'Ip på klient'),
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    client_user_agent = models.CharField(
+        verbose_name=_(u'User-Agent på klient'),
+        max_length=1024,
+        null=True,
+        blank=True,
+    )
+
+    def __unicode__(self):
+        if self.token_nameid:
+            if self.issued_time:
+                return "#%s, %s, %s" % (
+                    self.pk, self.token_nameid, str(self.issued_time)[0:19]
+                )
+            else:
+                return "#%s: %s" % (self.pk, self.token_nameid)
+        else:
+            return "IssuedToken #%s" % self.pk
 
 fix_sql_server_schemas()

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # from django.shortcuts import render
 
+import re
 import tempfile
 
 from common.views import LoginRequiredMixin
@@ -31,6 +32,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                 if x.status != status:
                     x.status = status
                     # Save user to trigger history update
+                    x.changed_by = self.request.user.username
                     x.save()
             return HttpResponse('Statusser er blevet opdateret.')
         elif action == '_add_user_profiles':
@@ -47,6 +49,7 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                         changed = True
                 if changed:
                     # Save user to trigger history update
+                    user.changed_by = self.request.user.username
                     user.save()
 
         return HttpResponse('Tildelte brugerprofiler er blevet opdateret.')
@@ -300,8 +303,15 @@ class CertificateUserListTable(AccessAccountListTable):
 
 class IdentityProviderAccountCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dafousers/identityprovideraccount/add.html'
-    form_class = forms.IdentityProviderAccountForm
     model = models.IdentityProviderAccount
+
+    def get_form_class(self):
+        if self.request.user.dafoauthinfo.has_user_profile(
+            "DAFO Administrator"
+        ):
+            return forms.IdentityProviderAccountForm
+        else:
+            return forms.IdentityProviderAccountFormRestricted
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
@@ -361,8 +371,15 @@ class IdentityProviderAccountHistory(LoginRequiredMixin, ListView):
 class IdentityProviderAccountEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dafousers/identityprovideraccount/edit.html'
     model = models.IdentityProviderAccount
-    form_class = forms.IdentityProviderAccountForm
     success_url = '/organisation/list/'
+
+    def get_form_class(self):
+        if self.request.user.dafoauthinfo.has_user_profile(
+            "DAFO Administrator"
+        ):
+            return forms.IdentityProviderAccountForm
+        else:
+            return forms.IdentityProviderAccountFormRestricted
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
@@ -581,13 +598,28 @@ def search_user_profile(request):
 class CertificateDownload(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         cert = models.Certificate.objects.get(pk=kwargs.get('pk'))
-        cert_date = cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S")
-        tmp_file = tempfile.TemporaryFile()
-        tmp_file.write(cert.certificate_blob)
-        tmp_file.seek(0)
-        resp = HttpResponse(tmp_file, content_type='application/x-pkcs12')
-        resp['Content-Disposition'] = (
-            "attachment; filename=cert_%s.p12" % cert_date
+        user = cert.certificateuser_set.last()
+        if user is None:
+            user = "cert"
+        else:
+            user = re.sub(r'[^\x00-\x7f]', '_', user.contact_email)
+        name_parts = [user]
+        if cert.valid_to:
+            name_parts.append(cert.valid_to.strftime("%Y-%m-%d_%H-%M-%S"))
+
+        name = "_".join(name_parts)
+
+        resp = HttpResponse(
+            cert.certificate_blob,
+            content_type='application/x-pkcs12'
         )
-        print "attachment; filename=cert_%s.p12" % cert_date
+        resp['Content-Disposition'] = (
+            "attachment; filename=%s.p12" % name
+        )
         return resp
+
+
+class DatabaseCheckView(View):
+    def get(self, request, *args, **kwargs):
+        count = models.PasswordUser.objects.count()
+        return HttpResponse()

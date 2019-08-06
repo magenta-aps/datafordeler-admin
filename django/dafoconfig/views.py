@@ -1,37 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 import re
-
-import requests
-from django.forms import model_to_dict
+from datetime import datetime
 
 from common.views import LoginRequiredMixin
-from datetime import datetime
+from django.forms import model_to_dict
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
-
+from django.views.generic.edit import CreateView
 from django.views.generic.edit import UpdateView, DeleteView
-
-from .forms import CvrConfigurationForm, CprConfigurationForm, \
-    GladdrregConfigurationForm
-from .models import CvrConfig, CprConfig, GladdregConfig, Command
-from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
-from django.shortcuts import redirect
-import logging
-import re
-import requests
 
-# from dafoadmin.dafousers.views import LoginRequiredMixin
-from .models import CvrConfig, CprConfig, DumpConfig, GladdregConfig
-from .forms import (
-    CvrConfigurationForm,
-    CprConfigurationForm,
-    DumpConfigurationForm,
-    GladdrregConfigurationForm,
-)
+from .forms import CvrConfigurationForm, CprConfigurationForm
+from .forms import DumpConfigurationForm
+from .forms import GladdrregConfigurationForm, GeoConfigurationForm
+from .models import CvrConfig, CprConfig, GeoConfig, GladdregConfig, Command
+from .models import DumpConfig
 
 logger = logging.getLogger('django.server')
 
@@ -78,6 +65,24 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
         else:
             return [{'items': self.get_form()}]
 
+    def form_valid(self, form):
+        response = super(PluginConfigurationView, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            '\n'.join([
+                "%s was updated by %s",
+                "Contents:",
+                "%s"
+            ]),
+            self.object.__class__.__name__,
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value if 'password' not in field else '******')
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
+        )
+        return response
+
 
 class CvrPluginConfigurationView(PluginConfigurationView):
 
@@ -95,6 +100,16 @@ class CprPluginConfigurationView(PluginConfigurationView):
     template_name = 'form.html'
     plugin_name = 'CPR'
     sectioned = True
+
+
+class GeoPluginConfigurationView(PluginConfigurationView):
+
+    model = GeoConfig
+    form_class = GeoConfigurationForm
+    template_name = 'form.html'
+    plugin_name = 'GEO'
+    sectioned = True
+
 
 
 class GladdregPluginConfigurationView(PluginConfigurationView):
@@ -121,6 +136,11 @@ class PluginListTable(LoginRequiredMixin, TemplateView):
                 'name': 'CPR',
                 'configlink': reverse('dafoconfig:plugin-cpr-edit'),
                 'synclink': reverse('dafoconfig:plugin-pull', args=['cpr'])
+            },
+            {
+                'name': 'GEO',
+                'configlink': reverse('dafoconfig:plugin-geo-edit'),
+                'synclink': reverse('dafoconfig:plugin-pull', args=['geo'])
             },
             {
                 'name': 'Gladdrreg',
@@ -197,7 +217,6 @@ class PluginPullView(LoginRequiredMixin, TemplateView):
         latest_pulls = self.get_pull_summary(self.get_plugin(), 'latest')
         command = latest_pulls[0] if len(latest_pulls) > 0 else None
         if command is not None:
-            print command.status
             status['latest'] = {
                 'plugin': command.commandbody_json['plugin'],
                 'id': command.id,
@@ -277,11 +296,48 @@ class DumpCreate(LoginRequiredMixin, CreateView):
         elif action == '_addanother':
             return reverse('dafoconfig:dump-add')
 
+    def form_valid(self, form):
+        response = super(DumpCreate, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            '\n'.join([
+                "%s (id=%d) was created by %s",
+                'Contents:',
+                "%s"
+            ]),
+            self.object.__class__.__name__,
+            self.object.id,
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value)
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
+        )
+        return response
 
 class DumpEdit(LoginRequiredMixin, UpdateView):
     model = DumpConfig
     form_class = DumpConfigurationForm
     template_name = 'dump/edit.html'
+
+    def form_valid(self, form):
+        response = super(DumpEdit, self).form_valid(form)
+        logging.getLogger('django.server').info(
+            '\n'.join([
+                "%s (id=%d) was updated by %s",
+                'Contents:',
+                "%s"
+            ]),
+            self.object.__class__.__name__,
+            self.object.id,
+            self.request.user.username,
+            '\n'.join([
+                "    %s: %s" %
+                (field, value)
+                for field, value in self.object.get_field_dict().iteritems()
+            ])
+        )
+        return response
 
 
 class DumpList(LoginRequiredMixin, ListView):
@@ -299,3 +355,14 @@ class DumpDelete(LoginRequiredMixin, DeleteView):
         context = super(DumpDelete, self).get_context_data(**kwargs)
         context.update(fields=model_to_dict(self.object))
         return context
+
+    def delete(self, request, *args, **kwargs):
+        id = self.get_object().id
+        response = super(DumpDelete, self).delete(request, *args, **kwargs)
+        logging.getLogger('django.server').info(
+            "%s (id=%d) was deleted by %s",
+            self.model.__name__,
+            id,
+            self.request.user.username
+        )
+        return response
