@@ -125,6 +125,8 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
 
         try:
             cls.browser = driver(**args)
+            cls.browser.set_window_size(1920, 1080)
+
         except Exception as exc:
             print(exc)
             raise unittest.SkipTest(exc.args[0])
@@ -448,13 +450,18 @@ class CrudTestMixin(object):
         self.assert_page(self.page + self.create_page)
 
         self.fill_in_form('submit_save', **self.create_form_params)
+
         self.assert_page(self.page + self.list_page)
 
         created_object = self.model.objects.search(self.get_object_name()).first()
+
         self.assertIsNotNone(created_object)
         self.compare_result(created_object, self.create_form_params)
 
         rows = self.browser.find_elements_by_css_selector(".update_%s_queryset_body>table>tbody>tr" % self.base_name)
+
+
+
         self.assertEqual(
             self.number_of_original_objects + 1,
             len(rows) - 1,
