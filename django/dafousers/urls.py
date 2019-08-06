@@ -8,7 +8,7 @@ urlpatterns = [
         dafo_views.PasswordUserEdit.as_view(),
         name='passworduser-edit'),
     url(r'^user/(?P<pk>[0-9]+)/history/$',
-        dafo_views.PasswordUserHistory.as_view(),
+        dafo_views.PasswordUserHistoryView.as_view(),
         name='passworduser-history'),
     url(r'^user/add/$',
         dafo_views.PasswordUserCreate.as_view(),

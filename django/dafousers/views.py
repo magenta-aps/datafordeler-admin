@@ -2,10 +2,10 @@
 # from django.shortcuts import render
 
 import re
-import tempfile
 
 from common.views import LoginRequiredMixin
 from dafousers import models, forms
+from dafousers.models import PasswordUser, PasswordUserHistory
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Min
 from django.http import HttpResponse
@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.views.generic import View, UpdateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
+from django.shortcuts import get_object_or_404
 
 
 class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
@@ -92,6 +93,7 @@ class PasswordUserCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         action = self.request.POST.get('action')
+        # if action is not set, which is valid because the form dosent require the action field you get a 404.
         if action == '_save':
             return reverse('dafousers:passworduser-list')
         elif action == '_addanother':
@@ -115,17 +117,19 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         return context
 
 
-class PasswordUserHistory(LoginRequiredMixin, ListView):
+class PasswordUserHistoryView(LoginRequiredMixin, ListView):
     template_name = 'dafousers/passworduser/history.html'
-    model = models.PasswordUserHistory
+
+    def get_queryset(self):
+        self.user = get_object_or_404(PasswordUser, pk=self.kwargs['pk'])
+        return PasswordUserHistory.objects.filter(entity=self.user).order_by("-updated")
 
     def get_context_data(self, **kwargs):
-        context = super(PasswordUserHistory, self).get_context_data(**kwargs)
-        pk = self.kwargs['pk']
-        context['password_user_id'] = pk
-        context['history'] = models.PasswordUserHistory.objects.filter(
-            entity=models.PasswordUser.objects.get(pk=pk)
-        ).order_by("-updated")
+        context = super(PasswordUserHistoryView, self).get_context_data(**kwargs)
+        context['password_user_id'] = self.user.pk
+        context['history'] = context['object_list']
+        # why use a list view if you are not going to use the default variable names?
+        # potential DOS when there is not limit
         return context
 
 
@@ -145,6 +149,7 @@ class PasswordUserEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super(PasswordUserEdit, self).form_valid(form)
 
     def get_success_url(self):
+        # not setting an action results in a 404 even though the form is valid.
         action = self.request.POST.get('action')
         if action == '_save':
             return reverse('dafousers:passworduser-list')
