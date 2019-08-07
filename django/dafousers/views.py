@@ -51,7 +51,8 @@ class AccessAccountUserAjaxUpdate(LoginRequiredMixin, View):
                     # Save user to trigger history update
                     user.changed_by = self.request.user.username
                     user.save()
-
+        # silly if we dont provide an action. Rather split it up in multiple views, one for handling status and
+        # one for adding the user_profiles.
         return HttpResponse('Tildelte brugerprofiler er blevet opdateret.')
 
 
@@ -355,16 +356,16 @@ class IdentityProviderAccountList(LoginRequiredMixin, ListView):
         return context
 
 
-class IdentityProviderAccountHistory(LoginRequiredMixin, ListView):
+class IdentityProviderAccountHistory(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/identityprovideraccount/history.html'
-    model = models.IdentityProviderAccountHistory
+    model = models.IdentityProviderAccount
 
     def get_context_data(self, **kwargs):
         context = super(IdentityProviderAccountHistory, self).get_context_data(**kwargs)
         pk = self.kwargs['pk']
         context['identityprovider_account_id'] = pk
         context['history'] = models.IdentityProviderAccountHistory.objects.filter(
-            entity=models.IdentityProviderAccount.objects.get(pk=pk)
+            entity=self.get_object()
         ).order_by("-updated")
         return context
 
