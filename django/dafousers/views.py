@@ -465,16 +465,16 @@ class UserProfileList(LoginRequiredMixin, ListView):
         return context
 
 
-class UserProfileHistory(LoginRequiredMixin, ListView):
+class UserProfileHistory(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/userprofile/history.html'
-    model = models.UserProfileHistory
+    model = models.UserProfile
 
     def get_context_data(self, **kwargs):
         context = super(UserProfileHistory, self).get_context_data(**kwargs)
         pk = self.kwargs['pk']
         context['user_profile_id'] = pk
         context['history'] = models.UserProfileHistory.objects.filter(
-            entity=models.UserProfile.objects.get(pk=pk)
+            entity=self.get_object()
         ).order_by("-updated")
         return context
 
