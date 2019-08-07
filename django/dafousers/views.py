@@ -5,13 +5,12 @@ import re
 
 from common.views import LoginRequiredMixin
 from dafousers import models, forms
-from dafousers.models import PasswordUser, PasswordUserHistory
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Min
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import View, UpdateView
+from django.views.generic import View, UpdateView, DetailView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
@@ -117,17 +116,14 @@ class PasswordUserList(LoginRequiredMixin, ListView):
         return context
 
 
-class PasswordUserHistoryView(LoginRequiredMixin, ListView):
+class PasswordUserHistory(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/passworduser/history.html'
-
-    def get_queryset(self):
-        self.user = get_object_or_404(PasswordUser, pk=self.kwargs['pk'])
-        return PasswordUserHistory.objects.filter(entity=self.user).order_by("-updated")
+    model = models.PasswordUser
 
     def get_context_data(self, **kwargs):
-        context = super(PasswordUserHistoryView, self).get_context_data(**kwargs)
-        context['password_user_id'] = self.user.pk
-        context['history'] = context['object_list']
+        context = super(PasswordUserHistory, self).get_context_data(**kwargs)
+        context['password_user_id'] = self.object.pk
+        context['history'] = models.PasswordUserHistory.objects.filter(entity=self.object).order_by("-updated")
         # why use a list view if you are not going to use the default variable names?
         # potential DOS when there is not limit
         return context
