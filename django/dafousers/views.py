@@ -260,7 +260,6 @@ class CertificateUserEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
         if self.request.POST.get('create_new_certificate'):
             certificate_years_valid = form.cleaned_data['certificate_years_valid']
-            print certificate_years_valid
             form.instance.create_certificate(int(certificate_years_valid))
         return super(CertificateUserEdit, self).form_valid(form)
 

@@ -28,7 +28,7 @@ class DafoUsersAuthBackend(object):
                 verifier = TokenVerifier(token)
                 verifier.verify()
             except Exception as e:
-                print "Failed to verify token: %s" % e
+                print("Failed to verify token: %s" % e)
                 raise e
             try:
                 # Users from external IdPs will all reference a Django

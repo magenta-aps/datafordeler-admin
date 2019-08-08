@@ -25,7 +25,7 @@ class Command(base.BaseCommand):
         try:
             return PasswordUser.objects.get(email=username)
         except PasswordUser.DoesNotExist:
-            print "User with name '%s' does not exist" % username
+            print("User with name '%s' does not exist" % username)
             return None
 
     def handle(
@@ -57,7 +57,7 @@ class Command(base.BaseCommand):
                 repeat_password = getpass.getpass("Repeat password: ")
 
             if repeat_password != password:
-                print "Password mismatch"
+                print("Password mismatch")
                 password = None
                 repeat_password = None
 
@@ -69,4 +69,4 @@ class Command(base.BaseCommand):
         user.encrypted_password = encrypted_password
         user.changed_by = "Console command 'edituser'"
         user.save()
-        print "User '%s' changed password" % username
+        print("User '%s' changed password" % username)

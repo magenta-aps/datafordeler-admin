@@ -561,7 +561,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
                 self.metadata_xml_file = None
 
             except Exception as e:
-                print "Failed to parse uploaded xml, error is: %s" % e
+                print("Failed to parse uploaded xml, error is: %s" % e)
 
         # Update the last-update-of-idp-data timestamp
         UpdateTimestamps.touch(self.CONSTANTS.IDP_UPDATE_TIMESTAMP_NAME)
@@ -673,7 +673,7 @@ class Certificate(models.Model):
 
                 self.certificate_file = None
             except Exception as e:
-                print "Failed to parse certificate, error is: %s" % e
+                print("Failed to parse certificate, error is: %s" % e)
 
             # TODO: Update next expire date for all related objects.
 
