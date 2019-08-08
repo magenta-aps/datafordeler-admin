@@ -1,6 +1,7 @@
 import dafoconfig.views as dafo_views
 from django.conf.urls import url
 
+app_name = 'dafoconfig'
 urlpatterns = [
     url(
         r'^plugin/?$',

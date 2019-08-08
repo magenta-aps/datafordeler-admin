@@ -20,8 +20,6 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
-    # Redirect root URL to admin
-    # url(r'^$', root_redirect, name="index"),
     url(r'^', include('common.urls', namespace='common')),
     url(r'^', include('dafoconfig.urls', namespace='dafoconfig')),
     url(r'^', include('dafousers.urls', namespace='dafousers')),
