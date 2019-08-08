@@ -209,7 +209,7 @@ def remove_password_users(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [(b"dafousers", "0001_initial_tables")]
+    dependencies = [("dafousers", "0001_initial_tables")]
     # dependencies = [(b"dafousers", "0004_auto_20170404_1601")]
 
     operations = [

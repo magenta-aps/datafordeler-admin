@@ -32,6 +32,6 @@ def get_sql():
 
 class Migration(migrations.Migration):
 
-    dependencies = [(b'dafousers', '0002_initial_data')]
+    dependencies = [('dafousers', '0002_initial_data')]
 
     operations = [migrations.RunSQL(x) for x in get_sql()]
