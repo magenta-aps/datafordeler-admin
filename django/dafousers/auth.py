@@ -22,7 +22,7 @@ from signxml import XMLVerifier
 
 class DafoUsersAuthBackend(object):
 
-    def authenticate(self, username=None, password=None, token=None):
+    def authenticate(self, request, username=None, password=None, token=None):
         if token is not None:
             try:
                 verifier = TokenVerifier(token)
@@ -107,7 +107,7 @@ def update_user_auth_info(request):
 
     info = None
 
-    if not hasattr(request, 'user') or not request.user.is_authenticated():
+    if not hasattr(request, 'user') or not request.user.is_authenticated:
         return info
 
     if hasattr(request.user, 'dafoauthinfo'):
