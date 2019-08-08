@@ -195,13 +195,12 @@ var DAFO = window.DAFO || {};
             var id = this.id;
 
             var search_body = $('.' + id + '_body');
-
             search_body.html('').load(
                 "/ajax/" + id + "/?search_term=" + encodeURIComponent(search_term)
             );
             if(search_body !== "") {
                 closeDropDowns();
-                search_body.addClass("show");
+                search_body.show();
             }
 
         });
