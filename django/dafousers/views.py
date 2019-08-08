@@ -227,16 +227,16 @@ class CertificateUserList(LoginRequiredMixin, ListView):
         return context
 
 
-class CertificateUserHistory(LoginRequiredMixin, ListView):
+class CertificateUserHistory(LoginRequiredMixin, DetailView):
     template_name = 'dafousers/certificateuser/history.html'
-    model = models.CertificateUserHistory
+    model = models.CertificateUser
 
     def get_context_data(self, **kwargs):
         context = super(CertificateUserHistory, self).get_context_data(**kwargs)
         pk = self.kwargs['pk']
         context['certificate_user_id'] = pk
         context['history'] = models.CertificateUserHistory.objects.filter(
-            entity=models.CertificateUser.objects.get(pk=pk)
+            entity=self.get_object()
         ).order_by("-updated")
         return context
 
