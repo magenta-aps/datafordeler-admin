@@ -230,7 +230,7 @@ AUTHENTICATION_BACKENDS = [
 
 LOCAL_SETTINGS_FILE = os.path.join(SITE_DIR, "local_settings.py")
 if os.path.exists(LOCAL_SETTINGS_FILE):
-    from local_settings import *  # noqa
+    from .local_settings import *  # noqa
 
 # Use same database as the default for configuration, if a specific database
 # has not been configured locally.
