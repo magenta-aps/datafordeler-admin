@@ -20,7 +20,7 @@ urlpatterns = [
         csrf_exempt(dafo_views.LoginView.as_view()),
         name='login'),
     url(r'^logout/',
-        django.contrib.auth.views.logout,
+        django.contrib.auth.views.LogoutView.as_view(),
         {'template_name': 'logged_out.html'},
         name='logout'),
 
