@@ -1,7 +1,7 @@
 pyopenssl==18.0.0
 pypiwin32==219; sys_platform == 'win32'
 cryptography==2.7
-Django==1.10.6
+Django>=2.2, <2.3
 django-markup==1.2
 django-mssql==1.8; sys_platform == 'win32'
 django-sqlserver==1.9; sys_platform != 'win32'
@@ -17,4 +17,6 @@ sqlparse==0.2.3
 requests==2.22.0
 psycopg2==2.7.3.2; sys_platform != 'win32' and platform_python_implementation != 'PyPy'
 psycopg2cffi==2.7.6; platform_python_implementation == 'PyPy'
-django-fancy-cronfield==0.2
+#needed to create a fork of django-fancy-cronfield to support django-2-2
+git+git://github.com/magenta-aps/django-fancy-cronfield@master
+
