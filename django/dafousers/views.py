@@ -87,7 +87,7 @@ class PasswordUserCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         form.instance.encrypted_password = encrypted_password
 
         result = super(PasswordUserCreate, self).form_valid(form)
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
+        form.instance.user_profiles.set(form.cleaned_data['user_profiles'])
         form.instance.save()
         return result
 
@@ -323,7 +323,7 @@ class IdentityProviderAccountCreate(LoginRequiredMixin, SuccessMessageMixin, Cre
 
         result = super(IdentityProviderAccountCreate, self).form_valid(form)
 
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
+        form.instance.user_profiles.set(form.cleaned_data['user_profiles'])
 
         form.instance.save_metadata()
         form.instance.save()
