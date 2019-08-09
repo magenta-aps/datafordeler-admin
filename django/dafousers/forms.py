@@ -41,10 +41,10 @@ class AccessAccountForm(forms.ModelForm):
     def clean(self):
         super(AccessAccountForm, self).clean()
         if self.instance.pk is not None:
-            self.instance.user_profiles = \
+            self.instance.user_profiles.set(
                 self.instance.get_updated_user_profiles(
                     self.user, self.cleaned_data['user_profiles']
-                )
+                ))
 
 
 class PasswordUserForm(AccessAccountForm):

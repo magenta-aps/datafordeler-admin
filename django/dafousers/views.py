@@ -196,7 +196,7 @@ class CertificateUserCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView)
         form.instance.identified_user = user_id
 
         result = super(CertificateUserCreate, self).form_valid(form)
-        form.instance.user_profiles = form.cleaned_data['user_profiles']
+        form.instance.user_profiles.set(form.cleaned_data['user_profiles'])
         certificate_years_valid = form.cleaned_data['certificate_years_valid']
         form.instance.create_certificate(int(certificate_years_valid))
         form.instance.save()
@@ -250,7 +250,7 @@ class CertificateUserEdit(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.changed_by = self.request.user.username
-        form.instance.certificates = form.cleaned_data['certificates']
+        form.instance.certificates.set(form.cleaned_data['certificates'])
 
         # Do we want to remove certs from the database?
         for cert in form.instance.certificates.all():
@@ -428,8 +428,8 @@ class UserProfileCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         form.instance.changed_by = self.request.user.username
 
         result = super(UserProfileCreate, self).form_valid(form)
-        form.instance.system_roles = form.cleaned_data['system_roles']
-        form.instance.area_restrictions = form.cleaned_data['area_restrictions']
+        form.instance.system_roles.set(form.cleaned_data['system_roles'])
+        form.instance.area_restrictions.set(form.cleaned_data['area_restrictions'])
         form.instance.accessaccount_set.add(
             self.request.user.dafoauthinfo.access_account_user
         )
