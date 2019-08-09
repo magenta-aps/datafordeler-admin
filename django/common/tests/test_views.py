@@ -36,17 +36,17 @@ class ViewsTestCase(TestCase):
     def test_login_user_password(self):
         resp = self.client.post(reverse('common:login'), {'username': 'jakob@data.nanoq.gl', 'password': 'jacob'}, follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.context['user'].is_authenticated())
+        self.assertTrue(resp.context['user'].is_authenticated)
 
     def test_login_user_password_fail(self):
         resp = self.client.post(reverse('common:login'), {'username': 'jako@data.nanoq.gl', 'password': 'jacob'}, follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertFalse(resp.context['user'].is_authenticated())
+        self.assertFalse(resp.context['user'].is_authenticated)
 
     def test_logout(self):
         self.client.login(**{'username': 'jakob@data.nanoq.gl', 'password': 'jacob'})
         resp = self.client.post(reverse('common:logout'), follow=True)
-        self.assertFalse(resp.context['user'].is_authenticated())
+        self.assertFalse(resp.context['user'].is_authenticated)
 
     def test_js_catalog(self):
         resp = self.client.get(reverse('common:javascript-catalog'))
