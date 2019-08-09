@@ -24,6 +24,7 @@ from django.db.models import Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.utils.encoding import smart_bytes, smart_text
 
 
 class EntityWithHistory(models.Model):
@@ -104,8 +105,8 @@ class HistoryForEntity(object):
 
         # Add many-to-many relation
         for r in rel_data:
-            setattr(new_obj, r, rel_data[r])
-
+            getattr(new_obj, r).set(rel_data[r])
+            
         return new_obj
 
     @classmethod
@@ -308,8 +309,8 @@ class PasswordUser(AccessAccount, EntityWithHistory):
     def generate_encrypted_password_and_salt(password):
         salt = base64.b64encode(os.urandom(16))
         pwdata = hashlib.sha256()
-        pwdata.update(password + salt)
-        return salt, base64.b64encode(pwdata.digest())
+        pwdata.update(smart_bytes(password) + salt)
+        return smart_text(salt), base64.b64encode(pwdata.digest()) #TODO needs to be testet
 
     def __str__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
@@ -319,8 +320,8 @@ class PasswordUser(AccessAccount, EntityWithHistory):
 
     def check_password(self, password):
         pwdata = hashlib.sha256()
-        pwdata.update(password + self.password_salt)
-        return base64.b64encode(pwdata.digest()) == self.encrypted_password
+        pwdata.update(smart_bytes(password) + smart_bytes(self.password_salt))
+        return base64.b64encode(pwdata.digest()) == smart_bytes(self.encrypted_password)
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 
