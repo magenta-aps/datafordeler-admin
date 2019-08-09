@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import pytz
 import datetime
 import zlib
 from base64 import b64decode
 from xml.etree import ElementTree
-
 from dafousers.model_constants import SystemRole as sr_contants
 from dafousers.models import AreaRestriction
 from dafousers.models import IdentityProviderAccount
@@ -16,8 +15,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db.models import Func, F
-from django.utils import timezone
 from signxml import XMLVerifier
+from django.utils import timezone
 
 
 class DafoUsersAuthBackend(object):
@@ -311,7 +310,7 @@ class TokenVerifier(object):
         unawere = timezone.datetime.strptime(
             text, "%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        return timezone.make_aware(unawere, timezone=timezone.UTC())
+        return timezone.make_aware(unawere, timezone=pytz.UTC)
 
     def check_time_skew(self, time_string, forward_interval_sec):
         check_against = self.parse_datetime(time_string)

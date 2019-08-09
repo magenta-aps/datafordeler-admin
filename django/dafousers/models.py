@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-
+import pytz
 import base64
 import copy
 import hashlib
@@ -106,7 +106,7 @@ class HistoryForEntity(object):
         # Add many-to-many relation
         for r in rel_data:
             getattr(new_obj, r).set(rel_data[r])
-            
+
         return new_obj
 
     @classmethod
@@ -323,6 +323,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         pwdata.update(smart_bytes(password) + smart_bytes(self.password_salt))
         return base64.b64encode(pwdata.digest()) == smart_bytes(self.encrypted_password)
 
+
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 
 
@@ -371,7 +372,7 @@ class EntityWithCertificate(models.Model):
         cert_req = crypto.X509Req()
         cert_req.get_subject().CN = self.contact_email
         cert_req.set_pubkey(public_key)
-        cert_req.sign(private_key, b"sha256")
+        cert_req.sign(private_key, "sha256")
 
         # create a cert
         cert = crypto.X509()
@@ -390,7 +391,7 @@ class EntityWithCertificate(models.Model):
         cert.set_issuer(public_cert.get_subject())
         cert.set_subject(cert_req.get_subject())
         cert.set_pubkey(cert_req.get_pubkey())
-        cert.sign(private_key, b"sha256")
+        cert.sign(private_key, "sha256")
 
         p12 = crypto.PKCS12()
         p12.set_privatekey(cert_req.get_pubkey())
@@ -641,15 +642,15 @@ class Certificate(models.Model):
                 # (hex encoded bytes separated by ":")
                 fingerprint_bytes = x509_cert.fingerprint(hashes.SHA256())
                 self.fingerprint = ":".join(
-                    "{:02x}".format(ord(c)) for c in fingerprint_bytes
+                    "{:02x}".format(c) for c in fingerprint_bytes
                 )
 
                 # Store valid time interval
                 self.valid_from = x509_cert.not_valid_before.replace(
-                    tzinfo=timezone.UTC()
+                    tzinfo=pytz.UTC
                 )
                 self.valid_to = x509_cert.not_valid_after.replace(
-                    tzinfo=timezone.UTC()
+                    tzinfo=pytz.UTC
                 )
 
                 subject_parts = []
