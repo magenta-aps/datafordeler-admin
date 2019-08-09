@@ -55,12 +55,12 @@ def on_post_save(sender, instance, created, **kwargs):
                 last_historic_item
             )
             difference = {}
-            for key, value in updated_dict.iteritems():
+            for key, value in updated_dict.items():
                 if value != historic_dict.get(key):
                     difference[key] = (historic_dict.get(key), value)
 
             diff_list = []
-            for key, values in difference.iteritems():
+            for key, values in difference.items():
                 if key not in ['updated']:
                     (value1, value2) = values
                     if key == '_relations':

@@ -78,7 +78,7 @@ class PluginConfigurationView(LoginRequiredMixin, UpdateView):
             '\n'.join([
                 "    %s: %s" %
                 (field, value if 'password' not in field else '******')
-                for field, value in self.object.get_field_dict().iteritems()
+                for field, value in self.object.get_field_dict().items()
             ])
         )
         return response
@@ -310,7 +310,7 @@ class DumpCreate(LoginRequiredMixin, CreateView):
             '\n'.join([
                 "    %s: %s" %
                 (field, value)
-                for field, value in self.object.get_field_dict().iteritems()
+                for field, value in self.object.get_field_dict().items()
             ])
         )
         return response
@@ -334,7 +334,7 @@ class DumpEdit(LoginRequiredMixin, UpdateView):
             '\n'.join([
                 "    %s: %s" %
                 (field, value)
-                for field, value in self.object.get_field_dict().iteritems()
+                for field, value in self.object.get_field_dict().items()
             ])
         )
         return response
