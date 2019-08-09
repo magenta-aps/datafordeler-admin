@@ -188,6 +188,7 @@ FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/frontpage/'
+LOGOUT_REDIRECT_URL = '/'
 
 # The URL we use for logging in via the IdP
 IDP_SSOPROXY_URL = "https://localhost:7443/sso_proxy"
