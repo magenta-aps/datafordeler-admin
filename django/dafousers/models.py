@@ -310,7 +310,7 @@ class PasswordUser(AccessAccount, EntityWithHistory):
         salt = base64.b64encode(os.urandom(16))
         pwdata = hashlib.sha256()
         pwdata.update(smart_bytes(password) + salt)
-        return smart_text(salt), base64.b64encode(pwdata.digest()) #TODO needs to be testet
+        return smart_text(salt), smart_text((base64.b64encode(pwdata.digest())))
 
     def __str__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
