@@ -332,7 +332,7 @@ class DumpConfig(DafoConfig, models.Model):
     def get_absolute_url(self):
         return reverse('dafoconfig:dump-edit', kwargs={'pk': self.pk})
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 

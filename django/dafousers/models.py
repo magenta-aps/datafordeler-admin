@@ -182,12 +182,10 @@ class HistoryForEntity(object):
 
     @classmethod
     def admin_register_kwargs(cls):
-        return {"list_display": ['__unicode__', 'updated', 'changed_by']}
+        return {"list_display": ['__str__', 'updated', 'changed_by']}
 
-    def __unicode__(self):
-        entity_unicode_method = self.entity_class.__unicode__.__func__
-
-        return entity_unicode_method(self)
+    def __str__(self):
+        return str(self.entity_class)
 
 
 class UserIdentification(models.Model):
