@@ -142,9 +142,7 @@ var DAFO = window.DAFO || {};
     $(document).ready(function() {
 
 
-
-        addEvent(window, 'load', function(e) {
-
+        window.onload = function(){
             if ($('#id_certificates_to').length > 0 && $('#id_current_time').length > 0) {
                 var currentTime = document.getElementById("id_current_time");
                 var certificateElements = document.getElementById("id_certificates_to").children;
@@ -157,8 +155,7 @@ var DAFO = window.DAFO || {};
                 var downloadElement = document.getElementById("id_certificates_add_link");
                 downloadElement.id = "id_certificates_download";
             }
-
-        });
+        };
 
         setOrderClasses();
 
