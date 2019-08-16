@@ -166,7 +166,7 @@ def update_user_auth_info(request):
                                 "{urn:oasis:names:tc:SAML:2.0:assertion}"
                                 "AttributeValue"
                             )
-                            value = unicode(attr_value.text)
+                            value = str(attr_value.text)
                             translated = attr_map.get(value)
                             if translated is not None:
                                 for x in translated:
