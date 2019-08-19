@@ -4,7 +4,7 @@ cryptography==2.7
 Django>=2.2, <2.3
 django-markup==1.2
 #fork to support django-2-2
-git+git://github.com/magenta-aps/django-pyodbc-azure@azure-2.2; sys_platform == 'win32'
+git+http://github.com/magenta-aps/django-pyodbc-azure.git; sys_platform == 'win32'
 docutils==0.14
 flake8==3.3.0
 ipython==3.2.3
@@ -17,6 +17,6 @@ requests==2.22.0
 psycopg2==2.7.3.2; sys_platform != 'win32' and platform_python_implementation != 'PyPy'
 psycopg2cffi==2.7.6; platform_python_implementation == 'PyPy'
 #needed to create a fork of django-fancy-cronfield to support django-2-2
-git+git://github.com/magenta-aps/django-fancy-cronfield@master
-wfastcgi==3.0.0; sys_platform == 'win32'
+git+http://github.com/magenta-aps/django-fancy-cronfield
+wfastcgi==3.0.0#; sys_platform == 'win32'
 
