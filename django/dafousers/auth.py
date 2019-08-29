@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import pytz
 import datetime
 import zlib
 from base64 import b64decode
 from xml.etree import ElementTree
-
 from dafousers.model_constants import SystemRole as sr_contants
 from dafousers.models import AreaRestriction
 from dafousers.models import IdentityProviderAccount
@@ -16,19 +15,19 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db.models import Func, F
-from django.utils import timezone
 from signxml import XMLVerifier
+from django.utils import timezone
 
 
 class DafoUsersAuthBackend(object):
 
-    def authenticate(self, username=None, password=None, token=None):
+    def authenticate(self, request, username=None, password=None, token=None):
         if token is not None:
             try:
                 verifier = TokenVerifier(token)
                 verifier.verify()
             except Exception as e:
-                print "Failed to verify token: %s" % e
+                print("Failed to verify token: %s" % e)
                 raise e
             try:
                 # Users from external IdPs will all reference a Django
@@ -107,7 +106,7 @@ def update_user_auth_info(request):
 
     info = None
 
-    if not hasattr(request, 'user') or not request.user.is_authenticated():
+    if not hasattr(request, 'user') or not request.user.is_authenticated:
         return info
 
     if hasattr(request.user, 'dafoauthinfo'):
@@ -167,7 +166,7 @@ def update_user_auth_info(request):
                                 "{urn:oasis:names:tc:SAML:2.0:assertion}"
                                 "AttributeValue"
                             )
-                            value = unicode(attr_value.text)
+                            value = str(attr_value.text)
                             translated = attr_map.get(value)
                             if translated is not None:
                                 for x in translated:
@@ -311,7 +310,7 @@ class TokenVerifier(object):
         unawere = timezone.datetime.strptime(
             text, "%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        return timezone.make_aware(unawere, timezone=timezone.UTC())
+        return timezone.make_aware(unawere, timezone=pytz.UTC)
 
     def check_time_skew(self, time_string, forward_interval_sec):
         check_against = self.parse_datetime(time_string)

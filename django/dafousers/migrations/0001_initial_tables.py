@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=2048, verbose_name='Navn')),
                 ('created_by', models.CharField(max_length=2048, verbose_name='Oprettet af')),
-                ('system_roles', models.ManyToManyField(blank=True, to=b'dafousers.SystemRole', verbose_name='Tilknyttede systemroller')),
+                ('system_roles', models.ManyToManyField(blank=True, to='dafousers.SystemRole', verbose_name='Tilknyttede systemroller')),
             ],
         ),
         migrations.CreateModel(
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='passworduserhistory',
             name='user_profiles',
-            field=models.ManyToManyField(blank=True, to=b'dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler'),
+            field=models.ManyToManyField(blank=True, to='dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler'),
         ),
         migrations.AddField(
             model_name='accessaccount',
@@ -107,7 +107,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='accessaccount',
             name='user_profiles',
-            field=models.ManyToManyField(blank=True, to=b'dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler'),
+            field=models.ManyToManyField(blank=True, to='dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler'),
         ),
         migrations.AddField(
             model_name='passworduserhistory',
@@ -141,7 +141,7 @@ class Migration(migrations.Migration):
                 ('Navn', models.CharField(blank=True, default='', max_length=2048)),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('comment', models.TextField(blank=True, default='', verbose_name='Kommentar/noter')),
-                ('certificates', models.ManyToManyField(to=b'dafousers.Certificate', verbose_name='Certifikater')),
+                ('certificates', models.ManyToManyField(to='dafousers.Certificate', verbose_name='Certifikater')),
             ],
             options={
                 'abstract': False,
@@ -161,10 +161,10 @@ class Migration(migrations.Migration):
                 ('Navn', models.CharField(blank=True, default='', max_length=2048)),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('comment', models.TextField(blank=True, default='', verbose_name='Kommentar/noter')),
-                ('certificates', models.ManyToManyField(to=b'dafousers.Certificate', verbose_name='Certifikater')),
+                ('certificates', models.ManyToManyField(to='dafousers.Certificate', verbose_name='Certifikater')),
                 ('entity', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dafousers.CertificateUser')),
                 ('identified_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='dafousers.UserIdentification', verbose_name='Identificerer bruger')),
-                ('user_profiles', models.ManyToManyField(blank=True, to=b'dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler')),
+                ('user_profiles', models.ManyToManyField(blank=True, to='dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler')),
             ],
             bases=(models.Model, dafousers.models.HistoryForEntity),
         ),
@@ -182,7 +182,7 @@ class Migration(migrations.Migration):
                 ('Single-Log-Out Endpoint', models.CharField(blank=True, default='', max_length=2048)),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('NameID format', models.CharField(blank=True, default='', max_length=2048)),
-                ('certificates', models.ManyToManyField(to=b'dafousers.Certificate', verbose_name='Certifikater')),
+                ('certificates', models.ManyToManyField(to='dafousers.Certificate', verbose_name='Certifikater')),
             ],
             options={
                 'abstract': False,
@@ -204,10 +204,10 @@ class Migration(migrations.Migration):
                 ('Single-Log-Out Endpoint', models.CharField(blank=True, default='', max_length=2048)),
                 ('organisation', models.TextField(blank=True, default='', verbose_name='Information om brugerens organisation')),
                 ('NameID format', models.CharField(blank=True, default='', max_length=2048)),
-                ('certificates', models.ManyToManyField(to=b'dafousers.Certificate', verbose_name='Certifikater')),
+                ('certificates', models.ManyToManyField(to='dafousers.Certificate', verbose_name='Certifikater')),
                 ('entity', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dafousers.IdentityProviderAccount')),
                 ('identified_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='dafousers.UserIdentification', verbose_name='Identificerer bruger')),
-                ('user_profiles', models.ManyToManyField(blank=True, to=b'dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler')),
+                ('user_profiles', models.ManyToManyField(blank=True, to='dafousers.UserProfile', verbose_name='Tilknyttede brugerprofiler')),
                 ('Navn', models.CharField(blank=True, default='', max_length=2048)),
             ],
             bases=(models.Model, dafousers.models.HistoryForEntity),
@@ -238,7 +238,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='area_restrictions',
-            field=models.ManyToManyField(blank=True, to=b'dafousers.AreaRestriction', verbose_name='Tilknyttede omr\xe5debegr\xe6nsninger'),
+            field=models.ManyToManyField(blank=True, to='dafousers.AreaRestriction', verbose_name='Tilknyttede omr\xe5debegr\xe6nsninger'),
         ),
         migrations.AlterModelOptions(
             name='arearestriction',
@@ -289,7 +289,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='certificate',
             name='certificate_blob',
-            field=models.FileField(upload_to=b'', verbose_name='Certifikat (bin\xe6re data)'),
+            field=models.FileField(upload_to='get ', verbose_name='Certifikat (bin\xe6re data)'),
         ),
         migrations.AlterModelOptions(
             name='certificate',

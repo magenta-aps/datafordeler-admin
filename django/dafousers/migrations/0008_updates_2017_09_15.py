@@ -12,7 +12,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'dafousers', '0008_auto_20170814_1247'), (b'dafousers', '0009_auto_20170814_1302'), (b'dafousers', '0010_auto_20170821_1631'), (b'dafousers', '0011_auto_20170821_1648'), (b'dafousers', '0012_auto_20170824_1150'), (b'dafousers', '0013_auto_20170908_1423'), (b'dafousers', '0014_auto_20170908_1423'), (b'dafousers', '0015_auto_20170915_1313')]
+    replaces = [('dafousers', '0008_auto_20170814_1247'), ('dafousers', '0009_auto_20170814_1302'), ('dafousers', '0010_auto_20170821_1631'), ('dafousers', '0011_auto_20170821_1648'), ('dafousers', '0012_auto_20170824_1150'), ('dafousers', '0013_auto_20170908_1423'), ('dafousers', '0014_auto_20170908_1423'), ('dafousers', '0015_auto_20170915_1313')]
 
     dependencies = [
         ('dafousers', '0007_on-behalf-of_mode_on_certificate_users'),
@@ -198,7 +198,7 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Opdateret')),
                 ('name', models.CharField(max_length=2048, verbose_name='Navn')),
                 ('created_by', models.CharField(max_length=2048, verbose_name='Oprettet af')),
-                ('area_restrictions', models.ManyToManyField(blank=True, to=b'dafousers.AreaRestriction', verbose_name='Tilknyttede omr\xe5debegr\xe6nsninger')),
+                ('area_restrictions', models.ManyToManyField(blank=True, to='dafousers.AreaRestriction', verbose_name='Tilknyttede omr\xe5debegr\xe6nsninger')),
             ],
             bases=(models.Model, dafousers.models.HistoryForEntity),
         ),
@@ -233,6 +233,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofilehistory',
             name='system_roles',
-            field=models.ManyToManyField(blank=True, to=b'dafousers.SystemRole', verbose_name='Tilknyttede systemroller'),
+            field=models.ManyToManyField(blank=True, to='dafousers.SystemRole', verbose_name='Tilknyttede systemroller'),
         ),
     ]

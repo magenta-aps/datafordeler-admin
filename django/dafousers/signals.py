@@ -18,12 +18,12 @@ def on_post_save(sender, instance, created, **kwargs):
         if last_historic_item is None:
             # Created new item
             content_list = []
-            for key, value in updated_dict.iteritems():
+            for key, value in updated_dict.items():
                 if key not in ['updated']:
                     if key == '_relations':
                         for relkey in value:
                             relvalues = [
-                                unicode(x) for x in value[relkey].all()
+                                str(x) for x in value[relkey].all()
                             ]
                             if len(relvalues) > 0:
                                 content_list.append(
@@ -43,7 +43,7 @@ def on_post_save(sender, instance, created, **kwargs):
                     "%s"
                 ]),
                 instance.__class__.__name__,
-                unicode(instance),
+                str(instance),
                 instance.id,
                 instance.changed_by,
                 verbose_contents
@@ -55,21 +55,21 @@ def on_post_save(sender, instance, created, **kwargs):
                 last_historic_item
             )
             difference = {}
-            for key, value in updated_dict.iteritems():
+            for key, value in updated_dict.items():
                 if value != historic_dict.get(key):
                     difference[key] = (historic_dict.get(key), value)
 
             diff_list = []
-            for key, values in difference.iteritems():
+            for key, values in difference.items():
                 if key not in ['updated']:
                     (value1, value2) = values
                     if key == '_relations':
                         for relkey in value1:
                             relvalues1 = [
-                                unicode(x) for x in value1[relkey].all()
+                                str(x) for x in value1[relkey].all()
                             ]
                             relvalues2 = [
-                                unicode(x) for x in value2[relkey].all()
+                                str(x) for x in value2[relkey].all()
                             ]
                             if (len(relvalues1) > 0 or len(relvalues2) > 0) \
                                     and set(relvalues1) != set(relvalues2):
@@ -85,13 +85,13 @@ def on_post_save(sender, instance, created, **kwargs):
                             value1 = value2 = '******'
                         if value1 is not None:
                             try:
-                                value1 = unicode(value1)
-                            except UnicodeDecodeError:
+                                value1 = str(value1)
+                            except ValueError:
                                 value1 = value1.encode("string_escape")
                         if value2 is not None:
                             try:
-                                value2 = unicode(value2)
-                            except UnicodeDecodeError:
+                                value2 = str(value2)
+                            except ValueError:
                                 value2 = value2.encode("string_escape")
                         diff_list.append(
                             "    %s: %s => %s" % (
@@ -107,7 +107,7 @@ def on_post_save(sender, instance, created, **kwargs):
                     "%s"
                 ]),
                 instance.__class__.__name__,
-                unicode(instance),
+                str(instance),
                 instance.id,
                 instance.changed_by,
                 verbose_difference

@@ -52,10 +52,10 @@ class Command(base.BaseCommand):
     @staticmethod
     def validate_username(username):
         if not Command.username_valid(username):
-            print "Invalid username"
+            print("Invalid username")
             return False
         elif Command.username_exists(username):
-            print "Username already exists"
+            print("Username already exists")
             return False
         return True
 
@@ -69,8 +69,8 @@ class Command(base.BaseCommand):
         try:
             userprofile = UserProfile.objects.get(name=self.userprofile_name)
         except UserProfile.DoesNotExist:
-            print "Couldn't find userprofile '%s' to assign" % \
-                  self.userprofile_name
+            print("Couldn't find userprofile '%s' to assign" % \
+                  self.userprofile_name)
             return
 
             # Validate username from parameter
@@ -97,7 +97,7 @@ class Command(base.BaseCommand):
                 repeat_password = getpass.getpass("Repeat password: ")
 
             if repeat_password != password:
-                print "Password mismatch"
+                print("Password mismatch")
                 password = None
                 repeat_password = None
 
@@ -120,9 +120,9 @@ class Command(base.BaseCommand):
         user.encrypted_password = encrypted_password
         user.changed_by = "Console command 'createuser'"
         user.save()
-        print "User '%s' created" % username
+        print("User '%s' created" % username)
 
         user.user_profiles.add(userprofile)
         user.save()
-        print "UserProfile '%s' added to User '%s'" % \
-              (userprofile.name, username)
+        print("UserProfile '%s' added to User '%s'" % \
+              (userprofile.name, username))

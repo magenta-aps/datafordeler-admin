@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, unicode_literals, print_function
-from dafousers import models
+from dafousers import models, model_constants
 from django import test
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.db.models.fields.files import FieldFile
 from django.db.models.fields.related import ManyToManyField
 from django.test import tag
+from django.test import override_settings
 
 import contextlib
 import copy
@@ -86,8 +87,6 @@ class CodeStyleTests(test.SimpleTestCase):
             out[1] = out[1].getvalue()
 
 
-
-
 SAFARI_PREVIEW_DRIVER = ('/Applications/Safari Technology Preview.app'
                          '/Contents/MacOS/safaridriver')
 CHROME_UBUNTU_DRIVER = '/usr/local/bin/chromedriver'
@@ -96,11 +95,51 @@ USERNAME = "jakob@data.nanoq.gl"
 PASSWORD = "jacob"
 
 
-class BrowserTest(test.LiveServerTestCase, test.TestCase):
+@override_settings(DEBUG=True)
+class BrowserTest(test.LiveServerTestCase):
+
+    def setUp(self):
+        from django import db
+        db.connections.close_all()
+        #kinda works because it clsoes the dirtry connection created in  test_bulk_status_change
+        user_id, created = models.UserIdentification.objects.get_or_create(user_id='jakob@data.nanoq.gl', defaults={'user_id': 'jakob@data.nanoq.gl'})
+
+        system_role, created = models.SystemRole.objects.get_or_create(role_name='DAFO Administrator',
+                                                defaults={'role_name':'DAFO Administrator',
+                                                          'role_type': model_constants.SystemRole.TYPE_CUSTOM,
+                                                          'target_name': "DAFO Admin"})
+
+        dafo_admin, created = models.UserProfile.objects.get_or_create(name='DAFO Administrator',
+                                                                       defaults={'name': 'DAFO Administrator',
+                                                                                 'changed_by': 'system'})
+
+        if created is True:
+            dafo_admin.system_roles.set([system_role])
+
+        service, created = models.SystemRole.objects.get_or_create(role_name='DAFO Serviceudbyder',
+                                                                   defaults={"role_name": "DAFO Serviceudbyder",
+                                                                             "role_type": model_constants.SystemRole.TYPE_CUSTOM,
+                                                                             "target_name": "DAFO Admin"})
+
+        dafo_service, created = models.UserProfile.objects.get_or_create(name='DAFO Serviceudbyder',
+                                                                         defaults={'name': 'DAFO Serviceudbyder',
+                                                                                   'changed_by': 'system'})
+        if created is True:
+            dafo_service.system_roles.set([service])
+
+        test_user, created = models.PasswordUser.objects.get_or_create(email=USERNAME, defaults={'changed_by': 'system',
+                                                                                                 'identified_user': user_id })
+        if created is True:
+            test_user.password_salt, test_user.encrypted_password = test_user.generate_encrypted_password_and_salt('jacob')
+            test_user.save()
+            test_user.user_profiles.set([dafo_admin])
+
+        test_user, created = models.PasswordUser.objects.get_or_create(email='amalie@serviceudbyder.gl', defaults={'changed_by': 'system',
+                                                                                                 'identified_user': user_id })
+
 
     @classmethod
     def setUpClass(cls):
-
         call_command('collectstatic', verbosity=0, interactive=False)
 
         default_driver = (
@@ -267,7 +306,7 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
     def m2m_names_to_labels(self, related_model, names):
         result = []
         for name in names:
-            result.append(related_model.objects.get(name=name).__unicode__())
+            result.append(str(related_model.objects.get(name=name)))
         return result
 
     def assert_page(self, expected_page):
@@ -298,6 +337,7 @@ class BrowserTest(test.LiveServerTestCase, test.TestCase):
                 )
 
 
+@override_settings(DEBUG=True)
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class LoginTest(BrowserTest):
@@ -422,7 +462,8 @@ class CrudTestMixin(object):
         return created_object
 
     def assert_update_success(self, original, changes):
-        updated_params = dict(original.items() + changes.items())
+        updated_params = dict(original)
+        updated_params.update(changes)
         updated_object_name = self.get_object_name(updated_params)
         created_object = self.model.objects.search(updated_object_name).first()
         self.compare_result(created_object, updated_params)
@@ -509,6 +550,7 @@ class CrudTestMixin(object):
         self.assertIsNotNone(result_link)
 
         self.click(result_link)
+        time.sleep(1)
         self.assert_page((self.page + self.edit_page) % created_object.pk)
 
         # Edit the form
@@ -521,6 +563,7 @@ class CrudTestMixin(object):
         )
 
     def test_history(self):
+
         print("%s.test_history" % self.__class__.__name__)
         self.login()
         self.setup()
@@ -577,7 +620,9 @@ class CrudTestMixin(object):
                 if i == 0:
                     expected_items = self.create_form_params
                 else:
-                    expected_items = dict(self.create_form_params.items() + self.edit_form_params.items())
+                    expected_items = dict(self.create_form_params)
+                    expected_items.update(self.edit_form_params)
+
 
                 expected_params = {}
                 for key, value in expected_items.items():
@@ -600,6 +645,7 @@ class CrudTestMixin(object):
                             (param_title, i, expected_value, param_value)
                         )
 
+
     def select_permissions_and_submit(self, permission_type):
         add_permissions = self.browser.find_element_by_id('add_%s' % permission_type)
         if permission_type in self.bulk_add_permissions_params:
@@ -619,6 +665,7 @@ class CrudTestMixin(object):
         for button in buttons:
                 if button.text.strip() == status_name:
                     self.click(button)
+                    time.sleep(1)
 
     def create_test_objects(self, iterations):
 
@@ -708,14 +755,14 @@ class CrudTestMixin(object):
             print("%s.test_bulk_status_change" % self.__class__.__name__)
             self.login()
             self.setup()
-
             # Create test objects and select them so that they are ready for bulk action
             params_to_update = self.create_objects_and_select_them()
 
             expected_status = u'Deaktiveret'
             self.change_status(expected_status)
-
+            
             time.sleep(1)
+
 
             for params in params_to_update:
                 self.assert_update_success(
@@ -724,6 +771,7 @@ class CrudTestMixin(object):
                 )
 
 
+@override_settings(DEBUG=True)
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
@@ -790,6 +838,7 @@ class IdentityProviderAccountTest(CrudTestMixin, BrowserTest):
         )
         user_profile.save()
 
+@override_settings(DEBUG=True)
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class PasswordUserTest(CrudTestMixin, BrowserTest):
@@ -848,6 +897,7 @@ class PasswordUserTest(CrudTestMixin, BrowserTest):
         return params['givenname'] + " " + params['lastname']
 
 
+@override_settings(DEBUG=True)
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class CertificateUserTest(CrudTestMixin, BrowserTest):
@@ -912,6 +962,7 @@ class CertificateUserTest(CrudTestMixin, BrowserTest):
         user_profile.save()
 
 
+@override_settings(DEBUG=True)
 @tag('selenium')
 @unittest.skipIf(not selenium, 'selenium not installed')
 class UserProfileTest(CrudTestMixin, BrowserTest):

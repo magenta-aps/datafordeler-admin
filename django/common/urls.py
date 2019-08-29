@@ -4,8 +4,9 @@ from django.conf.urls import url
 from django.conf.urls.static import static
 from django.views.decorators.csrf import csrf_exempt
 from django.views.i18n import JavaScriptCatalog
+import common.views as dafo_views
 
-import views as dafo_views
+app_name = 'common'
 
 urlpatterns = [
 
@@ -20,7 +21,7 @@ urlpatterns = [
         csrf_exempt(dafo_views.LoginView.as_view()),
         name='login'),
     url(r'^logout/',
-        django.contrib.auth.views.logout,
+        django.contrib.auth.views.LogoutView.as_view(),
         {'template_name': 'logged_out.html'},
         name='logout'),
 

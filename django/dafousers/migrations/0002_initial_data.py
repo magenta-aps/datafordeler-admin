@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import pytz
 import datetime
 
 from dafousers import model_constants
 from django.db import migrations
-from django.utils import timezone
+
+
 
 
 def add_defaults(apps, schema_editor, modelname, items):
@@ -142,7 +143,7 @@ def remove_useridentifications(apps, schema_editor):
 
 
 create_time = datetime.datetime(
-    2017, 4, 1, 12, 0, 0, 0, tzinfo=timezone.UTC()
+    2017, 4, 1, 12, 0, 0, 0, tzinfo=pytz.UTC
 )
 
 
@@ -209,7 +210,7 @@ def remove_password_users(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [(b"dafousers", "0001_initial_tables")]
+    dependencies = [("dafousers", "0001_initial_tables")]
     # dependencies = [(b"dafousers", "0004_auto_20170404_1601")]
 
     operations = [

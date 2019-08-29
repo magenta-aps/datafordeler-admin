@@ -41,10 +41,10 @@ class AccessAccountForm(forms.ModelForm):
     def clean(self):
         super(AccessAccountForm, self).clean()
         if self.instance.pk is not None:
-            self.instance.user_profiles = \
+            self.instance.user_profiles.set(
                 self.instance.get_updated_user_profiles(
                     self.user, self.cleaned_data['user_profiles']
-                )
+                ))
 
 
 class PasswordUserForm(AccessAccountForm):
@@ -187,11 +187,10 @@ class UserProfileForm(forms.ModelForm):
     def clean(self):
         super(UserProfileForm, self).clean()
         if self.instance.pk is not None:
-            self.instance.system_roles = \
-                self.instance.get_updated_system_roles(
+            self.instance.system_roles.set(self.instance.get_updated_system_roles(
                     self.user, self.cleaned_data['system_roles']
-                )
-            self.instance.area_restrictions = \
+                ))
+            self.instance.area_restrictions.set(
                 self.instance.get_updated_area_restrictions(
                     self.user, self.cleaned_data['area_restrictions']
-                )
+                ))

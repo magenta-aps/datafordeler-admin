@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_windows_tools',
     'django_markup',
     'fancy_cronfield',
     'common',
@@ -188,6 +187,7 @@ FCGI_LOG_PATH = os.path.join(PROJECT_DIR, "logs")
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/frontpage/'
+LOGOUT_REDIRECT_URL = '/'
 
 # The URL we use for logging in via the IdP
 IDP_SSOPROXY_URL = "https://localhost:7443/sso_proxy"
@@ -230,7 +230,7 @@ AUTHENTICATION_BACKENDS = [
 
 LOCAL_SETTINGS_FILE = os.path.join(SITE_DIR, "local_settings.py")
 if os.path.exists(LOCAL_SETTINGS_FILE):
-    from local_settings import *  # noqa
+    from .local_settings import *  # noqa
 
 # Use same database as the default for configuration, if a specific database
 # has not been configured locally.

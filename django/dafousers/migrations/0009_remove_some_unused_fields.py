@@ -7,7 +7,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'dafousers', '0009_auto_20170918_1143'), (b'dafousers', '0010_auto_20170918_1429')]
+    replaces = [('dafousers', '0009_auto_20170918_1143'), ('dafousers', '0010_auto_20170918_1429')]
 
     dependencies = [
         ('dafousers', '0008_updates_2017_09_15'),

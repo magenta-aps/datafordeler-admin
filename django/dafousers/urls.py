@@ -1,6 +1,7 @@
 import dafousers.views as dafo_views
 from django.conf.urls import url
 
+app_name = 'dafousers'
 urlpatterns = [
 
     # USER

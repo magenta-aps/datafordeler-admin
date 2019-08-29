@@ -52,7 +52,7 @@ class DefaultModelAdmin(admin.ModelAdmin):
 
 
 def register_models(models, namespace=None):
-    models = models.__dict__.iteritems()
+    models = models.__dict__.items()
 
     for name, value in models:
         # Skip stuff that is not classes

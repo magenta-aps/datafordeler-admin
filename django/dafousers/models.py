@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-
+import pytz
 import base64
 import copy
 import hashlib
@@ -24,6 +24,7 @@ from django.db.models import Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.utils.encoding import smart_bytes, smart_text
 
 
 class EntityWithHistory(models.Model):
@@ -104,7 +105,7 @@ class HistoryForEntity(object):
 
         # Add many-to-many relation
         for r in rel_data:
-            setattr(new_obj, r, rel_data[r])
+            getattr(new_obj, r).set(rel_data[r])
 
         return new_obj
 
@@ -127,7 +128,7 @@ class HistoryForEntity(object):
             (models.Model, cls) + extra_parents,
             {
                 "__module__": entity_class.__module__,
-                "entity": models.ForeignKey(entity_class),
+                "entity": models.ForeignKey(entity_class, on_delete=models.CASCADE),
                 "entity_class": entity_class,
                 "hide_in_dafoadmin": True,
             }
@@ -181,12 +182,10 @@ class HistoryForEntity(object):
 
     @classmethod
     def admin_register_kwargs(cls):
-        return {"list_display": ['__unicode__', 'updated', 'changed_by']}
+        return {"list_display": ['__str__', 'updated', 'changed_by']}
 
-    def __unicode__(self):
-        entity_unicode_method = self.entity_class.__unicode__.__func__
-
-        return entity_unicode_method(self)
+    def __str__(self):
+        return str(self.entity_class)
 
 
 class UserIdentification(models.Model):
@@ -202,8 +201,8 @@ class UserIdentification(models.Model):
         max_length=2048
     )
 
-    def __unicode__(self):
-        return unicode(self.user_id)
+    def __str__(self):
+        return self.user_id
 
 
 class AccessAccount(models.Model):
@@ -215,6 +214,7 @@ class AccessAccount(models.Model):
         verbose_name=_(u"Identificerer bruger"),
         blank=True,
         null=True,
+        on_delete=models.CASCADE
     )
     status = models.IntegerField(
         verbose_name=_(u"Status"),
@@ -307,10 +307,10 @@ class PasswordUser(AccessAccount, EntityWithHistory):
     def generate_encrypted_password_and_salt(password):
         salt = base64.b64encode(os.urandom(16))
         pwdata = hashlib.sha256()
-        pwdata.update(password + salt)
-        return salt, base64.b64encode(pwdata.digest())
+        pwdata.update(smart_bytes(password) + salt)
+        return smart_text(salt), smart_text((base64.b64encode(pwdata.digest())))
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s %s <%s>' % (self.givenname, self.lastname, self.email)
 
     def get_absolute_url(self):
@@ -318,8 +318,9 @@ class PasswordUser(AccessAccount, EntityWithHistory):
 
     def check_password(self, password):
         pwdata = hashlib.sha256()
-        pwdata.update(password + self.password_salt)
-        return base64.b64encode(pwdata.digest()) == self.encrypted_password
+        pwdata.update(smart_bytes(password) + smart_bytes(self.password_salt))
+        return base64.b64encode(pwdata.digest()) == smart_bytes(self.encrypted_password)
+
 
 PasswordUserHistory = HistoryForEntity.build_from_entity_class(PasswordUser)
 
@@ -369,7 +370,7 @@ class EntityWithCertificate(models.Model):
         cert_req = crypto.X509Req()
         cert_req.get_subject().CN = self.contact_email
         cert_req.set_pubkey(public_key)
-        cert_req.sign(private_key, b"sha256")
+        cert_req.sign(private_key, "sha256")
 
         # create a cert
         cert = crypto.X509()
@@ -388,7 +389,7 @@ class EntityWithCertificate(models.Model):
         cert.set_issuer(public_cert.get_subject())
         cert.set_subject(cert_req.get_subject())
         cert.set_pubkey(cert_req.get_pubkey())
-        cert.sign(private_key, b"sha256")
+        cert.sign(private_key, "sha256")
 
         p12 = crypto.PKCS12()
         p12.set_privatekey(cert_req.get_pubkey())
@@ -442,8 +443,8 @@ class CertificateUser(AccessAccount, EntityWithCertificate, EntityWithHistory):
         default=""
     )
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return self.name
 
     def get_absolute_url(self):
         return reverse('dafousers:passworduser-list')
@@ -540,8 +541,8 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
         default=""
     )
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return self.name
 
     def get_absolute_url(self):
         return reverse('dafousers:identityprovideraccount-list')
@@ -561,7 +562,7 @@ class IdentityProviderAccount(AccessAccount, EntityWithHistory):
                 self.metadata_xml_file = None
 
             except Exception as e:
-                print "Failed to parse uploaded xml, error is: %s" % e
+                print("Failed to parse uploaded xml, error is: %s" % e)
 
         # Update the last-update-of-idp-data timestamp
         UpdateTimestamps.touch(self.CONSTANTS.IDP_UPDATE_TIMESTAMP_NAME)
@@ -639,15 +640,15 @@ class Certificate(models.Model):
                 # (hex encoded bytes separated by ":")
                 fingerprint_bytes = x509_cert.fingerprint(hashes.SHA256())
                 self.fingerprint = ":".join(
-                    "{:02x}".format(ord(c)) for c in fingerprint_bytes
+                    "{:02x}".format(c) for c in fingerprint_bytes
                 )
 
                 # Store valid time interval
                 self.valid_from = x509_cert.not_valid_before.replace(
-                    tzinfo=timezone.UTC()
+                    tzinfo=pytz.UTC
                 )
                 self.valid_to = x509_cert.not_valid_after.replace(
-                    tzinfo=timezone.UTC()
+                    tzinfo=pytz.UTC
                 )
 
                 subject_parts = []
@@ -673,7 +674,7 @@ class Certificate(models.Model):
 
                 self.certificate_file = None
             except Exception as e:
-                print "Failed to parse certificate, error is: %s" % e
+                print("Failed to parse certificate, error is: %s" % e)
 
             # TODO: Update next expire date for all related objects.
 
@@ -683,9 +684,9 @@ class Certificate(models.Model):
     def get_readonly_fields(self):
         return ['fingerprint', 'subject', 'valid_from', 'valid_to']
 
-    def __unicode__(self):
+    def __str__(self):
         if self.valid_to:
-            return unicode(self.valid_to.strftime("%Y-%m-%d %H:%M:%S"))
+            return self.valid_to.strftime("%Y-%m-%d %H:%M:%S")
         else:
             return "Certifikat uden udløbsdato (pk=%s)" % self.pk
 
@@ -738,8 +739,8 @@ class UserProfile(EntityWithHistory):
 
         return other_area_restrictions.distinct() | submitted.distinct()
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return self.name
 
 
 UserProfileHistory = HistoryForEntity.build_from_entity_class(UserProfile)
@@ -760,7 +761,8 @@ class SystemRole(models.Model):
         verbose_name=_(u"Forældre-rolle"),
         blank=True,
         null=True,
-        default=None
+        default=None,
+        on_delete=models.CASCADE
     )
     role_name = models.CharField(
         verbose_name=_(u"Navn"),
@@ -798,14 +800,12 @@ class SystemRole(models.Model):
             else:
                 return "<unknown>"
 
-    def __unicode__(self):
-        return unicode(
-            '%s (%s, %s)' % (
+    def __str__(self):
+        return '%s (%s, %s)' % (
                 self.role_name,
                 self.get_role_type_display(),
                 self.service_name.upper()
             )
-        )
 
 
 class AreaRestriction(models.Model):
@@ -836,6 +836,7 @@ class AreaRestriction(models.Model):
         verbose_name=_(u"Type"),
         blank=False,
         null=False,
+        on_delete=models.CASCADE
     )
 
     @property
@@ -845,8 +846,8 @@ class AreaRestriction(models.Model):
         else:
             return "<unknown>"
 
-    def __unicode__(self):
-        return unicode("%s (%s)") % (
+    def __str__(self):
+        return "%s (%s)" % (
             self.name,
             self.service_name.upper()
         )
@@ -874,8 +875,8 @@ class AreaRestrictionType(models.Model):
         max_length=2048
     )
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return self.name
 
 
 class UpdateTimestamps(models.Model):
@@ -923,7 +924,8 @@ class IssuedToken(models.Model):
         'AccessAccount',
         verbose_name=_(u'Udstedt til konto'),
         null=True,
-        default=None
+        default=None,
+        on_delete=models.CASCADE
     )
     issued_time = models.DateTimeField(
         verbose_name=_(u'Udstedelsestidspunkt'),
@@ -973,7 +975,7 @@ class IssuedToken(models.Model):
         blank=True,
     )
 
-    def __unicode__(self):
+    def __str__(self):
         if self.token_nameid:
             if self.issued_time:
                 return "#%s, %s, %s" % (
